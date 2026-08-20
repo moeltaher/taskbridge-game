@@ -10,7 +10,7 @@ const requestedStage=stageForPage(page),currentStage=Number(state.stage||0),curr
 if(!publicEntryPages.has(page)&&!state.scenarioKey){location.replace(href('home'))}
 else if(state.scenarioKey&&!publicEntryPages.has(page)&&requestedStage!==currentStage){location.replace(href(currentRoute))}
 else{
- if(page!=='home'||!state.scenarioKey)enterPage(page,{record:true});
+ if(!(state.scenarioKey&&publicEntryPages.has(page)))enterPage(page,{record:true});
  state=getState();
  document.getElementById('app').innerHTML=shell(page);bindShell(page);
  try{const mod=await import(`../pages/${page}.js`);await mod.render(document.getElementById('pageRoot'))}catch(e){console.error(e);document.getElementById('pageRoot').innerHTML='<div class="panel"><h2>تعذر تحميل هذه المرحلة</h2><p class="muted">حدث خطأ تقني. استخدم زر «رجوع» داخل اللعبة أو ابدأ محاكاة جديدة.</p></div>'}
