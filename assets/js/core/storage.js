@@ -8,9 +8,10 @@ const LEGACY_STATE_KEY='taskbridge_v2_state';
 const LEGACY_SETTINGS_KEY='taskbridge_v2_settings';
 const LEGACY_RESULTS_KEY='taskbridge_v2_results';
 
-function read(key,fallback=null){try{const raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw)}catch{return fallback}}
-function write(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true}catch(e){console.warn('No Boss: تعذر حفظ البيانات محليًا',e);return false}}
-function remove(key){try{localStorage.removeItem(key);return true}catch(e){console.warn('No Boss: تعذر حذف البيانات المحلية',e);return false}}
+function stores(){return [globalThis.sessionStorage,globalThis.localStorage].filter(Boolean)}
+function read(key,fallback=null){for(const store of stores()){try{const raw=store.getItem(key);if(raw!==null)return JSON.parse(raw)}catch{}}return fallback}
+function write(key,value){const raw=JSON.stringify(value);let saved=false;for(const store of [globalThis.localStorage,globalThis.sessionStorage].filter(Boolean)){try{store.setItem(key,raw);saved=true}catch(e){console.warn('No Boss: تعذر الحفظ في إحدى مساحات التخزين',e)}}return saved}
+function remove(key){let ok=false;for(const store of stores()){try{store.removeItem(key);ok=true}catch(e){console.warn('No Boss: تعذر حذف البيانات من إحدى مساحات التخزين',e)}}return ok}
 function asArray(x){return Array.isArray(x)?x:[]}
 function isCurrentState(x){return !!x&&x.version===CURRENT_VERSION}
 function isCurrentResult(x){return x?.version===CURRENT_RESULT_VERSION&&x?.scoringVersion===CURRENT_SCORING_VERSION}
