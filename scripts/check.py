@@ -12,12 +12,22 @@ required=['assets/js/data/scenarios.js','assets/js/core/state.js','assets/js/cor
 for f in required: assert (R/f).exists(), f'missing {f}'
 state=(R/'assets/js/core/state.js').read_text(encoding='utf-8')
 storage=(R/'assets/js/core/storage.js').read_text(encoding='utf-8')
+bootstrap=(R/'assets/js/core/bootstrap.js').read_text(encoding='utf-8')
 power=(R/'assets/js/pages/power.js').read_text(encoding='utf-8')
+conclusion=(R/'assets/js/pages/conclusion.js').read_text(encoding='utf-8')
 work=(R/'assets/js/pages/work.js').read_text(encoding='utf-8')
 dispute=(R/'assets/js/pages/dispute.js').read_text(encoding='utf-8')
+investigation=(R/'assets/js/pages/investigation.js').read_text(encoding='utf-8')
+rights=(R/'assets/js/pages/rights.js').read_text(encoding='utf-8')
 assert "CURRENT_VERSION='3.0.2'" in state
 assert "CURRENT_VERSION='3.0.2'" in storage
-assert 'powerEdited' in state and 'powerEdited' in power
-assert "taskHTML(sc,s.workAnswers)" in work
+assert "state.scenarioKey&&publicEntryPages.has(page)" in bootstrap
+assert 'hadPowerEdited' in state and 'next.powerTouched=[]' in state
+assert 'undoCheckpointTo' in state and 'undoCheckpointTo' in rights
+assert 'powerEdited' in power and 'Number.isInteger' in power and 'clamp(Number(inp.value)' not in power
+assert 'powerComplete' in conclusion and 'powerEdited' in conclusion
+assert "taskHTML(sc,s.workAnswers)" in work and 'ResizeObserver' in work
 assert "patch({stage:6,status:'قيد التسوية'})" in dispute
+assert 'role="tabpanel"' in investigation and 'aria-controls' in investigation and 'ArrowLeft' in investigation
+assert 'asArray' in storage and 'function write(' in storage
 print('No Boss v3.0.2 structural and regression guards passed')
