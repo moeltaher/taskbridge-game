@@ -1,8 +1,9 @@
 import {pageFromPath,href} from './routes.js';
-import {getState,enterPage,stageForPage} from './state.js';
+import {getState,enterPage,stageForPage,persistenceStatus} from './state.js';
 import {shell,bindShell,pageTitle} from './ui.js';
 const page=document.body.dataset.page||pageFromPath();
 document.title=`${pageTitle(page)} | No Boss v3.0.2`;
+addEventListener('beforeunload',e=>{if(persistenceStatus().status==='failed'){e.preventDefault();e.returnValue=''}});
 let state=getState();
 const publicEntryPages=new Set(['home','scenario']);
 const stageRoute={0:'scenario',1:'onboarding',2:'work',3:'management',4:'risk',5:'dispute',6:'payment',7:'access',8:'investigation',9:'power',10:'conclusion',11:'result'};
