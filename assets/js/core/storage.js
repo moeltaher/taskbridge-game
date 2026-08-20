@@ -7,11 +7,12 @@ const RESULTS_KEY='no_boss_v3_results';
 const LEGACY_STATE_KEY='taskbridge_v2_state';
 const LEGACY_SETTINGS_KEY='taskbridge_v2_settings';
 const LEGACY_RESULTS_KEY='taskbridge_v2_results';
+const MISSING=Symbol('missing');
 
 const local=()=>globalThis.localStorage||null;
 const session=()=>globalThis.sessionStorage||null;
 function readFrom(store,key,fallback=null){if(!store)return fallback;try{const raw=store.getItem(key);return raw===null?fallback:JSON.parse(raw)}catch{return fallback}}
-function readPreferred(key,fallback=null){const a=readFrom(local(),key,undefined);if(a!==undefined)return a;const b=readFrom(session(),key,undefined);return b===undefined?fallback:b}
+function readPreferred(key,fallback=null){const a=readFrom(local(),key,MISSING);if(a!==MISSING)return a;const b=readFrom(session(),key,MISSING);return b===MISSING?fallback:b}
 function write(key,value){const raw=JSON.stringify(value);let persistent=false,temporary=false;try{local()?.setItem(key,raw);persistent=!!local()}catch(e){console.warn('No Boss: تعذر الحفظ الدائم',e)}try{session()?.setItem(key,raw);temporary=!!session()}catch(e){console.warn('No Boss: تعذر الحفظ المؤقت',e)}return {ok:persistent||temporary,status:persistent?'persistent':temporary?'session':'failed',persistent,session:temporary}}
 function writePersistent(key,value){try{if(!local())return false;local().setItem(key,JSON.stringify(value));return true}catch(e){console.warn('No Boss: تعذر حفظ الأرشيف بصورة دائمة',e);return false}}
 function remove(key){let ok=false;for(const store of [local(),session()].filter(Boolean)){try{store.removeItem(key);ok=true}catch(e){console.warn('No Boss: تعذر حذف البيانات من إحدى مساحات التخزين',e)}}return ok}
