@@ -9,21 +9,24 @@ const LEGACY_SETTINGS_KEY='taskbridge_v2_settings';
 const LEGACY_RESULTS_KEY='taskbridge_v2_results';
 
 function read(key,fallback=null){try{const raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw)}catch{return fallback}}
+function write(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true}catch(e){console.warn('No Boss: تعذر حفظ البيانات محليًا',e);return false}}
+function remove(key){try{localStorage.removeItem(key);return true}catch(e){console.warn('No Boss: تعذر حذف البيانات المحلية',e);return false}}
+function asArray(x){return Array.isArray(x)?x:[]}
 function isCurrentState(x){return !!x&&x.version===CURRENT_VERSION}
 function isCurrentResult(x){return x?.version===CURRENT_RESULT_VERSION&&x?.scoringVersion===CURRENT_SCORING_VERSION}
 function resultKey(x){return x?.runId||x?.createdAt}
 
-function migrateCurrentStateFromLegacyKey(){const existing=read(STATE_KEY);if(isCurrentState(existing))return existing;const legacy=read(LEGACY_STATE_KEY);if(isCurrentState(legacy)){localStorage.setItem(STATE_KEY,JSON.stringify(legacy));return legacy}return null}
-function allResults(){const a=read(RESULTS_KEY,[]),b=read(LEGACY_RESULTS_KEY,[]),byKey=new Map();[...b,...a].forEach(x=>byKey.set(resultKey(x),x));return [...byKey.values()]}
+function migrateCurrentStateFromLegacyKey(){const existing=read(STATE_KEY);if(isCurrentState(existing))return existing;const legacy=read(LEGACY_STATE_KEY);if(isCurrentState(legacy)){write(STATE_KEY,legacy);return legacy}return null}
+function allResults(){const a=asArray(read(RESULTS_KEY,[])),b=asArray(read(LEGACY_RESULTS_KEY,[])),byKey=new Map();[...b,...a].forEach(x=>{if(x&&typeof x==='object')byKey.set(resultKey(x),x)});return [...byKey.values()]}
 
-export function saveState(state){localStorage.setItem(STATE_KEY,JSON.stringify(state))}
+export function saveState(state){return write(STATE_KEY,state)}
 export function loadState(){return migrateCurrentStateFromLegacyKey()}
-export function clearState(){localStorage.removeItem(STATE_KEY)}
+export function clearState(){return remove(STATE_KEY)}
 export function hasState(){return !!loadState()?.scenarioKey}
 export function hasLegacyState(){const currentSlot=read(STATE_KEY),oldSlot=read(LEGACY_STATE_KEY);return !!((currentSlot?.scenarioKey&&!isCurrentState(currentSlot))||(oldSlot?.scenarioKey&&!isCurrentState(oldSlot)))}
-export function clearLegacyState(){const currentSlot=read(STATE_KEY);if(currentSlot&&!isCurrentState(currentSlot))localStorage.removeItem(STATE_KEY);localStorage.removeItem(LEGACY_STATE_KEY)}
-export function saveSettings(x){localStorage.setItem(SETTINGS_KEY,JSON.stringify(x))}
-export function loadSettings(){return read(SETTINGS_KEY,read(LEGACY_SETTINGS_KEY,{}))||{}}
-export function archiveResult(x){const current=allResults().filter(isCurrentResult),key=resultKey(x),i=current.findIndex(r=>resultKey(r)===key);if(i>=0)current[i]=x;else current.push(x);const old=allResults().filter(r=>!isCurrentResult(r));localStorage.setItem(RESULTS_KEY,JSON.stringify([...old,...current.slice(-30)]))}
+export function clearLegacyState(){const currentSlot=read(STATE_KEY);if(currentSlot&&!isCurrentState(currentSlot))remove(STATE_KEY);remove(LEGACY_STATE_KEY)}
+export function saveSettings(x){return write(SETTINGS_KEY,x)}
+export function loadSettings(){const current=read(SETTINGS_KEY),legacy=read(LEGACY_SETTINGS_KEY,{});return current&&typeof current==='object'?current:legacy&&typeof legacy==='object'?legacy:{}}
+export function archiveResult(x){const current=allResults().filter(isCurrentResult),key=resultKey(x),i=current.findIndex(r=>resultKey(r)===key);if(i>=0)current[i]=x;else current.push(x);const old=allResults().filter(r=>!isCurrentResult(r));return write(RESULTS_KEY,[...old,...current.slice(-30)])}
 export function savedResults(){return allResults().filter(isCurrentResult).slice(-30)}
 export function legacyResults(){return allResults().filter(x=>!isCurrentResult(x))}
