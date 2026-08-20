@@ -1,0 +1,76 @@
+name: Cleanup v1.0.2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cleanup-v1.0.2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Build single-file v1.0.2
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          src = Path('app.html')
+          if not src.exists():
+              raise SystemExit('app.html not found')
+          s = src.read_text(encoding='utf-8')
+
+          replacements = [
+              ('<title>خلف الشاشة | النسخة النهائية</title>', '<title>خلف الشاشة | v1.0.2</title>'),
+              ('button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:1240px;margin:auto;min-height:100vh;padding:10px 12px 88px}', 'button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:1320px;margin:auto;min-height:100vh;padding:10px 12px 88px}'),
+              ('.topbar-inner{max-width:1240px;margin:auto;', '.topbar-inner{max-width:1320px;margin:auto;'),
+              ('.game-shell{display:grid;grid-template-columns:208px minmax(0,1fr);gap:12px}', '.game-shell{display:block}'),
+              ('@media (min-width:940px){.game-shell.in-game .sidebar{display:block}.game-shell.in-game{grid-template-columns:208px minmax(0,1fr)}}', '@media (min-width:1180px){.game-shell.in-game{display:grid;grid-template-columns:220px minmax(0,1fr);gap:16px}.game-shell.in-game .sidebar{display:block}}\n@media (min-width:940px) and (max-width:1179px){.game-shell.in-game{display:block}.game-shell.in-game .sidebar{display:none!important}}\n@media (min-width:940px) and (max-width:1179px){.stats.active{grid-template-columns:repeat(3,1fr)}.job-grid{grid-template-columns:repeat(2,1fr)}.workspace{grid-template-columns:minmax(0,1fr) 280px}.case-shell{grid-template-columns:220px minmax(0,1fr)}.hero-grid{grid-template-columns:1fr 1fr}}'),
+              ('<div class="subbrand">النسخة النهائية · محاكاة تفاعلية للعمل الرقمي وعلاقات السلطة</div>', '<div class="subbrand">v1.0.2 · محاكاة تفاعلية للعمل الرقمي وعلاقات السلطة</div>'),
+              ("version:'TaskBridge Final 1.0'", "version:'TaskBridge v1.0.2'")
+          ]
+          for old, new in replacements:
+              if old not in s:
+                  raise SystemExit('Expected source fragment not found: ' + old[:90])
+              s = s.replace(old, new, 1)
+
+          Path('index.html').write_text(s, encoding='utf-8')
+          src.unlink()
+
+          readme = Path('README.md').read_text(encoding='utf-8')
+          readme = readme.replace('**الإصدار الحالي: v1.0.1**', '**الإصدار الحالي: v1.0.2**', 1)
+          marker = '## سجل الإصدارات\n\nتفاصيل التغييرات موثقة في [`CHANGELOG.md`](CHANGELOG.md).\n'
+          addition = marker + '\n### v1.0.2 — تبسيط بنية النشر\n\nأصبحت اللعبة الكاملة والمصححة موجودة مباشرة في `index.html`. لم يعد المشروع يستخدم `app.html` أو iframe لتشغيل اللعبة؛ يحتفظ GitHub بتاريخ النسخ السابقة عبر الـCommits.\n'
+          if marker in readme:
+              readme = readme.replace(marker, addition, 1)
+          Path('README.md').write_text(readme, encoding='utf-8')
+
+          changelog = Path('CHANGELOG.md').read_text(encoding='utf-8')
+          heading = '## [1.0.1] - 2026-08-20'
+          entry = '''## [1.0.2] - 2026-08-20\n\n### Changed\n\n- تبسيط بنية النشر بحيث أصبحت اللعبة الكاملة والمصححة موجودة مباشرة في `index.html`.\n- إزالة طبقة `iframe` التي كانت تستخدم `app.html` كملف منفصل.\n- حذف `app.html` من الفرع الحالي؛ تبقى النسخ السابقة محفوظة بالكامل في Git history.\n- تحديث بيانات الإصدار الظاهرة والمصدرة إلى `v1.0.2`.\n\n### Not changed\n\n- لا تغيير في السيناريوهات أو المحتوى التدريبي.\n- لا تغيير في منطق اللعبة أو الدرجات أو الحسابات.\n- لا تغيير في الحفظ المحلي أو التقارير أو مقارنة المجموعات.\n- إصلاحات سطح المكتب التي أضيفت في v1.0.1 محفوظة داخل `index.html` نفسه.\n\n'''
+          if heading not in changelog:
+              raise SystemExit('CHANGELOG insertion point not found')
+          changelog = changelog.replace(heading, entry + heading, 1)
+          Path('CHANGELOG.md').write_text(changelog, encoding='utf-8')
+
+          Path('RELEASE_NOTES_v1.0.2.md').write_text('''# Release v1.0.2 — Single-file deployment\n\nهذا إصدار صيانة يبسط بنية نشر لعبة «خلف الشاشة» على GitHub Pages.\n\n## ما تغير\n\n- أصبحت اللعبة الكاملة والمصححة موجودة مباشرة في `index.html`.\n- تمت إزالة `app.html` وطبقة الـiframe.\n- يحتفظ GitHub نفسه بالنسخة السابقة من خلال سجل الـCommits، لذلك لا حاجة إلى ملف نسخة قديمة داخل الموقع المنشور.\n- ظلت إصلاحات سطح المكتب واللابتوب من v1.0.1 مدمجة داخل CSS الخاص باللعبة.\n\n## ما لم يتغير\n\nلا توجد تغييرات في المحتوى التدريبي، السيناريوهات، منطق القرارات، الدرجات، البيانات المحلية، التقارير أو مقارنة المجموعات.\n''', encoding='utf-8')
+
+          workflow = Path('.github/workflows/cleanup-v1.0.2.yml')
+          if workflow.exists():
+              workflow.unlink()
+          PY
+      - name: Commit documented cleanup
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(release): simplify v1.0.2 deployment structure" -m "Move the full corrected game back into index.html, remove app.html and the iframe wrapper, preserve v1.0.1 desktop fixes, and document the maintenance release. No gameplay or training logic changed."
+          git push origin main
