@@ -10,7 +10,7 @@ function isV3State(x){return !!x&&String(x.version||'').startsWith('3.')}
 function isV3Result(x){return String(x?.version||'').includes('No Boss v3')}
 
 function migrateV3StateFromLegacyKey(){const existing=read(STATE_KEY);if(existing)return existing;const legacy=read(LEGACY_STATE_KEY);if(isV3State(legacy)){localStorage.setItem(STATE_KEY,JSON.stringify(legacy));return legacy}return null}
-function migrateV3ResultsFromLegacyKey(){let current=read(RESULTS_KEY,[]);const legacy=read(LEGACY_RESULTS_KEY,[]);const imported=legacy.filter(isV3Result);if(imported.length){const byKey=new Map(current.map(x=>[x.runId||x.createdAt,x]));imported.forEach(x=>byKey.set(x.runId||x.createdAt,x));current=[...byKey.values()].slice(-30);localStorage.setItem(RESULTS_KEY,JSON.stringify(current))}return current}
+function migrateV3ResultsFromLegacyKey(){let current=read(RESULTS_KEY,[]);const legacy=read(LEGACY_RESULTS_KEY,[]);const imported=legacy.filter(isV3Result);if(imported.length){const byKey=new Map(current.map(x=>[x.runId||x.createdAt,x]));imported.forEach(x=>{const key=x.runId||x.createdAt;if(!byKey.has(key))byKey.set(key,x)});current=[...byKey.values()].slice(-30);localStorage.setItem(RESULTS_KEY,JSON.stringify(current))}return current}
 
 export function saveState(state){localStorage.setItem(STATE_KEY,JSON.stringify(state))}
 export function loadState(){return migrateV3StateFromLegacyKey()}
