@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="title desc">
+  <title id="title">No Boss</title>
+  <desc id="desc">علامة شبكية ترمز إلى العمل عبر منصة بلا مدير مركزي ظاهر</desc>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d2742"/>
+      <stop offset="1" stop-color="#174f7f"/>
+    </linearGradient>
+    <linearGradient id="t" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e7490"/>
+      <stop offset="1" stop-color="#16a6a1"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="204" height="204" rx="54" fill="url(#g)"/>
+  <path d="M58 68 110 44l52 24v58l-52 48-52-48Z" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity=".96"/>
+  <path d="M76 91 110 75l34 16M76 91v28l34 31 34-31V91M110 75v75" fill="none" stroke="url(#t)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="58" cy="68" r="13" fill="#16a6a1" stroke="#fff" stroke-width="5"/>
+  <circle cx="162" cy="68" r="13" fill="#16a6a1" stroke="#fff" stroke-width="5"/>
+  <circle cx="110" cy="174" r="13" fill="#16a6a1" stroke="#fff" stroke-width="5"/>
+  <circle cx="110" cy="44" r="13" fill="#f0b64d" stroke="#fff" stroke-width="5"/>
+  <circle cx="110" cy="111" r="22" fill="#fff"/>
+  <path d="M98 119V99h9l9 12V99h7v20h-8l-10-12v12Z" fill="#0d2742"/>
+</svg>
