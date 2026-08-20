@@ -1,0 +1,35 @@
+نشر لعبة «خلف الشاشة» على GitHub Pages
+========================================
+
+الطريقة الأسهل من المتصفح:
+
+1) سجل الدخول إلى GitHub.
+2) اضغط New repository.
+3) اختر اسمًا للمستودع، مثل:
+   taskbridge-game
+   أو
+   behind-the-screen-game
+4) اجعل المستودع Public إذا كنت تستخدم GitHub Free وتريد GitHub Pages بسهولة.
+5) أنشئ المستودع.
+6) من صفحة المستودع اختر Add file > Upload files.
+7) ارفع الملفات التالية من هذه الحزمة إلى جذر المستودع:
+   - index.html
+   - .nojekyll
+   - README.md
+8) اضغط Commit changes.
+9) افتح Settings > Pages.
+10) في Build and deployment:
+    Source: Deploy from a branch
+    Branch: main
+    Folder: /(root)
+11) اضغط Save.
+12) انتظر عادةً بضع دقائق ثم أعد فتح Settings > Pages.
+13) سيظهر رابط اللعبة المنشور.
+
+إذا كان اسم المستخدم USERNAME واسم المستودع taskbridge-game، فغالبًا سيكون الرابط:
+https://USERNAME.github.io/taskbridge-game/
+
+مهم:
+- يجب أن يبقى index.html في جذر مصدر النشر.
+- اسم index.html حساس لحالة الأحرف.
+- كل ما تنشره عبر GitHub Pages يصبح متاحًا للويب وفق إعدادات Pages وخطتك.
