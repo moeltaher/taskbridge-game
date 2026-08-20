@@ -12,16 +12,22 @@ if(params.get('debug')==='1'&&!state.scenarioKey){
   patch({scenarioKey:'data',status:'وضع تطوير',currentPage:page,realStartedAt:Date.now()});
   state=getState();
 }
-if(page!=='home'&&!state.scenarioKey){location.replace(href('home'));}
 
-document.getElementById('app').innerHTML=shell(page);
-bindShell(page);
-if(page!=='home'||!state.scenarioKey)enterPage(page,{record:true});
+// Home and scenario selection are valid without a selected scenario.
+// All later simulation routes require scenarioKey and fall back to home when opened directly.
+const publicEntryPages=new Set(['home','scenario']);
+if(!publicEntryPages.has(page)&&!state.scenarioKey){
+  location.replace(href('home'));
+}else{
+  document.getElementById('app').innerHTML=shell(page);
+  bindShell(page);
+  if(page!=='home'||!state.scenarioKey)enterPage(page,{record:true});
 
-try{
-  const mod=await import(`../pages/${page}.js`);
-  await mod.render(document.getElementById('pageRoot'));
-}catch(e){
-  console.error(e);
-  document.getElementById('pageRoot').innerHTML='<div class="panel"><h2>تعذر تحميل هذه المرحلة</h2><p class="muted">حدث خطأ تقني. ارجع إلى الصفحة الرئيسية أو أعد المحاولة.</p></div>';
+  try{
+    const mod=await import(`../pages/${page}.js`);
+    await mod.render(document.getElementById('pageRoot'));
+  }catch(e){
+    console.error(e);
+    document.getElementById('pageRoot').innerHTML='<div class="panel"><h2>تعذر تحميل هذه المرحلة</h2><p class="muted">حدث خطأ تقني. ارجع إلى الصفحة الرئيسية أو أعد المحاولة.</p></div>';
+  }
 }
