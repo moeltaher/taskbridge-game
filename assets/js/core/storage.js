@@ -6,7 +6,7 @@ const LEGACY_SETTINGS_KEY='taskbridge_v2_settings';
 const LEGACY_RESULTS_KEY='taskbridge_v2_results';
 
 function read(key,fallback=null){try{const raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw)}catch{return fallback}}
-function isV3State(x){return !!x&&x.version==='3.0.0'}
+function isV3State(x){return !!x&&String(x.version||'').startsWith('3.')}
 function isV3Result(x){return String(x?.version||'').includes('No Boss v3')}
 
 function migrateV3StateFromLegacyKey(){const existing=read(STATE_KEY);if(existing)return existing;const legacy=read(LEGACY_STATE_KEY);if(isV3State(legacy)){localStorage.setItem(STATE_KEY,JSON.stringify(legacy));return legacy}return null}
