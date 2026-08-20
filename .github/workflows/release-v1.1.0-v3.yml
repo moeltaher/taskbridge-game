@@ -1,0 +1,83 @@
+name: Release v1.1.0 v3
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v1.1.0-v3.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Reuse compatibility upgrade
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          src=Path('.github/workflows/release-v1.1.0-v2.yml').read_text(encoding='utf-8').splitlines()
+          start=None
+          for i,line in enumerate(src):
+              if line.strip()=='- name: Apply v1.1.0 compatibility upgrade':
+                  for j in range(i+1,len(src)):
+                      if src[j].strip()=='run: |':
+                          start=j+1;break
+                  break
+          if start is None: raise SystemExit('Could not locate v2 upgrade script')
+          block=[]
+          for line in src[start:]:
+              if line.startswith('      - name: '): break
+              block.append(line[10:] if line.startswith('          ') else line)
+          Path('/tmp/apply-v110.sh').write_text('\n'.join(block)+'\n',encoding='utf-8')
+          PY
+          bash /tmp/apply-v110.sh
+
+      - name: Remove quick mode from source
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html');s=p.read_text(encoding='utf-8')
+          s,n=re.subn(r'\s*<h3>اختر نمط اللعب</h3>\s*<div class="mode-grid">.*?</div>\s*', '\n          ', s, count=1, flags=re.S)
+          if n!=1: raise SystemExit('Quick-mode selector block not found')
+          s=s.replace("let selectedMode='quick';","let selectedMode='full';",1)
+          s=s.replace("selectedMode=x.selectedMode||'quick';","selectedMode='full';",1)
+          s=s.replace("function currentGoal(){return state.scenario?(state.mode==='quick'?state.scenario.goalQuick:state.scenario.goalFull):0;}","function currentGoal(){return state.scenario?state.scenario.goalFull:0;}",1)
+          s=s.replace("${state.mode==='quick'?'تدريب سريع':'محاكاة كاملة'}","محاكاة كاملة")
+          p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Validate release
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          required=['taskbridge-v110-upgrade','v1.1.0','goBack','restartGame','impactHTML','unpaidMinutes',"let selectedMode='full';"]
+          missing=[x for x in required if x not in s]
+          if missing: raise SystemExit('Missing: '+', '.join(missing))
+          if 'id="modeQuick"' in s or '<h3>اختر نمط اللعب</h3>' in s: raise SystemExit('Quick-mode UI still present')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/taskbridge-v110.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('v1.1.0 feature checks passed')
+          PY
+          node --check /tmp/taskbridge-v110.js
+
+      - name: Remove temporary workflows and commit
+        shell: bash
+        run: |
+          rm -f .github/workflows/release-v1.1.0.yml .github/workflows/release-v1.1.0-v2.yml .github/workflows/release-v1.1.0-v3.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat(simulation): release v1.1.0 full simulation UX" -m "Remove quick mode; surface paid and unpaid time throughout the shift; add immediate impact cards, checkpoint back navigation, restart/home controls, browser-back integration, and release documentation."
+          git push origin main
