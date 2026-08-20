@@ -1,5 +1,6 @@
 const CURRENT_VERSION='3.0.2';
 const CURRENT_RESULT_VERSION='No Boss v3.0.2';
+const CURRENT_SCORING_VERSION=6;
 const STATE_KEY='no_boss_v3_state';
 const SETTINGS_KEY='no_boss_v3_settings';
 const RESULTS_KEY='no_boss_v3_results';
@@ -9,7 +10,7 @@ const LEGACY_RESULTS_KEY='taskbridge_v2_results';
 
 function read(key,fallback=null){try{const raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw)}catch{return fallback}}
 function isCurrentState(x){return !!x&&x.version===CURRENT_VERSION}
-function isCurrentResult(x){return x?.version===CURRENT_RESULT_VERSION}
+function isCurrentResult(x){return x?.version===CURRENT_RESULT_VERSION&&x?.scoringVersion===CURRENT_SCORING_VERSION}
 function resultKey(x){return x?.runId||x?.createdAt}
 
 function migrateCurrentStateFromLegacyKey(){const existing=read(STATE_KEY);if(isCurrentState(existing))return existing;const legacy=read(LEGACY_STATE_KEY);if(isCurrentState(legacy)){localStorage.setItem(STATE_KEY,JSON.stringify(legacy));return legacy}return null}
