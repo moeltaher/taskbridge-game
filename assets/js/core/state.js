@@ -12,6 +12,7 @@ export function reset(){state=freshState();clearState();saveState(state);return 
 export function checkpoint(targetPage){const snap=structuredClone(state);snap.checkpoints=[];state.checkpoints.push({page:state.currentPage,snapshot:snap,target:targetPage});if(state.checkpoints.length>24)state.checkpoints.shift();saveState(state)}
 export function enterPage(page,{record=true}={}){if(record&&state.currentPage!==page)checkpoint(page);state.currentPage=page;saveState(state)}
 export function undoCheckpoint(){const item=state.checkpoints.pop();if(!item)return null;const keep=state.checkpoints;state=migrateState(item.snapshot);state.checkpoints=keep;if(pageStage[item.page]!==undefined)state.stage=pageStage[item.page];state.currentPage=item.page;saveState(state);return item.page}
+export function undoCheckpointTo(expectedPage){const item=state.checkpoints.at(-1);return item?.page===expectedPage?undoCheckpoint():null}
 export function addEvidence(id){if(!state.evidence.includes(id))state.evidence.push(id);saveState(state)}
 export function addLog(title,text){const h=9+Math.floor(state.time/60),m=String(state.time%60).padStart(2,'0');state.log.push({time:`${String(h).padStart(2,'0')}:${m}`,title,text});saveState(state)}
 export function recalcAcceptance(){state.acceptance=state.offerDecisions?Math.round(state.acceptedOffers/state.offerDecisions*100):100;saveState(state)}
