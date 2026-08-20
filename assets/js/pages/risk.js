@@ -1,32 +1,41 @@
 import {scenarios} from '../data/scenarios.js';import {getState,patch,addLog,addEvidence,clamp,money} from '../core/state.js';import {href} from '../core/routes.js';import {refreshStats} from '../core/ui.js';
 
-function baseProfile(type){
- if(type==='wellbeing')return {key:'wellbeing',icon:'🧠',kind:'خطر نفسي وصحي',title:'التعرض لمحتوى مزعج أثناء المراجعة',cause:'أثناء مراجعة المحتوى، تراكم أثر المواد المزعجة مع ضغط السرعة.',minutes:3,stress:18};
- if(type==='timeout')return {key:'timeout',icon:'⏱',kind:'خطر الوقت وتغيّر التعليمات',title:'تغيّرت الإرشادات أثناء المهمة',cause:'أثناء تقييم مخرجات الذكاء الاصطناعي، تغيّرت إرشادات المشروع واحتجت إلى إعادة التحقق من جزء من العمل.',minutes:2,stress:10};
- if(type==='revision')return {key:'revision',icon:'↺',kind:'طلب تعديل بعد التسليم',title:'وصل الآن طلب تعديل من العميل',cause:'بعد أن كنت قد سلّمت ترجمة سابقة، وصل الآن عبر TaskBridge طلب من العميل لتغيير بعض المصطلحات وفق نسخة محدثة من دليل المشروع.',minutes:4,stress:7};
- return {key:'connection',icon:'⌁',kind:'خطر تقني وتشغيلي',title:'انقطع الاتصال أثناء وجود مهمة مفتوحة',cause:'أثناء تصنيف الصور انقطع الاتصال بالخادم والمهمة ما تزال مفتوحة.',minutes:2,stress:9};
-}
-
-function profile(type,tookBreak){
- const b=baseProfile(type);
- if(tookBreak){
-  if(type==='wellbeing')return {...b,variant:'break',title:'ظهرت آثار المحتوى المزعج، لكن الاستراحة خففتها',cause:'لأنك أخذت استراحة قبل العودة إلى العمل، وصلت إلى هذه الدفعة بمستوى ضغط أقل. احتجت إلى دقيقة إضافية فقط قبل المتابعة.',minutes:1,stress:6,consequence:'الاستراحة لم تمنع الخطر تمامًا، لكنها خففت وقت التعافي والزيادة في الضغط.'};
-  if(type==='timeout')return {...b,variant:'break',title:'راجعت الإرشادات بعد الاستراحة وتفاديت انتهاء المهلة',cause:'خلال توقفك القصير ظهرت الإرشادات المحدثة. عندما عدت إلى العمل قرأتها قبل استكمال المهمة، فاحتجت إلى دقيقة تحقق إضافية فقط.',minutes:1,stress:4,consequence:'الاستراحة منحتك فرصة لالتقاط التغيير مبكرًا، لذلك كان أثره أخف.'};
-  if(type==='revision')return {...b,variant:'break',title:'وصل الآن طلب تعديل على ترجمة سبق أن سلّمتها',cause:'بعد عودتك من الاستراحة ظهر إشعار جديد في TaskBridge: العميل يطلب تعديل بعض المصطلحات في ترجمة سبق أن سلّمتها. هذا هو أول ظهور لهذا الطلب في الجولة.',minutes:3,stress:4,consequence:'طلب التعديل حدث الآن. لأنك عدت من الاستراحة بضغط أقل، احتجت في هذه المحاكاة إلى 3 دقائق إضافية لتنفيذ التعديل.'};
-  return {...b,variant:'break',title:'عاد الاتصال قبل أن تنتهي مهلة المهمة',cause:'أثناء الاستراحة استقر الاتصال. عندما عدت إلى المنصة احتجت إلى دقيقة واحدة فقط لاستعادة المهمة ومتابعتها.',minutes:1,stress:3,consequence:'الاستراحة لم تمنع الانقطاع، لكنها قللت الوقت الضائع وأثره على الضغط.'};
- }
- if(type==='wellbeing')return {...b,variant:'continue',title:'احتجت إلى التوقف بعد تراكم أثر المحتوى المزعج',cause:'واصلت العمل دون استراحة، فتراكم أثر المواد المزعجة مع ضغط السرعة واضطررت إلى التوقف 4 دقائق قبل أن تتمكن من المتابعة.',minutes:4,stress:22,consequence:'الاستمرار دون توقف جعل وقت التعافي أطول ورفع الضغط بصورة أكبر.'};
- if(type==='timeout')return {...b,variant:'continue',title:'انتهت مهلة المهمة أثناء إعادة التحقق',cause:'واصلت العمل دون توقف، ثم ظهرت الإرشادات الجديدة أثناء التنفيذ. بدأت إعادة التحقق متأخرًا وانتهت المهلة قبل احتساب 3 دقائق من العمل.',minutes:3,stress:14,consequence:'الاستمرار جعل أثر تغيير الإرشادات أشد لأنك واجهته أثناء التنفيذ لا قبل استئنافه.'};
- if(type==='revision')return {...b,variant:'continue',title:'وصل الآن طلب تعديل على ترجمة سبق أن سلّمتها',cause:'أثناء مواصلتك للوردية ظهر إشعار جديد في TaskBridge: العميل يطلب تعديل بعض المصطلحات في ترجمة سبق أن سلّمتها. هذا هو أول ظهور لهذا الطلب في الجولة.',minutes:5,stress:10,consequence:'طلب التعديل حدث الآن، وليس في مرحلة سابقة. لأنك واصلت العمل دون استراحة، احتاج تنفيذ التعديل في هذه المحاكاة إلى 5 دقائق إضافية ورفع الضغط أكثر.'};
- return {...b,variant:'continue',title:'استمر الانقطاع حتى انتهت مهلة المهمة',cause:'واصلت العمل دون استراحة، ثم انقطع الاتصال أثناء المهمة. استغرقت الاستعادة 3 دقائق وانتهت المهلة خلال ذلك.',minutes:3,stress:13,consequence:'الاستمرار دون توقف جعل الوقت الضائع أطول وأثر الانقطاع أكبر.'};
+function profile(type){
+ if(type==='wellbeing')return {
+  key:'wellbeing',icon:'🧠',kind:'خطر نفسي وصحي',
+  title:'ظهرت الآن آثار التعرض لمحتوى مزعج',
+  cause:'أثناء مراجعة دفعة جديدة الآن، تعرضت لمحتوى مزعج واحتجت إلى 3 دقائق بعيدًا عن المهمة قبل أن تتمكن من المتابعة. هذا هو أول ظهور لهذا الحدث في الجولة.',
+  minutes:3,stress:18,
+  consequence:'أضيفت 3 دقائق إلى وقت الوردية كوقت غير مدفوع، وارتفع مؤشر الضغط في المحاكاة بسبب أثر المحتوى.'
+ };
+ if(type==='timeout')return {
+  key:'timeout',icon:'⏱',kind:'تغيّر التعليمات أثناء العمل',
+  title:'وصل الآن تحديث جديد لإرشادات المشروع',
+  cause:'أثناء تنفيذ مهمة التقييم الحالية ظهر في TaskBridge تحديث جديد لإرشادات المشروع. احتجت إلى دقيقتين لإعادة التحقق من جزء من العمل وفق التعليمات الجديدة. هذا هو أول ظهور لهذا التحديث في الجولة.',
+  minutes:2,stress:10,
+  consequence:'أضيفت دقيقتان إلى وقت الوردية كوقت غير مدفوع في هذه المحاكاة، وارتفع الضغط بسبب الحاجة إلى إعادة التحقق.'
+ };
+ if(type==='revision')return {
+  key:'revision',icon:'↺',kind:'طلب تعديل بعد التسليم',
+  title:'وصل الآن طلب تعديل من العميل',
+  cause:'ظهر الآن إشعار جديد في TaskBridge: العميل يطلب تغيير بعض المصطلحات في ترجمة سبق أن سلّمتها وفق نسخة محدثة من دليل المشروع. هذا هو أول ظهور لهذا الطلب في الجولة.',
+  minutes:4,stress:7,
+  consequence:'احتاج تنفيذ التعديل إلى 4 دقائق إضافية لم تُضف كمقابل مستقل، وارتفع الضغط قليلًا بسبب إعادة العمل.'
+ };
+ return {
+  key:'connection',icon:'⌁',kind:'خطر تقني وتشغيلي',
+  title:'حدث الآن انقطاع في الاتصال بالخادم',
+  cause:'أثناء وجود مهمة تصنيف مفتوحة الآن، فقدت TaskBridge الاتصال بالخادم لمدة دقيقتين ولم تستطع متابعة المهمة خلالهما. هذا هو أول ظهور لهذا الانقطاع في الجولة.',
+  minutes:2,stress:9,
+  consequence:'أضيفت دقيقتان إلى وقت الوردية كوقت غير مدفوع، وارتفع الضغط بسبب توقف العمل المفاجئ.'
+ };
 }
 
 function stressLabel(v){return v>=70?'مرتفع':v>=40?'متوسط':'منخفض'}
 
 function ensureRisk(sc){
  let s=getState();
- const tookBreak=s.tookBreak===true,variant=tookBreak?'break':'continue',current=profile(sc.riskType,tookBreak),eventKey=`${s.scenarioKey}:${sc.riskType}:${variant}`;
- const old=s.riskEvent;
+ const current=profile(sc.riskType),eventKey=`${s.scenarioKey}:${sc.riskType}:independent-v1`,old=s.riskEvent;
  if(s.riskApplied&&old?.eventKey&&old.eventKey!==eventKey){
   patch({time:Math.max(0,s.time-(old.minutes||0)),unpaidTime:Math.max(0,s.unpaidTime-(old.minutes||0)),stress:clamp(s.stress-(old.stress||0),0,100),riskApplied:false,riskEvent:null});
   s=getState();
@@ -35,7 +44,7 @@ function ensureRisk(sc){
   const r={...current,eventKey};
   patch({riskEvent:r,riskApplied:true,time:s.time+r.minutes,unpaidTime:s.unpaidTime+r.minutes,stress:clamp(s.stress+r.stress,0,100)});
   addEvidence('risk');
-  addLog('حدث خطر أثناء العمل',`${r.title}: أضيفت ${r.minutes} دقيقة غير مدفوعة إلى الوردية.`);
+  addLog('حدث موقف جديد أثناء العمل',`${r.title}: أضيفت ${r.minutes} دقيقة غير مدفوعة إلى الوردية.`);
   return r;
  }
  if(!s.riskEvent?.eventKey){const r={...current,eventKey};patch({riskEvent:r});return r;}
@@ -44,13 +53,41 @@ function ensureRisk(sc){
 
 function previousDecisionHTML(st){
  const d=st.monitorDecision;
- if(d?.tookBreak)return `<div class="notice good"><b>المسار الذي اخترته: استراحة دقيقة</b><div style="margin-top:5px">دفعت تكلفة فورية صغيرة: دقيقة واحدة غير مدفوعة، وانخفض الضغط من <b>${d.stressBefore}/100</b> إلى <b>${d.stressAfter}/100</b>. في المقابل أصبح الخطر التالي أخف.</div></div>`;
- return `<div class="notice info"><b>المسار الذي اخترته: الاستمرار في العمل</b><div style="margin-top:5px">لم تضف وقت استراحة، لكن الضغط ارتفع من <b>${d?.stressBefore ?? st.stress}/100</b> إلى <b>${d?.stressAfter ?? st.stress}/100</b>. في المقابل أصبح الخطر التالي أشد.</div></div>`;
+ if(!d)return `<div class="notice"><b>قرارك السابق:</b><div style="margin-top:5px">واصلت الوردية إلى أن وقع الحدث الجديد أدناه.</div></div>`;
+ if(d.tookBreak)return `<div class="notice good"><b>قبل الحدث: أخذت استراحة دقيقة.</b><div style="margin-top:5px">أضيفت دقيقة واحدة غير مدفوعة إلى الوردية، وانخفض الضغط من <b>${d.stressBefore}/100</b> إلى <b>${d.stressAfter}/100</b>. هذا القرار غيّر وضعك أنت قبل الحدث، لكنه <b>لم يسبب الحدث ولم يغيّر وقت وقوعه</b>.</div></div>`;
+ return `<div class="notice info"><b>قبل الحدث: واصلت العمل دون استراحة.</b><div style="margin-top:5px">لم تضف دقيقة توقف إلى الوردية، لكن الضغط ارتفع من <b>${d.stressBefore}/100</b> إلى <b>${d.stressAfter}/100</b>. هذا القرار غيّر وضعك أنت قبل الحدث، لكنه <b>لم يسبب الحدث ولم يغيّر وقت وقوعه</b>.</div></div>`;
 }
 
 export async function render(root){
- const s0=getState(),sc=scenarios[s0.scenarioKey],r=ensureRisk(sc),st=getState(),take=st.tookBreak===true;
- const eventLabel=r.key==='revision'?'حدث جديد الآن':'الحدث بعد القرار';
- root.innerHTML=`<div class="panel"><div class="instruction"><span class="n">9</span><div class="instruction-copy"><div class="instruction-title"><b>${take?'الاستراحة خففت أثر الخطر التالي':'الاستمرار جعل أثر الخطر التالي أشد'}</b></div><div class="instruction-subtitle"><small>هذه النتيجة مرتبطة مباشرة بالاختيار الذي اتخذته في المرحلة السابقة.</small></div></div></div>${previousDecisionHTML(st)}<div class="notice info"><b>أنت تلعب الآن بشخصية ${sc.name}</b><div style="margin-top:5px">نوع الخطر في هذه الحالة: <b>${r.kind}</b>.</div></div><h2>${r.icon} ${r.title}</h2><div class="timeline"><div class="tl"><small>قرارك السابق</small><b>${take?'أخذت استراحة دقيقة':'واصلت العمل دون استراحة'}</b><div class="muted small">${take?'انخفض الضغط قبل العودة إلى العمل.':'ارتفع الضغط لأنك واصلت دون توقف.'}</div></div><div class="tl"><small>${eventLabel}</small><b>${r.title}</b><div class="muted small">${r.cause}</div></div><div class="tl"><small>أثر هذا المسار</small><b>${r.minutes} دقيقة غير مدفوعة إضافية</b><div class="muted small">${r.consequence}</div></div></div><div class="grid-4"><div class="metric"><small>المسار</small><b>${take?'استراحة':'استمرار'}</b></div><div class="metric"><small>وقت غير مدفوع بسبب الخطر</small><b>+${r.minutes} د</b></div><div class="metric"><small>زيادة الضغط بسبب الخطر</small><b>+${r.stress}</b></div><div class="metric"><small>الضغط الحالي</small><b>${st.stress}/100 · ${stressLabel(st.stress)}</b></div></div><div class="notice ${take?'good':'bad'}"><b>الفرق بين الخيارين أصبح فعليًا:</b><div style="margin-top:5px">${take?'دفعت دقيقة استراحة غير مدفوعة أولًا، لكنك خففت الوقت والضغط الناتجين عن الخطر اللاحق.':'وفرت دقيقة الاستراحة، لكنك تحملت وقتًا غير مدفوع وضغطًا أكبر عندما وقع الخطر.'}</div></div><div class="notice"><b>تكاليف التشغيل في هذه الحالة</b><div style="margin-top:5px">الإنترنت ${money(sc.costs.internet)} · الكهرباء ${money(sc.costs.electricity)} · استهلاك الجهاز ${money(sc.costs.device)}.</div></div><div class="notice"><b>ما الذي سيحدث بعد ذلك؟</b><div style="margin-top:5px">ستنتقل إلى مراجعة جودة لجزء من العمل الذي أنجزته في هذه الحالة.</div></div><div class="actions"><button class="btn" id="next">متابعة إلى مراجعة جودة العمل</button></div></div>`;
+ const s0=getState(),sc=scenarios[s0.scenarioKey],r=ensureRisk(sc),st=getState(),d=st.monitorDecision;
+ const decisionUnpaid=d?.unpaidDelta||0,totalNewUnpaid=decisionUnpaid+r.minutes,totalStressDelta=d?(d.stressDelta+r.stress):r.stress;
+ root.innerHTML=`<div class="panel">
+  <div class="instruction"><span class="n">9</span><div class="instruction-copy"><div class="instruction-title"><b>حدث موقف جديد أثناء الوردية</b></div><div class="instruction-subtitle"><small>الحدث أدناه يحدث الآن لأول مرة. قرار الاستراحة أو الاستمرار السابق لا يخلق هذا الحدث؛ إنما يغيّر وضعك قبل مواجهته.</small></div></div></div>
+
+  ${previousDecisionHTML(st)}
+
+  <div class="notice info"><b>الحالة الحالية: ${sc.name} · ${sc.role}</b><div style="margin-top:5px">نوع الموقف في هذه الحالة: <b>${r.kind}</b>.</div></div>
+
+  <h2>${r.icon} ${r.title}</h2>
+  <div class="timeline">
+   <div class="tl"><small>الخطوة السابقة</small><b>${d?.tookBreak?'أخذت استراحة دقيقة':'واصلت العمل دون استراحة'}</b><div class="muted small">هذا القرار غيّر الوقت والضغط فقط.</div></div>
+   <div class="tl"><small>حدث جديد الآن</small><b>${r.title}</b><div class="muted small">${r.cause}</div></div>
+   <div class="tl"><small>أثر الحدث نفسه</small><b>+${r.minutes} دقيقة غير مدفوعة · +${r.stress} ضغط</b><div class="muted small">${r.consequence}</div></div>
+  </div>
+
+  <div class="grid-4">
+   <div class="metric"><small>أثر قرارك السابق على الوقت</small><b>+${decisionUnpaid} د غير مدفوعة</b></div>
+   <div class="metric"><small>أثر الحدث الجديد على الوقت</small><b>+${r.minutes} د غير مدفوعة</b></div>
+   <div class="metric"><small>إجمالي الوقت غير المدفوع الجديد</small><b>+${totalNewUnpaid} د</b></div>
+   <div class="metric"><small>الضغط الحالي</small><b>${st.stress}/100 · ${stressLabel(st.stress)}</b></div>
+  </div>
+
+  <div class="notice"><b>ما الفرق الحقيقي بين الاستراحة والاستمرار؟</b><div style="margin-top:5px">الحدث الخارجي واحد في الحالتين. الفرق هو أنك وصلت إليه بحالة مختلفة: ${d?.tookBreak?`الاستراحة خفّضت الضغط قبل وقوعه، لذلك التغير الصافي منذ قرارك السابق هو <b>${totalStressDelta>=0?'+':''}${totalStressDelta}</b> نقطة ضغط.`:`الاستمرار رفع الضغط قبل وقوعه، لذلك التغير الصافي منذ قرارك السابق هو <b>${totalStressDelta>=0?'+':''}${totalStressDelta}</b> نقطة ضغط.`}</div></div>
+
+  <div class="notice"><b>تكاليف التشغيل في هذه الحالة</b><div style="margin-top:5px">الإنترنت ${money(sc.costs.internet)} · الكهرباء ${money(sc.costs.electricity)} · استهلاك الجهاز ${money(sc.costs.device)}. هذه تكاليف تشغيل عامة للوردية وليست أحداثًا جديدة سبّبها هذا الموقف.</div></div>
+
+  <div class="notice"><b>ما الذي سيحدث بعد ذلك؟</b><div style="margin-top:5px">ستنتقل إلى مراجعة جودة لجزء من العمل الذي أنجزته في هذه الحالة.</div></div>
+  <div class="actions"><button class="btn" id="next">متابعة إلى مراجعة جودة العمل</button></div>
+ </div>`;
  refreshStats();document.getElementById('next').onclick=()=>location.href=href('dispute');
 }
