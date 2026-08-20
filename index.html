@@ -392,6 +392,9 @@ initApp();
   const oldResume=resumeGame;
   resumeGame=function(){oldResume();selectedMode='full';if(state){state.mode='full';if(state.riskApplied===undefined)state.riskApplied=false;}loadNav();if(!navHistory.length&&state?.scenario)rememberScreen(state.currentScreen||'contractScreen');};
 
+  const oldSelectScenario=selectScenario;
+  selectScenario=function(id){oldSelectScenario(id);const snap=snapshotState();navHistory=[{screen:'scenarioScreen',snapshot:deepCopy(snap)},{screen:'contractScreen',snapshot:deepCopy(snap)}];persistNav();syncNavControls();};
+
   const oldRenderScenarioGrid=renderScenarioGrid;
   renderScenarioGrid=function(){oldRenderScenarioGrid();document.querySelectorAll('#scenarioGrid .fact').forEach(f=>{if(f.querySelector('small')?.textContent==='هدف المستحقات')f.querySelector('b').textContent=money(Object.values(scenarios).find(x=>x.role===f.closest('.scenario')?.querySelector('.muted')?.textContent.split(' · ')[0])?.goalFull||0);});};
   const oldRenderProfile=renderProfile;
