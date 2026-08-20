@@ -23,7 +23,7 @@ globalThis.localStorage={getItem:key=>localStore.has(key)?localStore.get(key):nu
 globalThis.sessionStorage={getItem:key=>sessionStore.has(key)?sessionStore.get(key):null,setItem:(key,value)=>sessionStore.set(key,String(value)),removeItem:key=>sessionStore.delete(key)};
 localStore.set('no_boss_v3_state',JSON.stringify({version:'3.0.2',scenarioKey:'data',stage:9,currentPage:'power',powerTouched:['price','allocation']}));
 const stateModule=await import('../assets/js/core/state.js');
-const {getState,setState,consumeCheckpointTo}=stateModule;
+const {getState,setState,consumeCheckpointTo,pageForStage}=stateModule;
 assert.deepEqual(getState().powerTouched,[],'pre-powerEdited sessions must re-approve power axes');
 assert.deepEqual(getState().powerEdited,[],'pre-powerEdited sessions must start with no edited axes');
 const draft={price:{worker:'10',platform:'50',client:'35',mediator:'5'}};
@@ -32,18 +32,23 @@ assert.deepEqual(getState().powerDraft,draft,'power drafts must survive state mi
 setState({...getState(),selectedRights:['privacy'],currentPage:'rights',stage:11,checkpoints:[{page:'result',target:'rights',snapshot:{}}]});
 assert.equal(consumeCheckpointTo('result'),'result');
 assert.deepEqual(getState().selectedRights,['privacy'],'returning from Rights must not restore an older result snapshot');
+setState({...getState(),scenarioKey:'data',stage:1,currentPage:'scenario'});
+assert.equal(getState().currentPage,'onboarding','active public-entry resume state must reconcile to stage route');
+assert.equal(pageForStage(1),'onboarding');
 
 const storage=await import('../assets/js/core/storage.js');
 localStore.set('no_boss_v3_results','{}');
 localStore.set('taskbridge_v2_results','null');
 assert.deepEqual(storage.savedResults(),[],'malformed but valid JSON result stores must not crash');
+sessionStore.set('no_boss_v3_state',JSON.stringify({version:'3.0.2',scenarioKey:'data',stage:9,currentPage:'power'}));
+localStore.set('no_boss_v3_state',JSON.stringify({version:'3.0.2',scenarioKey:'ai',stage:2,currentPage:'work'}));
+assert.equal(storage.loadState().scenarioKey,'ai','persistent state must win over stale session state');
 const originalLocalSet=localStorage.setItem;
 localStorage.setItem=()=>{throw new Error('quota')};
 sessionStore.clear();
-assert.equal(storage.saveState({version:'3.0.2',scenarioKey:'data'}),true,'sessionStorage must back up state when localStorage fails');
+const fallback=storage.saveState({version:'3.0.2',scenarioKey:'data'});
+assert.equal(fallback.status,'session','sessionStorage must back up state when localStorage fails');
 assert.equal(JSON.parse(sessionStore.get('no_boss_v3_state')).scenarioKey,'data');
-const originalSessionSet=sessionStorage.setItem;
-sessionStorage.setItem=()=>{throw new Error('blocked')};
-assert.equal(storage.archiveResult({runId:'x',version:'No Boss v3.0.2',scoringVersion:6}),false,'archive must report failure when no storage backend works');
-localStorage.setItem=originalLocalSet;sessionStorage.setItem=originalSessionSet;
+assert.equal(storage.archiveResult({runId:'x',version:'No Boss v3.0.2',scoringVersion:6}),false,'result archive must require persistent storage');
+localStorage.setItem=originalLocalSet;
 console.log('No Boss regression checks passed');
