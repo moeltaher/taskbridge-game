@@ -19,15 +19,19 @@ work=(R/'assets/js/pages/work.js').read_text(encoding='utf-8')
 dispute=(R/'assets/js/pages/dispute.js').read_text(encoding='utf-8')
 investigation=(R/'assets/js/pages/investigation.js').read_text(encoding='utf-8')
 rights=(R/'assets/js/pages/rights.js').read_text(encoding='utf-8')
+result=(R/'assets/js/pages/result.js').read_text(encoding='utf-8')
 assert "CURRENT_VERSION='3.0.2'" in state
 assert "CURRENT_VERSION='3.0.2'" in storage
 assert "state.scenarioKey&&publicEntryPages.has(page)" in bootstrap
 assert 'hadPowerEdited' in state and 'next.powerTouched=[]' in state
-assert 'undoCheckpointTo' in state and 'undoCheckpointTo' in rights
+assert 'powerDraft' in state and 'consumeCheckpointTo' in state
+assert 'consumeCheckpointTo' in rights and 'undoCheckpointTo' not in rights
+assert 'powerDraft' in power and 'rawValuesFor' in power and 'delete draft[axis]' in power
 assert 'powerEdited' in power and 'Number.isInteger' in power and 'clamp(Number(inp.value)' not in power
 assert 'powerComplete' in conclusion and 'powerEdited' in conclusion
 assert "taskHTML(sc,s.workAnswers)" in work and 'ResizeObserver' in work
 assert "patch({stage:6,status:'قيد التسوية'})" in dispute
-assert 'role="tabpanel"' in investigation and 'aria-controls' in investigation and 'ArrowLeft' in investigation
-assert 'asArray' in storage and 'function write(' in storage
+assert 'role="tabpanel"' in investigation and 'aria-controls' in investigation and "render(root).then" in investigation
+assert 'globalThis.sessionStorage' in storage and 'globalThis.localStorage' in storage
+assert "const ok=archiveResult" in result and "تعذر حفظ النتيجة" in result
 print('No Boss v3.0.2 structural and regression guards passed')
