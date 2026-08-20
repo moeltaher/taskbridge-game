@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#0d2742" />
-<title>خلف الشاشة | v1.0.2</title>
+<title>خلف الشاشة | v1.1.0</title>
 <style>
 :root{
   --bg:#edf3f8;--panel:#fff;--panel2:#f7fafc;--ink:#172132;--muted:#6b7a90;--line:#d9e3ed;
@@ -53,12 +53,20 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:1
 @media print{body{background:#fff!important}.app,.bottom-actions,.drawer,.modal,#liveRegion{display:none!important}.print-report{display:block!important;font-family:Tahoma,Arial,sans-serif;direction:rtl;color:#111;padding:18px}.print-report h1,.print-report h2,.print-report h3{color:#0d2742}.print-report table{width:100%;border-collapse:collapse}.print-report th,.print-report td{border:1px solid #bbb;padding:7px;text-align:right}.print-report .stacked{display:flex;height:12px;border-radius:999px;overflow:hidden;background:#eee}.print-report .seg.worker{background:#7c3aed}.print-report .seg.platform{background:#1473e6}.print-report .seg.client{background:#e67e22}.print-report .seg.mediator{background:#0f9f78}}
 
 </style>
+
+<style id="taskbridge-v110-style">
+.topbar-inner{gap:8px}.brand-home{border:0;background:transparent;padding:0;color:inherit;text-align:right;cursor:pointer}.brand-home:hover .logo{transform:translateY(-1px)}
+.top-actions{display:flex;align-items:center;gap:6px;margin-inline-start:auto}.top-action{border:1px solid var(--line);background:#fff;color:var(--brand);border-radius:10px;padding:7px 9px;font-size:11px;font-weight:900;min-height:38px}.top-action:disabled{opacity:.4;cursor:not-allowed}
+.stats.active{grid-template-columns:repeat(8,minmax(0,1fr))}.impact-card{border:2px solid #f0d9ad;background:#fffaf0;border-radius:16px;padding:14px;margin:12px 0}.impact-card h3{margin-top:0}.impact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.impact-item{border:1px solid #ead9b7;background:#fff;border-radius:11px;padding:9px}.impact-item small{display:block;color:var(--muted);font-size:10px}.impact-item b{font-size:16px}.impact-item.unpaid{border-color:#efcbc7;background:#fff4f2}.impact-item.unpaid b{color:var(--bad)}
+@media(max-width:1179px){.stats.active{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:700px){.impact-grid{grid-template-columns:1fr 1fr}}@media(max-width:560px){.stats.active{grid-template-columns:repeat(2,minmax(0,1fr))}.top-action span{display:none}.top-action{padding:7px}.phase{display:none}}
+</style>
+
 </head>
 <body>
 <div class="app">
   <header class="topbar">
     <div class="topbar-inner">
-      <div class="brand-wrap"><div class="logo">TB</div><div><div class="brand">TaskBridge</div><div class="subbrand">v1.0.2 · محاكاة تفاعلية للعمل الرقمي وعلاقات السلطة</div></div></div>
+      <div class="brand-wrap"><div class="logo">TB</div><div><div class="brand">TaskBridge</div><div class="subbrand">v1.1.0 · محاكاة كاملة للعمل الرقمي وعلاقات السلطة</div></div></div>
       <div class="phase" id="phaseLabel">قبل الوردية</div>
     </div>
   </header>
@@ -83,11 +91,6 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:1
           <p class="lead">ستعمل داخل منصة رقمية لبضع دقائق. في البداية تبدو حرًا: تختار الوقت، وتستخدم جهازك، ويمكنك رفض العمل. لكن أثناء الوردية ستكتشف من يحدد السعر، ومن يوزع المهام، ومن يراقب الجودة، ومن يستطيع إغلاق باب العمل.</p>
           <div class="onboard-grid"><div class="onboard"><span class="ico">⌨</span><b>اعمل</b><small>نفّذ مهام حقيقية مصغرة.</small></div><div class="onboard"><span class="ico">◉</span><b>راقب</b><small>تابع الدخل والجودة والوصول والضغط.</small></div><div class="onboard"><span class="ico">⌕</span><b>حقق</b><small>استخرج الأدلة ثم حلل علاقة العمل.</small></div></div>
           <div class="notice info">لا تستخدم اللعبة أي ذكاء اصطناعي أثناء التشغيل. كل السيناريوهات والقواعد والنتائج مبرمجة مسبقًا.</div>
-          <h3>اختر نمط اللعب</h3>
-          <div class="mode-grid">
-            <button class="onboard" id="modeQuick" onclick="setMode('quick')" style="text-align:right;cursor:pointer;border:2px solid var(--brand2)"><span class="ico">⚡</span><b>تدريب سريع</b><small>نحو 12–14 دقيقة. يحافظ على الأدلة الأساسية ويختصر مرحلة المراقبة.</small></button>
-            <button class="onboard" id="modeFull" onclick="setMode('full')" style="text-align:right;cursor:pointer"><span class="ico">◫</span><b>محاكاة كاملة</b><small>نحو 20–25 دقيقة. تتضمن قرارات الضغط والمراقبة بالتفصيل.</small></button>
-          </div>
           <div class="resume-banner notice good" id="resumeBanner"><b>توجد جلسة محفوظة على هذا الجهاز.</b><div class="actions"><button class="btn good" onclick="resumeGame()">متابعة الجلسة السابقة</button><button class="btn ghost" onclick="discardSavedGame()">حذفها</button></div></div>
           <div class="actions"><button class="btn" onclick="go('scenarioScreen')">اختر حالتك وابدأ</button><button class="btn ghost" onclick="toggleFacilitatorSetup()">إعدادات الميسر</button></div>
           <div class="facilitator-setup" id="facilitatorSetup"><h3>إعدادات الميسر</h3><div class="settings-grid"><div class="setting"><label for="groupName">اسم/رقم المجموعة</label><input id="groupName" type="text" placeholder="مثال: المجموعة 2" oninput="updateFacilitator()"></div><div class="setting"><label for="lockScenario">تثبيت حالة واحدة</label><select id="lockScenario" onchange="updateFacilitator()"><option value="">اترك الاختيار للمشاركين</option><option value="data">سامر · تصنيف بيانات</option><option value="moderation">ليان · مراجعة محتوى</option><option value="ai">كريم · تقييم AI</option><option value="translation">مريم · ترجمة</option></select></div><div class="setting"><label><input id="showScoreSetting" type="checkbox" checked onchange="updateFacilitator()"> إظهار درجة الاتساق في النهاية</label><small class="muted">يمكن إخفاؤها إذا كان الهدف نقاشًا مفتوحًا فقط.</small></div><div class="setting"><label>إدارة الجلسة</label><div class="actions"><button class="btn ghost" onclick="discardSavedGame()">مسح التقدم المحفوظ</button><button class="btn ghost" onclick="renderComparison()">عرض نتائج محفوظة</button></div></div></div><h4>مقارنة مجموعات</h4><p class="small muted">يمكن لكل مجموعة تصدير ملف نتيجة JSON، ثم استيراد عدة ملفات هنا للمقارنة دون خادم.</p><input type="file" id="compareFiles" accept="application/json,.json" multiple onchange="importGroupResults(this.files)"><div id="comparisonBox"></div></div>
@@ -200,14 +203,14 @@ const evidenceTemplates={
  clientRemoval:{title:'سلطة العميل على المشروع',icon:'×',text:'العميل يستطيع رفض العمل أو طلب استبعاد عامل من مشروعه، لكنه لا يعيد الحساب العام.',kind:'dep'}
 };
 let state={};
-let selectedMode='quick';
+let selectedMode='full';
 let facilitator={groupName:'',lockScenario:'',showScore:true};
 let comparisonResults=[];
 let lastFocusedElement=null;
 const SAVE_KEY='taskbridge_final_progress_v1', SETTINGS_KEY='taskbridge_final_settings_v1', RESULTS_KEY='taskbridge_final_results_v1';
 function setMode(mode){selectedMode=mode;['modeQuick','modeFull'].forEach(id=>{const el=$(id);if(el)el.style.border=id===(mode==='quick'?'modeQuick':'modeFull')?'2px solid var(--brand2)':'1px solid var(--line)';});if(state&&state.scenario)state.mode=mode;saveSettings();}
 function newState(){state={mode:selectedMode,scenario:null,scenarioKey:null,wallet:0,grossWorker:0,clientPaid:0,time:0,paidTime:0,unpaidTime:0,quality:92,acceptance:100,acceptedOffers:10,offerDecisions:10,access:72,stress:22,status:'غير نشط',jobsDone:0,rejections:0,rejectedJobs:[],marketRefresh:false,selectedJob:null,secondOffer:null,workAnswers:[],workScore:0,rushAccepted:null,tookBreak:null,appealed:null,disputeSeverity:0,disputeIndex:0,accountOutcome:null,riskEvent:null,evidence:['contract','ownTools','multiPlatform'],log:[],evidenceSort:{},answers:{},power:{},payment:null,currentScreen:'introScreen',analysisText:'',conclusionEvidence:[],selectedRights:[],rightsSummaryShown:false,realStartedAt:null,realFinishedAt:null,resultData:null};axes.forEach(a=>state.power[a.id]={worker:25,platform:25,client:25,mediator:25});}
-function currentGoal(){return state.scenario?(state.mode==='quick'?state.scenario.goalQuick:state.scenario.goalFull):0;}
+function currentGoal(){return state.scenario?state.scenario.goalFull:0;}
 function recalcAcceptance(){state.acceptance=Math.round(state.acceptedOffers/state.offerDecisions*100);}
 newState();
 const stages={introScreen:[0,'قبل الوردية'],scenarioScreen:[3,'اختيار الحالة'],contractScreen:[7,'العقد'],marketScreen:[13,'سوق العمل'],workScreen:[22,'تنفيذ مهمة'],workResultScreen:[29,'نتيجة العمل'],rankingScreen:[36,'الإدارة الخوارزمية'],rushScreen:[43,'قرار العمل'],monitorScreen:[51,'المراقبة'],connectionScreen:[58,'المخاطر'],disputeScreen:[66,'نزاع الجودة'],paymentScreen:[74,'توزيع القيمة'],suspensionScreen:[81,'الوصول إلى العمل'],caseScreen:[87,'التحقيق'],evidenceScreen:[91,'تصنيف الأدلة'],questionsScreen:[94,'تحليل العلاقة'],powerScreen:[97,'خريطة السلطة'],conclusionScreen:[99,'الاستنتاج'],resultScreen:[100,'النتيجة'],rightsScreen:[100,'خريطة الحقوق']};
@@ -221,7 +224,7 @@ function renderStats(){if(!state.scenario){$('statsBar').innerHTML='';return;}co
 function avatarSVG(s,size=58){const skin=s.type==='moderation'?'#c98962':s.type==='translation'?'#d39a74':s.type==='ai'?'#b77a55':'#c98d68';const shirt=s.accent;return `<svg viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#eef3f8"/><circle cx="32" cy="25" r="13" fill="${skin}"/><path d="M18 58c1-13 7-20 14-20s13 7 14 20" fill="${shirt}"/><path d="M19 24c1-12 8-17 14-17 8 0 14 6 14 17-5-5-9-7-14-7-5 0-9 2-14 7z" fill="#26394e"/><circle cx="27" cy="25" r="1.4" fill="#26394e"/><circle cx="37" cy="25" r="1.4" fill="#26394e"/><path d="M28 31c3 2 5 2 8 0" fill="none" stroke="#7b4d3c" stroke-width="1.5" stroke-linecap="round"/></svg>`;}
 function renderScenarioGrid(){document.getElementById('lockedScenarioNotice')?.remove();const entries=Object.entries(scenarios).filter(([id])=>!facilitator.lockScenario||id===facilitator.lockScenario);$('scenarioGrid').innerHTML=entries.map(([id,s])=>`<article class="scenario" style="--accent:${s.accent}"><div class="scenario-head"><div class="avatar" style="background:transparent">${avatarSVG(s,58)}</div><div><h3>${s.name}</h3><div class="muted small">${s.role} · ${s.city}</div></div></div><p>${s.description}</p><div class="facts"><div class="fact"><small>هدف المستحقات</small><b>${money(s.goalQuick)}–${money(s.goalFull)}</b></div><div class="fact"><small>الاعتماد على المنصة</small><b>${s.dependency}%</b></div><div class="fact"><small>العميل</small><b>${s.clientCountry}</b></div></div><div class="tags">${s.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div><div class="actions"><button class="btn" onclick="selectScenario('${id}')">اختيار هذه الحالة</button></div></article>`).join('');if(facilitator.lockScenario)$('scenarioGrid').insertAdjacentHTML('beforebegin','<div class="notice info" id="lockedScenarioNotice">ثبت الميسر هذه الحالة لهذا التشغيل.</div>');}
 function selectScenario(id){newState();state.scenarioKey=id;state.scenario=scenarios[id];state.status='جاهز للعمل';addLog('اخترت الحالة',`${state.scenario.name} · ${state.scenario.role}`);renderProfile();renderWorldMap();go('contractScreen');}
-function renderProfile(){const s=state.scenario;$('profileCard').innerHTML=`<div class="avatar" style="background:transparent">${avatarSVG(s,58)}</div><div><b>${s.name} · ${s.role}</b><div class="muted">${s.city}، ${s.country}</div><div class="small">${s.description}</div></div>`;$('goalText').textContent=`الوصول إلى ${money(currentGoal())} من المقابل المستحق قبل تكاليف التشغيل (${state.mode==='quick'?'تدريب سريع':'محاكاة كاملة'})`;$('dependencyText').textContent=`${s.dependency}% من دخله الرقمي`;$('goalTrack').style.width=s.dependency+'%';}
+function renderProfile(){const s=state.scenario;$('profileCard').innerHTML=`<div class="avatar" style="background:transparent">${avatarSVG(s,58)}</div><div><b>${s.name} · ${s.role}</b><div class="muted">${s.city}، ${s.country}</div><div class="small">${s.description}</div></div>`;$('goalText').textContent=`الوصول إلى ${money(currentGoal())} من المقابل المستحق قبل تكاليف التشغيل (محاكاة كاملة)`;$('dependencyText').textContent=`${s.dependency}% من دخله الرقمي`;$('goalTrack').style.width=s.dependency+'%';}
 function acceptContract(){state.status='نشط';if(!state.realStartedAt)state.realStartedAt=Date.now();addLog('وافقت على الشروط','العقد يصف العلاقة بأنها تعاقد مستقل، مع ربط الوصول بمؤشرات الأداء.');addEvidence('contract');addEvidence('ownTools');addEvidence('multiPlatform');renderMarket();go('marketScreen');}
 function jobsForScenario(){const s=state.scenario;const core={data:{id:'core',title:'تعليم بيانات صور طرق',sub:'ضع إطارًا حول العنصر المطلوب في كل مشهد',icon:'road',pay:s.basePay,duration:12,client:s.client,clientValue:s.clientPay},moderation:{id:'core',title:'مراجعة محتوى قصير',sub:'طبّق سياسة العميل على ثلاث حالات',icon:'moderation',pay:s.basePay,duration:14,client:s.client,clientValue:s.clientPay},ai:{id:'core',title:'مقارنة إجابات نموذج لغوي',sub:'اختر الإجابة الأفضل وفق القواعد المنشورة',icon:'ai',pay:s.basePay,duration:15,client:s.client,clientValue:s.clientPay},translation:{id:'core',title:'ترجمة أوصاف تجارة إلكترونية',sub:'اختر الصياغة المطابقة لدليل العميل',icon:'translation',pay:s.basePay,duration:14,client:s.client,clientValue:s.clientPay}}[s.type];const jobs=[core,{id:'micro',title:'مهمة قصيرة منخفضة الأجر',sub:'تنفيذ سريع · معيار جودة 90%',icon:'micro',pay:.55,duration:7,client:'عميل غير معلن',clientValue:1.35},{id:'premium-preview',title:'Premium Project',sub:'أجر أعلى · يتطلب وصولًا 80+',icon:'premium',pay:3.85,duration:18,client:'Enterprise Client',clientValue:8.20,locked:state.access<80}];if(state.marketRefresh)jobs.push({id:'fallback',title:'مهمة بديلة ظهرت بعد تحديث السوق',sub:'مشروع قصير متاح الآن لأغراض استمرار المحاكاة',icon:'micro',pay:1.15,duration:9,client:'New Client',clientValue:2.6,noReject:true});return jobs;}
 function jobVisual(type){if(type==='road')return `<svg viewBox="0 0 340 120"><rect width="340" height="120" fill="#dcecf7"/><rect y="73" width="340" height="47" fill="#45576a"/><path d="M0 97h340" stroke="#f4dc69" stroke-width="4" stroke-dasharray="26 15"/><circle cx="85" cy="88" r="11" fill="#26394e"/><circle cx="153" cy="88" r="11" fill="#26394e"/><path d="M63 86l21-27h55l28 27z" fill="#e65f4e"/><rect x="96" y="64" width="34" height="16" fill="#bfe1ef"/></svg>`;if(type==='moderation')return `<div style="font-size:38px">💬</div>`;if(type==='ai')return `<div style="font-size:38px">A ⇄ B</div>`;if(type==='translation')return `<div style="font-size:32px;font-weight:900">AR ⇄ EN</div>`;if(type==='premium')return `<div style="font-size:38px">★</div>`;return `<div style="font-size:38px">▦</div>`;}
@@ -314,7 +317,7 @@ function escapeHTML(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;',
 function buildPrintReport(){const p=resultPayload(),powerRows=axes.map(a=>`<tr><td>${a.title}</td>${parties.map(x=>`<td>${state.power[a.id][x]}</td>`).join('')}</tr>`).join(''),rights=state.selectedRights.map(id=>rightsDefinitions[id].title).join('، ')||'لم تُحدد بعد';$('printReport').innerHTML=`<h1>خلف الشاشة · تقرير المجموعة</h1><p><b>المجموعة:</b> ${escapeHTML(p.groupName)} · <b>الحالة:</b> ${escapeHTML(p.scenarioName)} · <b>النمط:</b> ${p.mode==='quick'?'تدريب سريع':'محاكاة كاملة'}</p><p><b>زمن المشاركة:</b> ${p.realMinutes} دقيقة · <b>زمن العمل المحاكى:</b> ${p.simMinutes} دقيقة · <b>نتيجة الوصول:</b> ${outcomeLabel()}</p>${facilitator.showScore!==false?`<p><b>درجة الاتساق:</b> ${p.score}/100</p>`:''}<h2>الاقتصاد</h2><p>المقابل المتفق عليه: ${p.payment?money(p.payment.contracted):'—'} · المتاح للتحويل: ${p.payment?money(p.payment.transferable):'—'} · الصافي بعد تكاليف العامل: ${p.payment?money(p.payment.net):'—'}</p><h2>خريطة السلطة</h2><table><thead><tr><th>المحور</th><th>العامل</th><th>المنصة</th><th>العميل</th><th>الوسيط</th></tr></thead><tbody>${powerRows}</tbody></table><h2>الاستنتاج</h2><p>${escapeHTML(state.analysisText)}</p><h2>الحقوق المختارة</h2><p>${escapeHTML(rights)}</p><p style="margin-top:28px;font-size:11px">هذه نتيجة محاكاة تدريبية وليست توصيفًا قانونيًا نهائيًا لعلاقة العمل.</p>`;}
 function printGroupReport(){buildPrintReport();window.print();}
 function saveSettings(){try{localStorage.setItem(SETTINGS_KEY,JSON.stringify({selectedMode,facilitator}));}catch(e){}}
-function loadSettings(){try{const x=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'null');if(x){selectedMode=x.selectedMode||'quick';facilitator={...facilitator,...(x.facilitator||{})};}}catch(e){}}
+function loadSettings(){try{const x=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'null');if(x){selectedMode='full';facilitator={...facilitator,...(x.facilitator||{})};}}catch(e){}}
 function updateFacilitator(){facilitator.groupName=$('groupName')?.value||'';facilitator.lockScenario=$('lockScenario')?.value||'';facilitator.showScore=$('showScoreSetting')?.checked!==false;saveSettings();renderComparison();}
 function syncFacilitatorUI(){if($('groupName'))$('groupName').value=facilitator.groupName||'';if($('lockScenario'))$('lockScenario').value=facilitator.lockScenario||'';if($('showScoreSetting'))$('showScoreSetting').checked=facilitator.showScore!==false;}
 function toggleFacilitatorSetup(){$('facilitatorSetup').classList.toggle('active');syncFacilitatorUI();renderComparison();}
@@ -328,5 +331,103 @@ function initApp(){loadSettings();setMode(selectedMode);syncFacilitatorUI();rend
 function openEconomy(){openDrawer('economy');}
 initApp();
 </script>
+
+<script id="taskbridge-v110-upgrade">
+(function(){
+  'use strict';
+  const NAV_KEY='taskbridge_nav_v110';
+  let navHistory=[];
+  let restoring=false;
+  const deepCopy=o=>JSON.parse(JSON.stringify(o));
+
+  selectedMode='full';
+  if(state) state.mode='full';
+
+  const oldNewState=newState;
+  newState=function(){navHistory=[];oldNewState();selectedMode='full';state.mode='full';state.riskApplied=false;syncNavControls();};
+  setMode=function(){selectedMode='full';if(state)state.mode='full';};
+  currentGoal=function(){return state.scenario?state.scenario.goalFull:0;};
+
+  function snapshotState(){const x=deepCopy(state);x.scenario=null;delete x._navHistory;return x;}
+  function restoreSnapshot(x){state=deepCopy(x);state.mode='full';state.scenario=state.scenarioKey?scenarios[state.scenarioKey]:null;if(state.riskApplied===undefined)state.riskApplied=false;axes.forEach(a=>{state.power=state.power||{};if(!state.power[a.id])state.power[a.id]={worker:25,platform:25,client:25,mediator:25};});}
+  function rememberScreen(id){if(!state?.scenario)return;const item={screen:id,snapshot:snapshotState()};const last=navHistory[navHistory.length-1];if(last&&last.screen===id)navHistory[navHistory.length-1]=item;else navHistory.push(item);if(navHistory.length>24)navHistory.shift();syncNavControls();persistNav();}
+  function persistNav(){try{localStorage.setItem(NAV_KEY,JSON.stringify(navHistory));}catch(e){}}
+  function loadNav(){try{const x=JSON.parse(localStorage.getItem(NAV_KEY)||'[]');navHistory=Array.isArray(x)?x:[];}catch(e){navHistory=[];}syncNavControls();}
+  function clearNav(){navHistory=[];try{localStorage.removeItem(NAV_KEY);}catch(e){}syncNavControls();}
+
+  window.syncNavControls=function(){const b=$('backBtn');if(b)b.disabled=navHistory.length<2;};
+  const oldGo=go;
+  go=function(id){state.mode='full';oldGo(id);if(!restoring)rememberScreen(id);};
+
+  function rehydrateBack(id){
+    if(id==='contractScreen'){renderProfile();renderWorldMap();}
+    else if(id==='marketScreen')renderMarket();
+    else if(id==='workScreen')setupWork(true);
+    else if(id==='workResultScreen')renderWorkResult();
+    else if(id==='rankingScreen')renderRankingState();
+    else if(id==='rushScreen')renderSecondOffer();
+    else if(id==='monitorScreen')renderMonitoring();
+    else if(id==='connectionScreen')renderRiskEvent();
+    else if(id==='disputeScreen')renderDispute();
+    else if(id==='paymentScreen')renderPayment();
+    else if(id==='suspensionScreen')renderAccessOutcome(false);
+    else if(id==='caseScreen'){renderRelationMap();renderTimeline('caseTimeline');renderCaseDocs();}
+    else if(id==='evidenceScreen')renderEvidenceSort();
+    else if(id==='questionsScreen')renderQuestions();
+    else if(id==='powerScreen')renderPower();
+    else if(id==='conclusionScreen'){$('analysisText').value=state.analysisText||'';$('conclusionEvidence').innerHTML=state.evidence.map(eid=>{const e=getEvidence(eid);return `<label class="doc" style="cursor:pointer"><input type="checkbox" name="conclusionEv" value="${eid}" ${state.conclusionEvidence.includes(eid)?'checked':''} onchange="toggleConclusionEvidence('${eid}',this.checked)"> <b>${e.title}</b><p class="small">${e.text}</p></label>`}).join('');}
+    else if(id==='resultScreen')renderFinalResult();
+    else if(id==='rightsScreen')renderRightsScreen();
+    restoring=true;oldGo(id);restoring=false;syncNavControls();
+  }
+
+  window.goBack=function(){if(navHistory.length<2){live('لا توجد خطوة سابقة متاحة.');return false;}if(!confirm('العودة إلى الخطوة السابقة ستلغي القرارات والأحداث التي وقعت بعدها. هل تريد المتابعة؟'))return false;navHistory.pop();const prev=navHistory[navHistory.length-1];restoreSnapshot(prev.snapshot);rehydrateBack(prev.screen);persistNav();live('تمت العودة إلى الخطوة السابقة وإلغاء القرارات اللاحقة.');return true;};
+  window.goHome=function(){if(state?.scenario){saveGame();if(!confirm('العودة إلى الصفحة الرئيسية؟ سيتم حفظ تقدمك ويمكنك متابعة الجلسة لاحقًا.'))return;}document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('introScreen').classList.add('active');$('phaseLabel').textContent='قبل الوردية';$('progressShell').classList.remove('active');$('statsBar').classList.remove('active');$('gameShell').classList.remove('in-game');$('bottomActions').classList.remove('active');if(hasSavedGame())$('resumeBanner')?.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});};
+  window.restartGame=function(){if(state?.scenario&&!confirm('بدء محاكاة جديدة؟ سيُحذف تقدم الجولة الحالية من هذا الجهاز.'))return;discardSavedGame(false);clearNav();oldNewState();selectedMode='full';state.mode='full';state.riskApplied=false;renderWorldMap();document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('introScreen').classList.add('active');$('phaseLabel').textContent='قبل الوردية';$('progressShell').classList.remove('active');$('statsBar').classList.remove('active');$('gameShell').classList.remove('in-game');$('bottomActions').classList.remove('active');window.scrollTo({top:0,behavior:'smooth'});live('بدأت محاكاة جديدة.');};
+
+  const oldSave=saveGame;
+  saveGame=function(){if(state)state.mode='full';oldSave();persistNav();};
+  const oldDiscard=discardSavedGame;
+  discardSavedGame=function(message=true){oldDiscard(message);clearNav();};
+  const oldResume=resumeGame;
+  resumeGame=function(){oldResume();selectedMode='full';if(state){state.mode='full';if(state.riskApplied===undefined)state.riskApplied=false;}loadNav();if(!navHistory.length&&state?.scenario)rememberScreen(state.currentScreen||'contractScreen');};
+
+  const oldRenderScenarioGrid=renderScenarioGrid;
+  renderScenarioGrid=function(){oldRenderScenarioGrid();document.querySelectorAll('#scenarioGrid .fact').forEach(f=>{if(f.querySelector('small')?.textContent==='هدف المستحقات')f.querySelector('b').textContent=money(Object.values(scenarios).find(x=>x.role===f.closest('.scenario')?.querySelector('.muted')?.textContent.split(' · ')[0])?.goalFull||0);});};
+  const oldRenderProfile=renderProfile;
+  renderProfile=function(){state.mode='full';oldRenderProfile();if($('goalText'))$('goalText').textContent=`الوصول إلى ${money(currentGoal())} من المقابل المستحق قبل تكاليف التشغيل (محاكاة كاملة)`;};
+
+  renderStats=function(){if(!state.scenario){$('statsBar').innerHTML='';return;}const total=Math.max(1,state.time),unpaidPct=Math.round(state.unpaidTime/total*100),accessLabel=state.access>=75?'مرتفع':state.access>=50?'متوسط':'منخفض',stressLabel=state.stress>=70?'مرتفع':state.stress>=40?'متوسط':'منخفض',earned=state.grossWorker;$('statsBar').innerHTML=`<div class="stat"><small>المقابل المستحق</small><b>${money(earned)}</b><div class="microbar"><i style="width:${clamp((earned/currentGoal())*100,0,100)}%;background:var(--good)"></i></div></div><div class="stat"><small>وقت الوردية</small><b>${state.time} د</b></div><div class="stat"><small>وقت مدفوع</small><b>${state.paidTime} د</b><div class="microbar"><i style="width:${clamp(state.paidTime/total*100,0,100)}%;background:var(--good)"></i></div></div><div class="stat"><small>غير مدفوع</small><b style="color:${state.unpaidTime?'var(--bad)':'inherit'}">${state.unpaidTime} د · ${unpaidPct}%</b><div class="microbar"><i style="width:${unpaidPct}%;background:var(--bad)"></i></div></div><div class="stat"><small>الجودة</small><b>${state.quality}%</b></div><div class="stat"><small>معدل القبول</small><b>${state.acceptance}%</b></div><div class="stat"><small>الوصول</small><b>${accessLabel}</b></div><div class="stat"><small>الضغط</small><b>${stressLabel}</b></div>`;$('sideStatus').textContent=state.status;$('sideScenario').textContent=state.scenario.role;};
+  window.impactHTML=function(title,minutes,stressDelta=0){return `<div class="impact-card"><h3>أثر الحدث عليك</h3><p class="small">${title}</p><div class="impact-grid"><div class="impact-item"><small>وقت الوردية</small><b>+${minutes} د</b></div><div class="impact-item unpaid"><small>وقت مدفوع</small><b>+0 د</b></div><div class="impact-item unpaid"><small>المقابل الإضافي</small><b>+$0.00</b></div><div class="impact-item"><small>الضغط</small><b>${stressDelta>=0?'+':''}${stressDelta}</b></div></div><p class="small"><b>المعنى:</b> قضيت وقتًا إضافيًا مرتبطًا بالعمل، لكن مستحقاتك لم ترتفع مقابل هذا الوقت.</p></div>`;};
+
+  rushDecision=function(accepted){state.rushAccepted=accepted;state.offerDecisions++;if(accepted){state.acceptedOffers++;recalcAcceptance();const o=state.secondOffer;state.wallet+=o.pay;state.grossWorker+=o.pay;state.clientPaid+=o.clientValue;state.time+=o.duration;state.paidTime+=o.duration;state.jobsDone++;state.stress=clamp(state.stress+(o.premium?18:22),0,100);state.access=clamp(state.access+5,0,100);addLog('قبلت العرض الثاني',`أكملت ${o.title} مقابل ${money(o.pay)}. ارتفع المقابل المستحق والوصول، وارتفع الضغط.`);$('rushMsg').innerHTML=`<div class="notice good">أضفت ${money(o.pay)} إلى مستحقاتك، لكن مؤشر الضغط ارتفع.</div>`;}else{recalcAcceptance();state.rejections++;state.access=clamp(state.access-2,0,100);state.stress=clamp(state.stress-4,0,100);addEvidence('decline');addLog('رفضت العرض الثاني','استطعت الرفض دون غرامة مالية مباشرة، لكن معدل القبول تغير.');$('rushMsg').innerHTML='<div class="notice">رفضت العرض. لم تُخصم أموال، لكن معدل القبول تغير ضمن ملف الأداء.</div>';}renderStats();saveGame();setTimeout(()=>{renderMonitoring();go('monitorScreen');},450);};
+  breakDecision=function(take){state.tookBreak=take;if(take){state.time+=1;state.unpaidTime+=1;state.stress=clamp(state.stress-14,0,100);addLog('أخذت استراحة قصيرة','انخفض الضغط، وسُجلت دقيقة توقف إضافية غير مدفوعة.');$('breakMsg').innerHTML=impactHTML('اخترت استراحة قصيرة أثناء الوردية.',1,-14);}else{state.stress=clamp(state.stress+14,0,100);addLog('واصلت دون استراحة','استمر النشاط وارتفع الضغط.');$('breakMsg').innerHTML='<div class="notice">حافظت على النشاط، لكن مؤشر الضغط ارتفع. لم يضف هذا القرار وقتًا غير مدفوعًا.</div>';}renderStats();saveGame();setTimeout(()=>{renderRiskEvent();go('connectionScreen');},450);};
+  renderRiskEvent=function(){if(!state.riskEvent)state.riskEvent=riskProfile();const r=state.riskEvent;if(!state.riskApplied){state.time+=r.minutes;state.unpaidTime+=r.minutes;state.stress=clamp(state.stress+r.stress,0,100);state.riskApplied=true;addLog('حدث خطر أثناء العمل',`${r.title}: ${r.minutes} دقيقة غير مدفوعة، دون مقابل إضافي.`);addEvidence('risk');}let impact=$('riskImpact');if(!impact){impact=document.createElement('div');impact.id='riskImpact';$('costGrid').before(impact);}impact.innerHTML=impactHTML(r.title,r.minutes,r.stress);$('riskIcon').textContent=r.icon;$('riskTitle').textContent=r.title;$('riskText').textContent=r.text;$('riskNotice').className='notice '+(state.scenario.type==='moderation'?'bad':'');$('riskNotice').innerHTML=`<b>من تحمل الأثر؟</b> ${r.notice}`;const c=state.scenario.costs;$('costGrid').innerHTML=`<div class="cost"><small>الإنترنت</small><b>${money(c.internet)}</b></div><div class="cost"><small>الكهرباء</small><b>${money(c.electricity)}</b></div><div class="cost"><small>استهلاك الجهاز</small><b>${money(c.device)}</b></div><div class="cost"><small>إجمالي الوقت غير المدفوع حتى الآن</small><b>${state.unpaidTime} د</b></div>`;renderStats();saveGame();};
+  afterRisk=function(){renderDispute();go('disputeScreen');};
+
+  const oldRenderPayment=renderPayment;
+  renderPayment=function(){oldRenderPayment();const total=Math.max(1,state.time),pct=Math.round(state.unpaidTime/total*100),box=$('receiptBox');if(box&&!box.querySelector('[data-v110-time]'))box.insertAdjacentHTML('beforeend',`<div data-v110-time><div class="receipt-row"><span>إجمالي وقت الوردية</span><b>${state.time} د</b></div><div class="receipt-row"><span>وقت مدفوع</span><b>${state.paidTime} د</b></div><div class="receipt-row" style="color:var(--bad)"><span><b>وقت غير مدفوع</b></span><b>${state.unpaidTime} د · ${pct}%</b></div></div>`);};
+  const oldRenderFinal=renderFinalResult;
+  renderFinalResult=function(){oldRenderFinal();let el=$('unpaidElapsed');if(!el){const metric=document.createElement('div');metric.className='metric';metric.innerHTML='<small>الوقت غير المدفوع</small><b id="unpaidElapsed">—</b>';document.querySelector('.pilot-meta')?.insertBefore(metric,$('resultOutcome')?.closest('.metric')||null);el=$('unpaidElapsed');}if(el)el.textContent=state.unpaidTime+' د ('+Math.round(state.unpaidTime/Math.max(1,state.time)*100)+'%)';};
+  const oldPayload=resultPayload;
+  resultPayload=function(){const p=oldPayload();p.version='TaskBridge v1.1.0';p.mode='full';p.paidMinutes=state.paidTime;p.unpaidMinutes=state.unpaidTime;return p;};
+
+  function upgradeUI(){
+    document.title='خلف الشاشة | v1.1.0';
+    const sub=document.querySelector('.subbrand');if(sub)sub.textContent='v1.1.0 · محاكاة كاملة للعمل الرقمي وعلاقات السلطة';
+    const bw=document.querySelector('.brand-wrap');if(bw&&!bw.classList.contains('brand-home')){bw.classList.add('brand-home');bw.setAttribute('role','button');bw.setAttribute('tabindex','0');bw.setAttribute('aria-label','العودة إلى الصفحة الرئيسية');bw.onclick=goHome;bw.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();goHome();}};}
+    if(!$('backBtn')){const actions=document.createElement('div');actions.className='top-actions';actions.innerHTML='<button class="top-action" id="backBtn" onclick="goBack()" disabled>↩ <span>رجوع</span></button><button class="top-action" onclick="restartGame()">↻ <span>بدء من جديد</span></button>';const phase=$('phaseLabel');phase?.parentElement?.insertBefore(actions,phase);}
+    const quick=$('modeQuick'),full=$('modeFull');const grid=quick?.closest('.mode-grid')||full?.closest('.mode-grid');const heading=grid?.previousElementSibling;if(grid){grid.outerHTML='<div class="notice good"><b>محاكاة كاملة واحدة</b><br><span class="small">ستمر بجميع مراحل العمل، بما فيها المراقبة والمخاطر والتسوية والتحقيق.</span></div>';if(heading&&heading.textContent.includes('اختر نمط'))heading.remove();}
+    const eyebrow=document.querySelector('#introScreen .eyebrow');if(eyebrow)eyebrow.textContent='محاكاة كاملة · نحو 20–25 دقيقة';
+    syncNavControls();
+  }
+
+  upgradeUI();
+  loadNav();
+  selectedMode='full';if(state)state.mode='full';
+  history.replaceState({taskbridge:true},'');history.pushState({taskbridge:true},'');window.addEventListener('popstate',()=>{if(state?.scenario&&navHistory.length>=2)goBack();history.pushState({taskbridge:true},'');});
+})();
+</script>
+
 </body>
 </html>
