@@ -1,7 +1,7 @@
 import {scenarios} from '../data/scenarios.js';import {getState,patch,addEvidence,addLog,money} from '../core/state.js';import {href} from '../core/routes.js';import {avatar} from '../core/ui.js';
 
 function compensationExplanation(sc){
-  if(sc.type==='data')return 'يدفع العميل للمنصة ميزانية المشروع، ولا تنتقل هذه الميزانية إلى العامل مباشرة. تحدد TaskBridge مقابلًا منفصلًا لكل مهمة يظهر للعامل وفق بطاقة أسعارها وتوافر العمال. لذلك قد يكون ما يدفعه العميل أعلى من المقابل الذي يحصل عليه العامل.';
+  if(sc.type==='data')return 'يدفع العميل إلى TaskBridge ميزانية للمشروع. لا تنتقل هذه الميزانية إلى العامل مباشرة؛ بل تحدد TaskBridge مقابلًا منفصلًا لكل مهمة وتعرضه للعامل قبل قبولها. لذلك قد يكون ما يدفعه العميل أعلى من المقابل الذي يحصل عليه العامل.';
   if(sc.type==='moderation')return 'يشتري العميل من TaskBridge حزمة مراجعة بسعر متفق عليه، بينما تحدد TaskBridge بصورة منفصلة المقابل الذي يظهر للعامل مقابل كل دفعة مراجعة.';
   if(sc.type==='ai')return 'يحدد العميل ميزانية مشروع التقييم ويدفعها للمنصة، ثم تحدد TaskBridge بصورة منفصلة سعر كل دفعة تقييم الذي يظهر للعامل.';
   return sc.priceMechanism;
