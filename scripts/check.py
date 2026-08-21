@@ -8,8 +8,10 @@ for f in routes:
     assert 'bootstrap.js' in s
     assert 'No Boss v3.0.2' in s, f'old or missing version title in {f}'
     assert 'TaskBridge v2.0.0' not in s, f'legacy title remains in {f}'
-required=['assets/js/data/scenarios.js','assets/js/core/state.js','assets/js/core/storage.js','assets/js/core/routes.js','assets/js/core/ui.js','assets/js/core/bootstrap.js','assets/js/core/power-scoring.js','ARCHITECTURE.md','assets/images/no-boss-logo.svg','scripts/check.mjs','DEPLOY_GITHUB_AR.txt','.github/workflows/check.yml']
+required=['assets/js/data/scenarios.js','assets/js/core/config.js','assets/js/core/state.js','assets/js/core/storage.js','assets/js/core/routes.js','assets/js/core/ui.js','assets/js/core/bootstrap.js','assets/js/core/power-scoring.js','ARCHITECTURE.md','assets/images/no-boss-logo.svg','scripts/check.mjs','DEPLOY_GITHUB_AR.txt','.github/workflows/check.yml']
 for f in required: assert (R/f).exists(), f'missing {f}'
+config=(R/'assets/js/core/config.js').read_text(encoding='utf-8')
+routes_js=(R/'assets/js/core/routes.js').read_text(encoding='utf-8')
 state=(R/'assets/js/core/state.js').read_text(encoding='utf-8')
 storage=(R/'assets/js/core/storage.js').read_text(encoding='utf-8')
 bootstrap=(R/'assets/js/core/bootstrap.js').read_text(encoding='utf-8')
@@ -24,14 +26,19 @@ rights=(R/'assets/js/pages/rights.js').read_text(encoding='utf-8')
 result=(R/'assets/js/pages/result.js').read_text(encoding='utf-8')
 deploy=(R/'DEPLOY_GITHUB_AR.txt').read_text(encoding='utf-8')
 workflow=(R/'.github/workflows/check.yml').read_text(encoding='utf-8')
-assert "CURRENT_VERSION='3.0.2'" in state
-assert "CURRENT_VERSION='3.0.2'" in storage
-assert "state.scenarioKey&&publicEntryPages.has(page)" in bootstrap
+assert "APP_VERSION='3.0.2'" in config and 'SCORING_VERSION=6' in config
+assert "scenario:{slug:'scenario',stage:0" in routes_js and 'stageDefault:true' in routes_js
+assert "result:{slug:'result',stage:11" in routes_js
+assert 'isPublicPage' in routes_js and 'isResearcherPage' in routes_js and 'pageForStage' in routes_js
+assert "import {APP_VERSION,TIME_MODEL_VERSION} from './config.js'" in state
+assert 'routePageForStage' in state and 'routeStageForPage' in state and 'isPublicPage' in state
+assert "import {APP_VERSION,RESULT_VERSION,SCORING_VERSION} from './config.js'" in storage
+assert 'isPublicPage(page)' in bootstrap and 'pageForStage(currentStage)' in bootstrap
 assert 'beforeunload' in bootstrap and 'persistenceStatus' in bootstrap
 assert 'hadPowerEdited' in state and 'next.powerTouched=[]' in state
 assert 'storageRevision' in state and 'revisionCounter' in state and 'resumePage' in state
-assert "['home','scenario'].includes(current)" in state and "['home','scenario'].includes(next.currentPage)" not in state
 assert "page==='rights'?consumeCheckpointTo('result'):undoCheckpoint()" in ui
+assert 'isResearcherPage(page)' in ui
 assert 'aria-label="رجوع"' in ui and 'aria-label="بدء من جديد"' in ui
 assert 'role="progressbar"' in ui and 'aria-valuenow="${pct}"' in ui
 assert 'persistenceBanner' in ui and "p.status==='session'" in ui
