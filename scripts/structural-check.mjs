@@ -10,15 +10,16 @@ for(const file of routeFiles){assert.ok(existsSync(resolve(root,file)),`missing 
 const required=['assets/js/data/scenarios.js','assets/js/data/parties.js','assets/js/data/power-targets.js','assets/js/data/question-references.js','assets/js/data/evidence-templates.js','assets/js/data/samples.js','assets/js/core/config.js','assets/js/core/html.js','assets/js/core/state.js','assets/js/core/storage.js','assets/js/core/routes.js','assets/js/core/ui.js','assets/js/core/bootstrap.js','assets/js/core/power-scoring.js','assets/js/domain/payment.js','assets/js/domain/access.js','assets/js/domain/evidence.js','assets/js/domain/questions.js','assets/js/domain/analysis.js','assets/js/domain/work.js','assets/js/domain/management.js','assets/js/domain/dispute.js','ARCHITECTURE.md','assets/images/no-boss-logo.svg','scripts/check.mjs','scripts/domain-check.mjs','scripts/generate-pages.mjs','scripts/serve-static.mjs','tests/e2e/smoke.spec.mjs','tests/e2e/journey.spec.mjs','playwright.config.mjs','package.json','DEPLOY_GITHUB_AR.txt','.github/workflows/check.yml'];
 for(const file of required)assert.ok(existsSync(resolve(root,file)),`missing ${file}`);
 
-const config=read('assets/js/core/config.js'),routes=read('assets/js/core/routes.js'),state=read('assets/js/core/state.js'),storage=read('assets/js/core/storage.js'),bootstrap=read('assets/js/core/bootstrap.js'),ui=read('assets/js/core/ui.js'),home=read('assets/js/pages/home.js'),power=read('assets/js/pages/power.js'),conclusion=read('assets/js/pages/conclusion.js'),work=read('assets/js/pages/work.js'),management=read('assets/js/pages/management.js'),dispute=read('assets/js/pages/dispute.js'),investigation=read('assets/js/pages/investigation.js'),rights=read('assets/js/pages/rights.js'),result=read('assets/js/pages/result.js'),payment=read('assets/js/pages/payment.js'),access=read('assets/js/pages/access.js'),deploy=read('DEPLOY_GITHUB_AR.txt'),workflow=read('.github/workflows/check.yml'),generator=read('scripts/generate-pages.mjs'),scenarios=read('assets/js/data/scenarios.js'),playwright=read('playwright.config.mjs'),e2e=read('tests/e2e/smoke.spec.mjs'),journey=read('tests/e2e/journey.spec.mjs'),pkg=JSON.parse(read('package.json'));
+const config=read('assets/js/core/config.js'),routes=read('assets/js/core/routes.js'),state=read('assets/js/core/state.js'),storage=read('assets/js/core/storage.js'),bootstrap=read('assets/js/core/bootstrap.js'),ui=read('assets/js/core/ui.js'),home=read('assets/js/pages/home.js'),power=read('assets/js/pages/power.js'),conclusion=read('assets/js/pages/conclusion.js'),work=read('assets/js/pages/work.js'),management=read('assets/js/pages/management.js'),dispute=read('assets/js/pages/dispute.js'),investigation=read('assets/js/pages/investigation.js'),rights=read('assets/js/pages/rights.js'),result=read('assets/js/pages/result.js'),payment=read('assets/js/pages/payment.js'),access=read('assets/js/pages/access.js'),deploy=read('DEPLOY_GITHUB_AR.txt'),workflow=read('.github/workflows/check.yml'),generator=read('scripts/generate-pages.mjs'),scenarios=read('assets/js/data/scenarios.js'),analysis=read('assets/js/domain/analysis.js'),evidence=read('assets/js/domain/evidence.js'),questions=read('assets/js/domain/questions.js'),domainWork=read('assets/js/domain/work.js'),domainCheck=read('scripts/domain-check.mjs'),scenarioPage=read('assets/js/pages/scenario.js'),playwright=read('playwright.config.mjs'),e2e=read('tests/e2e/smoke.spec.mjs'),journey=read('tests/e2e/journey.spec.mjs'),pkg=JSON.parse(read('package.json'));
 
 assert.ok(config.includes("APP_VERSION='3.0.2'")&&config.includes('SCORING_VERSION=6'));
 assert.ok(routes.includes("scenario:{slug:'scenario',stage:0")&&routes.includes('stageDefault:true')&&routes.includes("result:{slug:'result',stage:11"));
 assert.ok(routes.includes('isPublicPage')&&routes.includes('isResearcherPage')&&routes.includes('pageForStage'));
-assert.ok(scenarios.includes("export {partyNames,parties,axes} from './parties.js'")&&scenarios.includes("export {samples} from './samples.js'"));
-assert.ok(!scenarios.includes('export const powerTargets=')&&!scenarios.includes('export const evidenceTemplates=')&&!scenarios.includes('export const samples='));
+assert.ok(scenarios.includes('export const scenarios=')&&!scenarios.includes('export {'));
+assert.ok(state.includes("import {axes} from '../data/parties.js'"));
 assert.ok(state.includes("import {APP_VERSION,TIME_MODEL_VERSION} from './config.js'"));
 assert.ok(state.includes('latestStateRevision')&&state.includes('storageWriterId')&&state.includes('export function commit'));
+assert.ok(!state.includes('export function addEvidence')&&!state.includes('export function addLog')&&!state.includes('export function recalcAcceptance'));
 assert.ok(state.includes("checkpoint(page,{persistNow:false})")&&state.includes('if(state.currentPage===page)return state'));
 assert.ok(state.includes('routePageForStage')&&state.includes('routeStageForPage')&&state.includes('isPublicPage'));
 assert.ok(storage.includes("import {APP_VERSION,RESULT_VERSION,SCORING_VERSION} from './config.js'"));
@@ -28,17 +29,23 @@ assert.ok(ui.includes("page==='rights'?consumeCheckpointTo('result'):undoCheckpo
 assert.ok(ui.includes('aria-label="رجوع"')&&ui.includes('aria-label="بدء من جديد"')&&ui.includes('role="progressbar"'));
 assert.ok(home.includes('resumePage')&&home.includes('outcomeLabel')&&home.includes('stateStorageMode')&&home.includes('<caption'));
 assert.ok(rights.includes('consumeCheckpointTo')&&!rights.includes('undoCheckpointTo')&&rights.includes('updateSummary'));
-assert.ok(power.includes('powerDraft')&&power.includes('rawValuesFor')&&power.includes('escapeAttribute')&&!power.includes('render(root).then'));
+assert.ok(power.includes("from '../data/parties.js'")&&power.includes('powerDraft')&&power.includes('rawValuesFor')&&power.includes('escapeAttribute')&&!power.includes('render(root).then'));
 assert.ok(conclusion.includes('powerMapComplete')&&conclusion.includes('scoreAnalysis')&&conclusion.includes("from '../domain/evidence.js'")&&conclusion.includes("from '../domain/analysis.js'"));
-assert.ok(work.includes("from '../domain/work.js'")&&work.includes('firstTaskOutcome')&&work.includes('commit({')&&work.includes('ResizeObserver'));
+assert.ok(work.includes("from '../data/scenarios.js'")&&work.includes("from '../data/samples.js'")&&work.includes("from '../domain/work.js'")&&work.includes('firstTaskOutcome')&&work.includes('commit({')&&work.includes('ResizeObserver'));
 assert.ok(management.includes("from '../domain/management.js'")&&management.includes('secondOfferDecision')&&management.includes('monitorDecision')&&management.includes('commit({'));
-assert.ok(dispute.includes("from '../domain/dispute.js'")&&dispute.includes('publishedTranslationText')&&dispute.includes('applyDisputeOutcome')&&dispute.includes('commit({'));
+assert.ok(dispute.includes("from '../data/samples.js'")&&dispute.includes("from '../domain/dispute.js'")&&dispute.includes('publishedTranslationText')&&dispute.includes('applyDisputeOutcome')&&dispute.includes('commit({'));
 assert.ok(!dispute.includes('id="msg"'));
 assert.ok(investigation.includes('role="tabpanel"')&&investigation.includes('aria-controls')&&investigation.includes("from '../domain/evidence.js'")&&investigation.includes("from '../domain/questions.js'")&&!investigation.includes('render(root).then'));
 assert.ok(storage.includes('writePersistent')&&storage.includes('stateStorageMode')&&storage.includes('function local(){try')&&storage.includes('function session(){try'));
 assert.ok(payment.includes("from '../domain/payment.js'")&&payment.includes('commit({'));
 assert.ok(access.includes("from '../domain/access.js'")&&access.includes('commit({'));
-assert.ok(result.includes('const ok=archiveResult')&&result.includes('تعذر حفظ النتيجة'));
+assert.ok(result.includes("from '../data/parties.js'")&&result.includes("from '../data/power-targets.js'")&&result.includes('const ok=archiveResult')&&result.includes('تعذر حفظ النتيجة'));
+assert.ok(analysis.includes("from '../data/parties.js'")&&analysis.includes("from '../data/power-targets.js'"));
+assert.ok(evidence.includes("from '../data/evidence-templates.js'"));
+assert.ok(questions.includes("from '../data/question-references.js'"));
+assert.ok(domainWork.includes("from '../data/samples.js'"));
+assert.ok(domainCheck.includes("data/parties.js")&&domainCheck.includes("data/power-targets.js"));
+assert.ok(scenarioPage.includes('freshState')&&scenarioPage.includes('commit({')&&!scenarioPage.includes('addLog'));
 assert.ok(generator.includes("import {pages} from '../assets/js/core/routes.js'")&&generator.includes("process.argv.includes('--check')"));
 assert.equal(pkg.scripts['test:e2e'],'playwright test');
 assert.ok(pkg.devDependencies['@playwright/test']);
