@@ -8,9 +8,9 @@ const noEvent={occurred:false,icon:'✓',kind:'لم يقع حدث إضافي',ti
 const probability={wellbeing:85,connection:65,timeout:60,revision:55};
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 function riskProfile(type){return profiles[type]||profiles.connection}
-function deterministicRoll(scenario,state){const seed=`${scenario.type}|${scenario.riskType}|${(state.sampleSequence||[]).join(',')}|${(state.completedTasks||[]).map(t=>t.score).join(',')}|${state.rejections||0}|${state.breakTime||0}`;let hash=0;for(let i=0;i<seed.length;i++)hash=(hash*31+seed.charCodeAt(i))>>>0;return hash%100}
+function deterministicRoll(scenario,state){const stableSeed=Number(state.riskSeed??state.realStartedAt??1)||1,seed=`${scenario.type}|${scenario.riskType}|${stableSeed}`;let hash=0;for(let i=0;i<seed.length;i++)hash=(hash*31+seed.charCodeAt(i))>>>0;return hash%100}
 export function riskTransition(scenario,state){
  if(state.riskEvent)return {event:state.riskEvent,changes:null};
- const profile=riskProfile(scenario.riskType),threshold=probability[scenario.riskType]??65,event=deterministicRoll(scenario,state)<threshold?profile:noEvent,time=Number(state.time||0),extraWorkTime=Number(state.extraWorkTime||0),stress=Number(state.stress||0);
- return {event,changes:{riskEvent:event,time:time+event.minutes,extraWorkTime:extraWorkTime+event.minutes,stress:clamp(stress+event.stress,0,100),status:event.occurred?'حدث موقف إضافي مرتبط بالعمل':'انتهت الوردية دون حدث إضافي'}};
+ const profile=riskProfile(scenario.riskType),threshold=probability[scenario.riskType]??65,roll=deterministicRoll(scenario,state),event=roll<threshold?profile:noEvent,time=Number(state.time||0),extraWorkTime=Number(state.extraWorkTime||0),stress=Number(state.stress||0);
+ return {event:{...event,roll,threshold},changes:{riskEvent:{...event,roll,threshold},time:time+event.minutes,extraWorkTime:extraWorkTime+event.minutes,stress:clamp(stress+event.stress,0,100),status:event.occurred?'حدث موقف إضافي مرتبط بالعمل':'انتهت الوردية دون حدث إضافي'}};
 }
