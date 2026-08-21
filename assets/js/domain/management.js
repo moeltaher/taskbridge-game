@@ -1,8 +1,8 @@
 import {acceptanceRate} from './work.js';
 
 export const SECOND_TASK_ACCESS_BONUS=5;
-export const SECOND_TASK_PREMIUM_STRESS=12;
-export const SECOND_TASK_STANDARD_STRESS=9;
+const SECOND_TASK_PREMIUM_STRESS=12;
+const SECOND_TASK_STANDARD_STRESS=9;
 export const BREAK_MINUTES=1;
 export const BREAK_STRESS_REDUCTION=10;
 
