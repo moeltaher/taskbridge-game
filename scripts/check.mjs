@@ -57,9 +57,14 @@ assert.deepEqual(getState().selectedRights,['privacy'],'returning from Rights mu
 
 setState({...getState(),scenarioKey:'data',stage:1,currentPage:'scenario',checkpoints:[]});
 assert.equal(getState().currentPage,'scenario','runtime state migration must not skip Scenario before navigation');
+const beforeEnterRevision=getState().storageRevision;
 enterPage('onboarding');
+assert.equal(getState().storageRevision,beforeEnterRevision+1,'entering a new page must persist checkpoint and current page once');
 assert.equal(getState().currentPage,'onboarding');
 assert.equal(getState().checkpoints.at(-1)?.page,'scenario','entering Onboarding must preserve a Scenario checkpoint');
+const samePageRevision=getState().storageRevision;
+enterPage('onboarding');
+assert.equal(getState().storageRevision,samePageRevision,'re-entering the current page must not create a storage write');
 assert.equal(undoCheckpoint(),'scenario','Back from Onboarding must return to Scenario');
 assert.equal(statePageForStage(1),'onboarding');
 assert.equal(resumePage({scenarioKey:'data',stage:1,currentPage:'scenario'}),'onboarding','resume must repair stale public-entry routes using stage');
@@ -96,6 +101,16 @@ assert.equal(fallback.status,'session','sessionStorage must back up state when l
 assert.equal(storage.loadState().currentPage,'risk','fallback reads must choose the newer session copy over stale local data');
 assert.equal(storage.archiveResult({runId:'x',version:RESULT_VERSION,scoringVersion:SCORING_VERSION}),false,'result archive must require persistent storage');
 localStorageObject.setItem=originalLocalSet;
+
+const archived=storage.archiveResult({runId:'compact',version:RESULT_VERSION,scoringVersion:SCORING_VERSION,scenario:'data',scenarioName:'سامي',score:88,outcome:'warning',simMinutes:42,netEconomic:3.25,finalStress:51,breakTaken:true,createdAt:'2026-08-21T12:00:00.000Z',analysis:'لا حاجة للاحتفاظ بهذا النص',answers:{price:'المنصة'},power:{price:{worker:1,platform:99}}});
+assert.equal(archived,true);
+const storedArchive=JSON.parse(localStore.get('no_boss_v3_results'));
+const compact=storedArchive.find(x=>x.runId==='compact');
+assert.ok(compact,'the compact result must be persisted');
+assert.equal(compact.analysis,undefined,'archived results must not retain free-text analysis');
+assert.equal(compact.answers,undefined,'archived results must not retain investigation answers');
+assert.equal(compact.power,undefined,'archived results must not retain the full power map');
+assert.equal(compact.score,88);
 
 Object.defineProperty(globalThis,'localStorage',{configurable:true,get(){throw new Error('blocked')}});
 sessionStore.clear();
