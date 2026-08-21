@@ -1,7 +1,28 @@
 import {samples} from '../data/scenarios.js';
 
 const DATA_TARGETS=[{x:.27,y:.43,w:.34,h:.35},{x:.45,y:.43,w:.34,h:.35},{x:.36,y:.42,w:.34,h:.36}];
+const DATA_REGION_X={left:.08,leftCenter:.27,center:.36,rightCenter:.45,right:.58};
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+
+export const dataRegionOptions=[
+ {id:'left',label:'الجزء الأيسر من الطريق'},
+ {id:'leftCenter',label:'بين اليسار والمنتصف'},
+ {id:'center',label:'حول منتصف الطريق'},
+ {id:'rightCenter',label:'بين المنتصف واليمين'},
+ {id:'right',label:'الجزء الأيمن من الطريق'}
+];
+
+export const dataSceneDescriptions=[
+ 'مشهد طريق أفقي بمركبة رئيسية واضحة يبدأ جسمها في الربع الأيسر ويمتد نحو منتصف الصورة.',
+ 'مشهد طريق أفقي بمركبة رئيسية واضحة يبدأ جسمها قرب منتصف الصورة ويمتد نحو الجهة اليمنى.',
+ 'مشهد طريق أفقي بمركبة رئيسية باهتة نسبيًا تتمركز حول منتصف الصورة.'
+];
+
+export function semanticDataAnswer(sceneIndex,regionId){
+ const target=DATA_TARGETS[sceneIndex],x=DATA_REGION_X[regionId];
+ if(!target||!Number.isFinite(x))return null;
+ return {x,y:target.y,w:target.w,h:target.h,regionId,source:'semantic'};
+}
 
 export function acceptanceRate(acceptedOffers,offerDecisions){return offerDecisions?Math.round(acceptedOffers/offerDecisions*100):100}
 
