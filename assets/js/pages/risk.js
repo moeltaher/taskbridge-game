@@ -6,10 +6,7 @@ import {riskTransition} from '../domain/risk.js';
 
 function ensureRisk(scenario){
  const transition=riskTransition(scenario,getState());
- if(transition.changes){
-  if(transition.isNew){commit({changes:transition.changes,evidence:['risk'],log:{title:'حدث موقف إضافي مرتبط بالعمل',text:`${transition.event.title}: أضيفت ${transition.event.minutes} دقيقة إلى الوقت الإضافي المرتبط بالعمل.`}})}
-  else patch(transition.changes);
- }
+ if(transition.changes)commit({changes:transition.changes,evidence:['risk'],log:{title:'حدث موقف إضافي مرتبط بالعمل',text:`${transition.event.title}: أضيفت ${transition.event.minutes} دقيقة إلى الوقت الإضافي المرتبط بالعمل.`}});
  return transition.event;
 }
 
