@@ -47,7 +47,7 @@ test('data task has an equivalent nonvisual annotation path',async({page})=>{
   expect(saved.workAnswers.every(answer=>answer?.source==='semantic')).toBe(true);
   await page.getByRole('button',{name:'إرسال العمل للمراجعة'}).click();
   await expect(page.getByText('نتيجة المهمة الأولى')).toBeVisible();
-  await expect(page.getByText('100%')).toBeVisible();
+  await expect(page.getByText('100%',{exact:true})).toBeVisible();
 });
 
 test('back from onboarding restores scenario selection',async({page})=>{
