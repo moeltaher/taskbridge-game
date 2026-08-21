@@ -21,14 +21,14 @@ export function computeManagedAccess(scenario,state){
 export function buildSecondOffer(scenario,access){return access>=80?{title:'دفعة مميزة إضافية',pay:3.85,duration:18,clientValue:Math.max(7.5,scenario.clientPay*1.2),premium:true}:{title:'دفعة إضافية',pay:1.8,duration:11,clientValue:Math.max(3.2,scenario.clientPay*.55),premium:false}}
 
 export function secondOfferDecision(state,accepted){
- const offer=state.secondOffer,before={acceptance:state.acceptance,access:state.access,stress:state.stress,rejections:state.rejections};
+ const offer=state.secondOffer,before={acceptance:state.acceptance,access:state.access,stress:state.stress};
  const offerDecisions=state.offerDecisions+1,acceptedOffers=state.acceptedOffers+(accepted?1:0),rejections=state.rejections+(accepted?0:1),acceptance=acceptanceRate(acceptedOffers,offerDecisions);
- return {accepted,offerDecisions,acceptedOffers,rejections,acceptance,result:{accepted,completed:false,title:offer.title,pay:offer.pay,duration:offer.duration,beforeAcceptance:before.acceptance,afterAcceptance:acceptance,beforeAccess:before.access,afterAccess:before.access,beforeStress:before.stress,afterStress:before.stress,rejectionsBefore:before.rejections,rejectionsAfter:rejections}};
+ return {offerDecisions,acceptedOffers,rejections,acceptance,result:{accepted,completed:false,title:offer.title,pay:offer.pay,duration:offer.duration,beforeAcceptance:before.acceptance,afterAcceptance:acceptance,beforeAccess:before.access,afterAccess:before.access,beforeStress:before.stress,afterStress:before.stress}};
 }
 
 export function completeSecondTask(state){
  const offer=state.secondOffer,decision=state.offerDecisionResult,stressDelta=secondTaskStressDelta(offer),afterAccess=clamp(state.access+SECOND_TASK_ACCESS_BONUS,0,100),afterStress=clamp(state.stress+stressDelta,0,100);
- return {stressDelta,afterAccess,afterStress,changes:{grossWorker:state.grossWorker+offer.pay,clientPaid:state.clientPaid+offer.clientValue,time:state.time+offer.duration,paidTime:state.paidTime+offer.duration,stress:afterStress,access:afterAccess,offerDecisionResult:{...decision,completed:true,afterAccess,afterStress,stressDelta,accessDelta:afterAccess-decision.beforeAccess},managementStep:'offerResult',status:'اكتملت المهمة الثانية'}};
+ return {stressDelta,changes:{grossWorker:state.grossWorker+offer.pay,clientPaid:state.clientPaid+offer.clientValue,time:state.time+offer.duration,paidTime:state.paidTime+offer.duration,stress:afterStress,access:afterAccess,offerDecisionResult:{...decision,completed:true,afterAccess,afterStress},managementStep:'offerResult',status:'اكتملت المهمة الثانية'}};
 }
 
 export function monitorDecision(state,takeBreak){const before=state.stress,after=takeBreak?clamp(before-BREAK_STRESS_REDUCTION,0,100):before;return {tookBreak:takeBreak,stressBefore:before,stressAfter:after,stressDelta:after-before,timeDelta:takeBreak?BREAK_MINUTES:0,breakDelta:takeBreak?BREAK_MINUTES:0}}
