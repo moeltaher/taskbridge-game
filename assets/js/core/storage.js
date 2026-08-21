@@ -38,6 +38,6 @@ export function clearState(){return remove(STATE_KEY)}
 export function hasState(){return !!loadState()?.scenarioKey}
 export function hasLegacyState(){const slots=[readFrom(local(),STATE_KEY),readFrom(session(),STATE_KEY),readFrom(local(),LEGACY_STATE_KEY),readFrom(session(),LEGACY_STATE_KEY)];return slots.some(x=>x?.scenarioKey&&!isCurrentState(x))}
 export function clearLegacyState(){for(const store of [local(),session()].filter(Boolean)){const current=readFrom(store,STATE_KEY);if(current&&!isCurrentState(current)){try{store.removeItem(STATE_KEY)}catch{}}try{store.removeItem(LEGACY_STATE_KEY)}catch{}}}
-export function archiveResult(x){const next=compactResult(x),current=allResults().filter(isCurrentResult).map(compactResult),key=resultKey(next),i=current.findIndex(r=>resultKey(r)===key);if(i>=0)current[i]=next;else current.push(next);const old=allResults().filter(r=>!isCurrentResult(r));return writePersistent(RESULTS_KEY,[...old,...current.slice(-30)])}
+export function archiveResult(x){const results=allResults(),next=compactResult(x),current=results.filter(isCurrentResult).map(compactResult),key=resultKey(next),i=current.findIndex(r=>resultKey(r)===key);if(i>=0)current[i]=next;else current.push(next);const old=results.filter(r=>!isCurrentResult(r));return writePersistent(RESULTS_KEY,[...old,...current.slice(-30)])}
 export function savedResults(){return allResults().filter(isCurrentResult).map(compactResult).slice(-30)}
 export function legacyResults(){return allResults().filter(x=>!isCurrentResult(x))}
