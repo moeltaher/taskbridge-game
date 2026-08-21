@@ -23,4 +23,4 @@ export function consumeCheckpointTo(expectedPage){const item=state.checkpoints.a
 export function timeBreakdown(s=state){return {taskTime:Number(s.paidTime||0),extraWorkTime:Number(s.extraWorkTime||0),breakTime:Number(s.breakTime||0),totalTime:Number(s.time||0)}}
 export function wellbeingLabel(v){return v>=70?'عبء مرتفع':v>=40?'عبء متوسط':'عبء منخفض'}
 export const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
-export const money=v=>`\u2066$${Number(v||0).toFixed(2)}\u2069`;
+export const money=v=>{const n=Number(v||0),text=n<0?`-$${Math.abs(n).toFixed(2)}`:`$${n.toFixed(2)}`;return `\u2066${text}\u2069`};
