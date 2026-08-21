@@ -1,0 +1,6 @@
+export const powerTargets={
+ data:{price:{worker:8,platform:57,client:30,mediator:5},allocation:{worker:8,platform:72,client:15,mediator:5},monitoring:{worker:8,platform:80,client:10,mediator:2},quality:{worker:5,platform:38,client:55,mediator:2},risk:{worker:75,platform:12,client:8,mediator:5},termination:{worker:5,platform:82,client:11,mediator:2}},
+ moderation:{price:{worker:8,platform:48,client:39,mediator:5},allocation:{worker:5,platform:68,client:25,mediator:2},monitoring:{worker:4,platform:84,client:10,mediator:2},quality:{worker:5,platform:34,client:59,mediator:2},risk:{worker:58,platform:27,client:12,mediator:3},termination:{worker:4,platform:70,client:24,mediator:2}},
+ ai:{price:{worker:8,platform:52,client:35,mediator:5},allocation:{worker:8,platform:58,client:31,mediator:3},monitoring:{worker:12,platform:64,client:21,mediator:3},quality:{worker:5,platform:28,client:65,mediator:2},risk:{worker:65,platform:16,client:15,mediator:4},termination:{worker:5,platform:74,client:19,mediator:2}},
+ translation:{price:{worker:18,platform:15,client:62,mediator:5},allocation:{worker:18,platform:34,client:45,mediator:3},monitoring:{worker:28,platform:43,client:26,mediator:3},quality:{worker:8,platform:18,client:72,mediator:2},risk:{worker:70,platform:10,client:16,mediator:4},termination:{worker:10,platform:54,client:34,mediator:2}}
+};
