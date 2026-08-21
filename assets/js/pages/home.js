@@ -16,7 +16,7 @@ function comparisonHTML(rows){
  const minStress=Math.min(...rows.map(row=>Number(row.finalStress??Infinity)));
  const body=rows.map(row=>{
   const score=Number(row.score||0),net=Number(row.netEconomic??0),time=Number(row.simMinutes??0),stress=row.finalStress===undefined?null:Number(row.finalStress);
-  return `<tr><th scope="row"><b>${escapeHTML(row.scenarioName||row.scenario)}</b></th><td>${score}/100 ${score===bestScore?'★':''}</td><td>${net.toFixed(2)} ${net===bestNet?'★':''}</td><td>${time} د ${time===minTime?'★':''}</td><td>${stress===null?'—':`${stress}/100 ${stress===minStress?'★':''}`}</td><td>${row.breakTaken===true?'نعم':row.breakTaken===false?'لا':'—'}</td><td>${outcomeLabel(row.outcome)}</td></tr>`;
+  return `<tr><th scope="row"><b>${escapeHTML(row.scenarioName)}</b></th><td>${score}/100 ${score===bestScore?'★':''}</td><td>${net.toFixed(2)} ${net===bestNet?'★':''}</td><td>${time} د ${time===minTime?'★':''}</td><td>${stress===null?'—':`${stress}/100 ${stress===minStress?'★':''}`}</td><td>${row.breakTaken===true?'نعم':row.breakTaken===false?'لا':'—'}</td><td>${outcomeLabel(row.outcome)}</td></tr>`;
  }).join('');
  return `<p class="muted">قارن الجولات مباشرة عبر الدرجة والصافي والوقت وعبء الوردية. علامة ★ تعني أفضل قيمة بين النتائج المعروضة لذلك المؤشر فقط.</p><div class="archive-scroll"><table class="archive-table"><caption class="small muted">آخر النتائج المحفوظة للمقارنة</caption><thead><tr><th scope="col">الحالة</th><th scope="col">الدرجة</th><th scope="col">الصافي USD</th><th scope="col">الوقت</th><th scope="col">عبء النهاية</th><th scope="col">الاستراحة</th><th scope="col">الوصول النهائي</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
