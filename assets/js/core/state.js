@@ -11,10 +11,9 @@ export function freshState(){const power={};axes.forEach(axis=>power[axis.id]={w
 const saved=loadState();let state=saved||freshState();revisionCounter=Number(state.storageRevision)||0;const initialMode=stateStorageMode();lastPersistence=initialMode==='session'?{ok:true,status:'session',persistent:false,session:true}:{ok:true,status:'persistent',persistent:true,session:false};
 export function getState(){return state}
 export function persistenceStatus(){return lastPersistence}
-export function pageForStage(stage=state.stage){return routePageForStage(stage)}
-export function resumePage(s=state){const current=s?.currentPage,stage=Number(s?.stage||0);if(s?.scenarioKey&&current&&!isPublicPage(current)&&routeStageForPage(current)===stage)return current;if(s?.scenarioKey&&stage>0)return pageForStage(stage);return current&&current!=='home'?current:'scenario'}
+export function resumePage(s=state){const current=s?.currentPage,stage=Number(s?.stage||0);if(s?.scenarioKey&&current&&!isPublicPage(current)&&routeStageForPage(current)===stage)return current;if(s?.scenarioKey&&stage>0)return routePageForStage(stage);return current&&current!=='home'?current:'scenario'}
 export function setState(next){state=structuredClone(next);revisionCounter=Math.max(revisionCounter,Number(state.storageRevision)||0);persist();return state}
-export function commit({changes={},evidence=[],log=null,recalculateAcceptance=false}={}){let dirty=applyChanges(changes);for(const id of evidence){if(!state.evidence.includes(id)){state.evidence.push(id);dirty=true}}if(recalculateAcceptance){const acceptance=state.offerDecisions?Math.round(state.acceptedOffers/state.offerDecisions*100):100;if(acceptance!==state.acceptance){state.acceptance=acceptance;dirty=true}}if(log){appendLog(log);dirty=true}if(dirty)persist();return state}
+export function commit({changes={},evidence=[],log=null}={}){let dirty=applyChanges(changes);for(const id of evidence){if(!state.evidence.includes(id)){state.evidence.push(id);dirty=true}}if(log){appendLog(log);dirty=true}if(dirty)persist();return state}
 export function patch(changes){return commit({changes})}
 export function reset(){state=freshState();clearState();warnedPersistence=false;warnedSession=false;revisionCounter=0;persist();return state}
 export function checkpoint(targetPage,{persistNow=true}={}){const snap=structuredClone(state);snap.checkpoints=[];state.checkpoints.push({page:state.currentPage,snapshot:snap,target:targetPage});if(state.checkpoints.length>24)state.checkpoints.shift();if(persistNow)persist();return state}
