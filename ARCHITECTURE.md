@@ -1,138 +1,116 @@
-# No Boss v3.1.0 Architecture
+# No Boss v3.2.0 Architecture
 
-No Boss is a static multi-page training simulation designed for GitHub Pages. It does not require a backend, database, framework, API, or build-time server.
+No Boss is a static multi-page training simulation for GitHub Pages. It has no backend, API, database, or application framework.
 
 ## Experience model
 
-The experience is split into two explicit chapters:
+The simulation has two chapters:
 
-1. **Worker shift** — scenario selection, agreement, marketplace, task execution, algorithmic management, work-related risk, quality review, settlement, and the final access decision.
-2. **Shift analysis** — case file, evidence classification, relationship questions, power mapping, participant conclusion, result, and rights discussion.
+1. **Worker experience** — choose a scenario, review the standardized agreement, enter or refuse the market, make offer decisions, perform tasks, experience algorithmic management, risk, review, settlement, and access outcomes.
+2. **Researcher analysis** — review only the facts that actually occurred, classify evidence, answer relationship questions, map control and burden, write a conclusion, compare with the training reference, and connect the run to rights questions.
 
-Worker progress reaches 100% at the end of `/access/`. Researcher progress then starts independently rather than pretending that the analysis section is only the last few percent of the experience.
+A contract refusal is a valid short branch: the participant may analyze the platform's gatekeeping power without fabricating tasks, monitoring, payment, or quality review.
 
-## Public routes
+## Model boundaries
 
-- `/` — landing page and resume/new-session controls
-- `/scenario/` — worker/scenario selection
-- `/onboarding/` — service-provider agreement and pre-work context, including a real decline path
-- `/work/` — marketplace, unpaid market/search time, task execution, first-task result, or a valid no-work ending
-- `/management/` — ranking, second offer, task/monitoring decisions
-- `/risk/` — contingent work-related risk and extra-work-time impact
-- `/dispute/` — first review, reasoned optional second review, and final quality outcome
-- `/payment/` — payment/value distribution
-- `/access/` — final access decision and worker-to-researcher transition
-- `/investigation/` — case file, evidence sorting, relationship questions
-- `/power/` — auto-balanced 100-point power map
-- `/conclusion/` — participant conclusion with supporting and counter-evidence
-- `/result/` — concise dashboard plus expandable analytical detail
-- `/rights/` — rights discussion personalized to events in the run
+### Control is not burden
 
-The router accepts clean GitHub Pages paths such as `/work/` and explicit document paths such as `/work/index.html`.
+`assets/js/data/parties.js` assigns every analytical axis a `metricType`.
 
-## Source structure
+- `control`: price, allocation, monitoring, quality, termination/access.
+- `burden`: costs and risks.
 
-### `assets/js/core/`
+The same 100-point interaction is used visually, but the meaning changes by axis. A high worker value on the risk axis means the worker bears more burden; it does **not** mean the worker has more authority.
 
-- `config.js` — application name and current release label.
-- `routes.js` — route manifest, stages, chapter-specific progress, titles, public-entry status, researcher mode, and stage-default routes.
-- `state.js` — versioned live-state schema, normalization/migration, stale-tab synchronization, checkpoints, transaction-style commits, logs, time buckets, and navigation state.
-- `storage.js` — guarded local/session storage, revision-aware state selection, latest-state snapshot access, compact archived results, and result retrieval.
-- `ui.js` — shared shell, chapter progress, desktop state summary, compact mobile summary, and reusable helpers.
-- `bootstrap.js` — route validation, resume/redirect behavior, shell loading, and page-controller loading.
-- `html.js` — HTML/attribute escaping helpers.
-- `power-scoring.js` — tie-aware qualitative power-map helpers based on leaders and strongest groups rather than hidden exact percentages.
+### One source for reference logic
 
-### `assets/js/domain/`
+- `authority-model.js` stores relative reference distributions.
+- `question-references.js` derives accepted leaders from that model.
+- `power-targets.js` derives power-map targets from the same model.
+- `authority-rationales.js` explains why each scenario/axis reference is structured that way.
 
-Domain modules contain simulation rules independent from the DOM:
+The result page shows those rationales rather than presenting an unexplained answer key.
 
-- `work.js` — acceptance rate, image IoU, partial-credit task scoring, and first-task outcome.
-- `management.js` — managed access, second-offer logic, second-task completion, and the break decision.
-- `risk.js` — reproducible contingent risk selection and time/stress transition; structural risk is not treated as an inevitable incident.
-- `dispute.js` — initial review severity, explicit appeal grounds, second-review effect, hold/penalty rules, appeal cost, and final review outcome.
-- `payment.js` — settlement and worker economic outcome.
-- `access.js` — final restriction/suspension decision using only independent final factors.
-- `evidence.js` — normalized evidence text and accepted evidence classifications.
-- `questions.js` — relationship questions derived against the same authority model used by the power map.
-- `analysis.js` — power-map completion and final analytical score.
+### Data-task geometry
 
-The final access decision deliberately does **not** reuse current quality, task score, acceptance rate, or the temporary access number after those facts have already influenced earlier stages. It uses the final quality-review severity and the run's rejection record, avoiding duplicate counting of the same event. The earlier opportunity-ranking event is recorded separately as `opportunityRankingDecision`, so rights explanations can distinguish it from the final access decision.
+`data-scenes.js` owns both the rendered road-scene geometry and `dataTargetForScene()`. The visual bounding-box target can therefore not drift independently from the SVG the participant sees.
 
-### `assets/js/data/`
+The nonvisual route does not receive hidden target dimensions. It asks for both horizontal location and approximate size, and `semanticDataAnswer()` converts those participant choices into the same scoring space used by the visual route.
 
-- `scenarios.js` — worker facts, explicit final-access thresholds, costs, mechanisms, and content warnings.
-- `parties.js` — party identifiers, Arabic labels, and six power-map axes.
-- `authority-model.js` — the single distribution source from which primary authority is derived.
-- `power-targets.js` — reference relative power distributions derived from the authority model.
-- `question-references.js` — accepted primary-authority answers derived from the same model.
-- `evidence-templates.js` — evidence descriptions and accepted classifications. Contract wording is contextual evidence rather than proof of actual independence.
-- `samples.js` — moderation, AI, and translation samples using preferred and defensible alternative answers.
+### Translation reference
 
-### `assets/js/pages/`
+The translation scenario exposes its client style guide before scoring. Preferred answers are therefore recoverable from visible instructions rather than a hidden preference table alone.
 
-Each page controller reads state, renders the current task/event/decision/result, binds user interactions, calls domain rules, commits the state transition, and navigates to the next route. Page modules do not duplicate settlement, access, dispute, or scoring rules owned by `domain/`.
+## State and storage
 
-## Simulation invariants
+`STATE_SCHEMA_VERSION=3` adds, among other fields:
 
-- Offer size and the number of samples actually completed are aligned.
-- A participant can reject all visible offers and finish a valid no-work shift. The game must not fabricate a task, dispute, payment, or quality outcome for that branch.
-- Time spent browsing and deciding in the marketplace is recorded as `marketTime` even when the shift ends without paid work.
-- The temporary access score is used to determine which subsequent opportunity appears and is stored as a distinct event. Completing the second task no longer receives an unused synthetic access bonus.
-- The two data-labeling tasks preserve the same visual bounding-box and nonvisual semantic modes.
-- An appeal is a real second review: it requires a stated ground and changes the result only when that ground is relevant to a reviewable error.
-- Risk is structural but incidents are contingent. A run may validly reach the risk stage without adding an incident, extra minutes, or extra stress.
-- Breaks affect shift time and simulated workload only; they are not silently converted into pay or access penalties.
-- `dependency` remains narrative context for the economic importance of platform access and is not a hidden scoring or punishment factor.
+- `contractDeclineEnding`
+- `riskSeed`
+- `conclusionDualEvidence`
 
-## Interaction and visual language
+Old stored states are normalized against `freshState()` and old incompatible checkpoints are discarded. Storage still reconciles local/session candidates by monotonic revision before writes.
 
-Reusable presentation conventions distinguish:
+Archived results include `appVersion` and `scoreModelVersion`. Historical runs are compared only within the same scenario and score model.
 
-- **Task** — something the participant must do.
-- **Decision** — a choice with explicit consequences.
-- **Event** — something that happened because of prior work or platform operation.
-- **Outcome** — the recorded effect of a decision/event.
+## Risk model
 
-Worker, platform, client, and payment mediator retain stable visual identities across pages. On mobile, the full state summary is collapsed by default into a compact horizontal strip so the current task remains visible in the initial viewport.
+Risk occurrence is reproducible per run. The deterministic roll is derived from a stable `riskSeed` created when the scenario starts plus scenario identity. Unrelated later choices such as taking a break, rejecting an offer, or obtaining a different task score do not silently alter whether an independent connection failure or revision request occurs.
 
-## Power map
+A no-event result never creates incident evidence. Structural risk remains discussable through costs, workload, monitoring, and context, but an incident is evidence only when `occurred === true`.
 
-The map represents 100 points of authority across worker, platform, client, and mediator for each axis. The participant uses range controls; changing one party automatically redistributes the remaining points so the total remains 100. The numeric values are an interaction aid, not hidden answer keys.
+## Access model
 
-Scoring is qualitative and relative: 65% of each axis credit compares the leading party/set, and 35% compares the strongest two-level group. Exact percentage proximity is not graded.
+The final access decision uses final review severity and actual offer rejections. It does not reuse task score, current quality, temporary ranking, or acceptance rate after those factors have already affected earlier stages.
 
-## Result and archive
+For `noWorkEnding`, rejection history may produce a warning, but it can never produce a restriction of a "current project" because no project was accepted.
 
-The result opens with a compact dashboard: analytical score, economic net, task time, market/search time, extra work-related time, final workload, and account-access outcome. Detailed material lives in expandable sections. The participant's conclusion is shown with evidence explicitly selected to support it and evidence selected to limit or complicate it.
+## Appeals and remedy
 
-Archived results contain only compact comparison fields. The home page groups them by `scenarioName`; stars are only calculated inside runs of the same scenario, and shorter time is not automatically labeled better because it may reflect skipped breaks or different extra-work events.
+An appeal requires a stated ground and changes the final review only when the ground matches a reviewable issue. If a successful appeal occurs after the disputed task was already used in an earlier opportunity-ranking event, the interface explicitly distinguishes:
 
-## Storage and navigation
+- correcting the later review decision; and
+- restoring an earlier lost opportunity.
 
-The live state is stored under `no_boss_state`; compact archived results use `no_boss_results`. Durable `localStorage` and tab-scoped `sessionStorage` are guarded and reconciled by monotonic `storageRevision` plus `storageWriterId`.
+The simulation does not silently pretend that successful late review automatically repairs every prior effect.
 
-The current schema is versioned by `STATE_SCHEMA_VERSION`. Saved states are normalized against `freshState()` so newly added arrays, objects, time buckets, and fields exist after upgrades; checkpoints from an older schema are discarded because their snapshots cannot be assumed compatible. Before writes/navigation, a tab adopts a newer persisted state written by another tab instead of overwriting it from a stale revision.
+## Evidence and analysis
 
-Moving into a route records a checkpoint. In-game Back restores the checkpoint snapshot rather than relying on browser history.
+Quality is a distinct evidence dimension rather than part of monitoring.
 
-## Generated route shells and verification
+The party-identification question is orientation-only and excluded from the analytical score. The numerical result is named **reference-alignment score** and contains:
 
-Physical route directories stay committed for GitHub Pages, but their HTML shells are generated from `routes.js` and `config.js`:
+- 30 points: scored relationship questions;
+- 30 points: evidence classification by analytical dimension;
+- 40 points: relative map alignment.
 
-```bash
-node scripts/generate-pages.mjs
-```
+The written conclusion itself is not automatically graded. Evidence may be marked as supporting, complicating, or both supporting and complicating the conclusion, avoiding forced false balance.
 
-CI validates:
+## Economics and time
 
-- generated route shells;
-- structural invariants;
+`marketTime`, task time, extra work time, and break time are all displayed wherever total shift time is explained.
+
+A no-work run records zero task income and can show a zero hourly income over the search/decision time rather than treating the economic outcome as nonexistent.
+
+Scenario operating costs currently use `costModel: 'fixedShiftEstimate'`. The interface states that these are fixed training estimates, not minute-by-minute consumption calculations.
+
+## Accessibility and browser verification
+
+The visual annotation surface no longer claims `role="application"` because it does not implement a full keyboard drawing interface. An equivalent semantic form remains keyboard and screen-reader accessible.
+
+Playwright runs desktop and mobile projects for Chromium and WebKit. `@axe-core/playwright` checks WCAG A/AA rules on key pages and the data task.
+
+## Verification layers
+
+`npm run check` runs:
+
+- route-shell drift checks;
+- structural guards;
 - state/storage regressions;
 - domain rules;
-- cross-component semantic invariants;
-- JavaScript syntax;
-- desktop and mobile Playwright journeys;
-- horizontal overflow and visual-review screenshots.
+- behavioral semantic invariants;
+- JavaScript syntax checks.
 
-Use `npm run check` for non-browser checks and `npm run test:e2e` for the browser suite.
+`npm run test:e2e` runs browser journeys and accessibility checks.
+
+CI installs dependencies from `package-lock.json` with `npm ci`, installs Chromium and WebKit, and runs the same verification layers.
