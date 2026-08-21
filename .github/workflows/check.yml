@@ -13,21 +13,35 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Route shell drift check
+        run: node scripts/generate-pages.mjs --check
       - name: Structural checks
-        run: python scripts/check.py
+        run: node scripts/structural-check.mjs
       - name: Regression checks
         run: node scripts/check.mjs
+      - name: Domain rule checks
+        run: node scripts/domain-check.mjs
       - name: JavaScript syntax checks
         shell: bash
         run: |
           while IFS= read -r -d '' file; do
             node --check "$file"
-          done < <(find assets/js scripts -type f \( -name '*.js' -o -name '*.mjs' \) -print0)
+          done < <(find assets/js scripts tests -type f \( -name '*.js' -o -name '*.mjs' \) -print0)
+      - name: Install browser-test dependencies
+        run: npm install --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser E2E checks
+        run: npm run test:e2e
+      - name: Upload visual review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-review
+          path: test-results/**/*.png
+          if-no-files-found: ignore
+          retention-days: 7
