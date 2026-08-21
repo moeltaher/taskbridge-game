@@ -18,19 +18,15 @@ jobs:
         with:
           node-version: '22'
       - name: Route shell drift check
-        run: node scripts/generate-pages.mjs --check
+        run: npm run check:routes
       - name: Structural checks
-        run: node scripts/structural-check.mjs
+        run: npm run check:structural
       - name: Regression checks
-        run: node scripts/check.mjs
+        run: npm run check:regression
       - name: Domain rule checks
-        run: node scripts/domain-check.mjs
+        run: npm run check:domain
       - name: JavaScript syntax checks
-        shell: bash
-        run: |
-          while IFS= read -r -d '' file; do
-            node --check "$file"
-          done < <(find assets/js scripts tests -type f \( -name '*.js' -o -name '*.mjs' \) -print0)
+        run: npm run check:syntax
       - name: Install browser-test dependencies
         run: npm install --no-audit --no-fund
       - name: Install Chromium
