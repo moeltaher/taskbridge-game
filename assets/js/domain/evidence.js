@@ -1,4 +1,4 @@
-import {evidenceTemplates} from '../data/scenarios.js';
+import {evidenceTemplates} from '../data/evidence-templates.js';
 
 export function evidenceFor(id,scenario,state){
  const evidence={...(evidenceTemplates[id]||{title:id,validKinds:['dep'],text:''})};
