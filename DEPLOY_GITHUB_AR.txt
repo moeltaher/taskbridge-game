@@ -1,35 +1,33 @@
-نشر لعبة «خلف الشاشة» على GitHub Pages
-========================================
+نشر لعبة No Boss على GitHub Pages
+=================================
 
 الطريقة الأسهل من المتصفح:
 
 1) سجل الدخول إلى GitHub.
-2) اضغط New repository.
-3) اختر اسمًا للمستودع، مثل:
-   taskbridge-game
-   أو
-   behind-the-screen-game
-4) اجعل المستودع Public إذا كنت تستخدم GitHub Free وتريد GitHub Pages بسهولة.
-5) أنشئ المستودع.
-6) من صفحة المستودع اختر Add file > Upload files.
-7) ارفع الملفات التالية من هذه الحزمة إلى جذر المستودع:
+2) افتح المستودع الذي سيستضيف اللعبة، أو أنشئ مستودعًا جديدًا مثل taskbridge-game.
+3) ارفع محتويات المشروع كاملة مع الحفاظ على بنية المجلدات، وليس index.html وحده.
+4) يجب أن يتضمن جذر المستودع على الأقل:
    - index.html
    - .nojekyll
-   - README.md
-8) اضغط Commit changes.
-9) افتح Settings > Pages.
-10) في Build and deployment:
-    Source: Deploy from a branch
-    Branch: main
-    Folder: /(root)
-11) اضغط Save.
-12) انتظر عادةً بضع دقائق ثم أعد فتح Settings > Pages.
-13) سيظهر رابط اللعبة المنشور.
+   - مجلد assets/ كاملًا
+   - مجلدات المسارات: scenario/ وonboarding/ وwork/ وmanagement/ وrisk/ وdispute/ وpayment/ وaccess/ وinvestigation/ وpower/ وconclusion/ وresult/ وrights/
+   - ويمكن كذلك رفع README.md وملفات التوثيق والاختبارات الموجودة في الحزمة.
+5) تأكد أن كل مجلد مسار يحتوي ملف index.html الخاص به، وأن assets/ يحتفظ ببنية css/ وjs/ وimages/ كما هي.
+6) اضغط Commit changes.
+7) افتح Settings > Pages.
+8) في Build and deployment اختر:
+   Source: Deploy from a branch
+   Branch: main
+   Folder: /(root)
+9) اضغط Save.
+10) بعد اكتمال النشر سيظهر رابط الموقع في Settings > Pages.
 
-إذا كان اسم المستخدم USERNAME واسم المستودع taskbridge-game، فغالبًا سيكون الرابط:
+إذا كان اسم المستخدم USERNAME واسم المستودع taskbridge-game، فعادة يكون الرابط:
 https://USERNAME.github.io/taskbridge-game/
 
 مهم:
-- يجب أن يبقى index.html في جذر مصدر النشر.
-- اسم index.html حساس لحالة الأحرف.
+- No Boss تطبيق ثابت متعدد الصفحات. حذف assets/ أو أي مجلد من مجلدات المسارات سيؤدي إلى صفحات مفقودة أو واجهة بلا JavaScript/CSS.
+- يجب أن يبقى index.html في جذر مصدر النشر، وأن تبقى ملفات index.html داخل مجلدات المسارات.
+- أسماء الملفات والمجلدات حساسة لحالة الأحرف.
+- لا تغيّر البنية النسبية للملفات بعد الرفع لأن التوجيه والموارد يعتمد عليها.
 - كل ما تنشره عبر GitHub Pages يصبح متاحًا للويب وفق إعدادات Pages وخطتك.
