@@ -1,9 +1,3 @@
-export {partyNames,parties,axes} from './parties.js';
-export {powerTargets} from './power-targets.js';
-export {questionRef} from './question-references.js';
-export {evidenceTemplates} from './evidence-templates.js';
-export {samples} from './samples.js';
-
 export const scenarios={
  data:{name:'سامر',initials:'س',city:'القاهرة',country:'مصر',role:'عامل تصنيف بيانات',type:'data',accent:'#7c3aed',goal:4.0,dependency:65,initial:{quality:91,access:72,stress:24},client:'AutoVision GmbH',clientCountry:'ألمانيا',clientCity:'برلين',description:'يعمل منذ 8 أشهر في تصنيف الصور والبيانات. يعتمد على No Boss في جزء كبير من دخله، لكنه يحتفظ بحساب على منصة أخرى.',tags:['تصنيف صور','مهام مصغرة','عمل عابر للحدود'],costs:{internet:.55,electricity:.18,device:.42,transfer:.25},basePay:2.1,clientPay:5.8,priceActor:'المنصة',priceMechanism:'يحدد العميل ميزانية المشروع، ثم تعرض No Boss سعر المهمة للعامل وفق بطاقة أسعارها وتوافر العمال.',allocationMechanism:'No Boss ترتب المهام وتقرر أهلية الوصول إلى المشروعات المميزة.',monitoring:'activity',outcomeStrictness:1,riskType:'connection'},
  moderation:{name:'ليان',initials:'ل',city:'عمّان',country:'الأردن',role:'مراجعة محتوى',type:'moderation',accent:'#b04a67',goal:4.2,dependency:78,initial:{quality:89,access:68,stress:34},client:'SafeCommunity Inc.',clientCountry:'الولايات المتحدة',clientCity:'سان فرانسيسكو',description:'تراجع محتوى وفق سياسات العميل. مرونة الوقت مرتفعة، لكن سرعة القرار ومعدل الاتفاق مع المرجع يؤثران في استمرار وصولها إلى المشروعات.',tags:['مراجعة محتوى','ضغط نفسي','سياسات عميل'],costs:{internet:.60,electricity:.20,device:.38,transfer:.27},basePay:2.35,clientPay:6.2,priceActor:'المنصة',priceMechanism:'يشتري العميل حزمة مراجعة من No Boss، بينما تحدد No Boss المقابل لكل دفعة للعامل.',allocationMechanism:'No Boss تحدد طوابير المراجعة والسرعة المطلوبة؛ العميل يستطيع طلب استبعاد مراجع من مشروعه.',monitoring:'intensive',outcomeStrictness:0,riskType:'wellbeing'},
