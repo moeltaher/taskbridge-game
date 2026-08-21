@@ -1,6 +1,5 @@
 const STATE_KEY='no_boss_state';
 const RESULTS_KEY='no_boss_results';
-const MISSING=Symbol('missing');
 
 function local(){try{return globalThis.localStorage||null}catch{return null}}
 function session(){try{return globalThis.sessionStorage||null}catch{return null}}
@@ -12,12 +11,11 @@ function asArray(value){return Array.isArray(value)?value:[]}
 function isState(value){return !!value&&typeof value==='object'&&!Array.isArray(value)&&Number.isFinite(Number(value.storageRevision))&&typeof value.currentPage==='string'}
 function stateRevision(value){const revision=Number(value?.storageRevision);return Number.isFinite(revision)&&revision>=0?revision:0}
 function stateWriter(value){return typeof value?.storageWriterId==='string'?value.storageWriterId:''}
-function stateCandidate(store,mode){const value=readFrom(store,STATE_KEY,MISSING);return isState(value)?{value,mode,revision:stateRevision(value),writer:stateWriter(value)}:null}
+function stateCandidate(store,mode){const value=readFrom(store,STATE_KEY);return isState(value)?{value,mode,revision:stateRevision(value),writer:stateWriter(value)}:null}
 function compareStateCandidates(a,b){if(a.revision!==b.revision)return b.revision-a.revision;if(a.writer&&b.writer&&a.writer!==b.writer){if(a.mode==='session')return -1;if(b.mode==='session')return 1}return a.mode==='persistent'?-1:b.mode==='persistent'?1:0}
 function stateCandidates(){return [stateCandidate(local(),'persistent'),stateCandidate(session(),'session')].filter(Boolean)}
 function newestState(){const candidates=stateCandidates();candidates.sort(compareStateCandidates);return candidates[0]||null}
-function resultKey(value){return value?.runId||value?.createdAt}
-function compactResult(value){return {runId:value?.runId,scenario:value?.scenario,scenarioName:value?.scenarioName,score:value?.score,outcome:value?.outcome,simMinutes:value?.simMinutes,netEconomic:value?.netEconomic,finalStress:value?.finalStress,breakTaken:value?.breakTaken,createdAt:value?.createdAt}}
+function compactResult(value){return {runId:value?.runId,scenarioName:value?.scenarioName,score:value?.score,outcome:value?.outcome,simMinutes:value?.simMinutes,netEconomic:value?.netEconomic,finalStress:value?.finalStress,breakTaken:value?.breakTaken}}
 
 export function saveState(state){return write(STATE_KEY,state)}
 export function loadState(){return newestState()?.value||null}
@@ -25,5 +23,5 @@ export function latestStateRevision(){const revisions=stateCandidates().map(cand
 export function stateStorageMode(){return newestState()?.mode||'none'}
 export function clearState(){return remove(STATE_KEY)}
 export function hasState(){return !!loadState()?.scenarioKey}
-export function archiveResult(value){const next=compactResult(value),key=resultKey(next),results=asArray(readFrom(local(),RESULTS_KEY,[])).map(compactResult),index=results.findIndex(result=>resultKey(result)===key);if(index>=0)results[index]=next;else results.push(next);return writePersistent(RESULTS_KEY,results.slice(-30))}
-export function savedResults(){return asArray(readFrom(local(),RESULTS_KEY,[])).map(compactResult).slice(-30)}
+export function archiveResult(value){if(!value?.runId)return false;const next=compactResult(value),results=asArray(readFrom(local(),RESULTS_KEY,[])).map(compactResult),index=results.findIndex(result=>result.runId===next.runId);if(index>=0)results[index]=next;else results.push(next);return writePersistent(RESULTS_KEY,results.slice(-30))}
+export function savedResults(){return asArray(readFrom(local(),RESULTS_KEY,[])).map(compactResult).filter(result=>result.runId&&result.scenarioName).slice(-30)}

@@ -10,7 +10,7 @@ const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 export function riskProfile(type){return profiles[type]||profiles.connection}
 
 export function riskTransition(scenario,state){
- if(state.riskEvent)return {event:state.riskEvent,changes:null,isNew:false};
+ if(state.riskEvent)return {event:state.riskEvent,changes:null};
  const event=riskProfile(scenario.riskType),time=Number(state.time||0),extraWorkTime=Number(state.extraWorkTime||0),stress=Number(state.stress||0);
- return {event,isNew:true,changes:{riskEvent:event,time:time+event.minutes,extraWorkTime:extraWorkTime+event.minutes,stress:clamp(stress+event.stress,0,100),status:'حدث موقف إضافي مرتبط بالعمل'}};
+ return {event,changes:{riskEvent:event,time:time+event.minutes,extraWorkTime:extraWorkTime+event.minutes,stress:clamp(stress+event.stress,0,100),status:'حدث موقف إضافي مرتبط بالعمل'}};
 }
