@@ -6,42 +6,30 @@ import {evidenceFor} from '../assets/js/domain/evidence.js';
 import {relationshipQuestions,acceptedQuestionReferences} from '../assets/js/domain/questions.js';
 import {powerMapComplete,scoreAnalysis} from '../assets/js/domain/analysis.js';
 import {acceptanceRate,intersectionOverUnion,scoreWork,firstTaskOutcome} from '../assets/js/domain/work.js';
+import {computeManagedAccess,buildSecondOffer,secondOfferDecision,completeSecondTask,monitorDecision} from '../assets/js/domain/management.js';
 
 const close=(actual,expected,epsilon=1e-12)=>assert.ok(Math.abs(actual-expected)<epsilon,`${actual} != ${expected}`);
 
 assert.equal(PAYMENT_PROCESSOR_RATE,.03);
 assert.equal(PAYMENT_PROCESSOR_CAP,.22);
-const payment=buildPaymentSettlement(
- {costs:{internet:.55,electricity:.18,device:.42,transfer:.25}},
- {clientPaid:5.8,grossWorker:2.1,hold:.21}
-);
-close(payment.clientPaid,5.8);
-close(payment.contracted,2.1);
-close(payment.platformService,3.7);
-close(payment.mediator,.063);
-close(payment.cashPayout,1.577);
-close(payment.operating,1.15);
-close(payment.net,.427);
+const payment=buildPaymentSettlement({costs:{internet:.55,electricity:.18,device:.42,transfer:.25}},{clientPaid:5.8,grossWorker:2.1,hold:.21});
+close(payment.clientPaid,5.8);close(payment.contracted,2.1);close(payment.platformService,3.7);close(payment.mediator,.063);close(payment.cashPayout,1.577);close(payment.operating,1.15);close(payment.net,.427);
 
 assert.equal(ACCESS_MODEL_VERSION,3);
 const baseScenario={outcomeStrictness:1};
 const warning=assessAccessDecision(baseScenario,{scenarioKey:'data',disputeSeverity:0,qualityBeforeDispute:90,accessBeforeDispute:70,rejections:0});
-assert.equal(warning.points,0);
-assert.equal(warning.outcome,'warning');
+assert.equal(warning.points,0);assert.equal(warning.outcome,'warning');
 const project=assessAccessDecision(baseScenario,{scenarioKey:'data',disputeSeverity:1,qualityBeforeDispute:75,accessBeforeDispute:70,rejections:1});
-assert.equal(project.points,3);
-assert.equal(project.outcome,'project');
+assert.equal(project.points,3);assert.equal(project.outcome,'project');
 const suspended=assessAccessDecision(baseScenario,{scenarioKey:'data',disputeSeverity:2,qualityBeforeDispute:65,accessBeforeDispute:70,rejections:3});
-assert.equal(suspended.points,6);
-assert.equal(suspended.outcome,'suspended');
+assert.equal(suspended.points,6);assert.equal(suspended.outcome,'suspended');
 
 const evidenceScenario={priceMechanism:'سعر مخصص',allocationMechanism:'توزيع مخصص',monitoring:'timing'};
 assert.equal(evidenceFor('priceSetting',evidenceScenario,{}).text,'سعر مخصص');
 assert.deepEqual(evidenceFor('allocation',evidenceScenario,{}).validKinds,['ctrl','dep']);
 assert.match(evidenceFor('monitoring',evidenceScenario,{}).text,/تبديل التبويب/);
 const riskEvidence=evidenceFor('risk',evidenceScenario,{riskEvent:{title:'إعادة تحقق',minutes:3}});
-assert.equal(riskEvidence.title,'وقت إضافي مرتبط بالعمل بلا مقابل مستقل');
-assert.match(riskEvidence.text,/3 دقيقة/);
+assert.equal(riskEvidence.title,'وقت إضافي مرتبط بالعمل بلا مقابل مستقل');assert.match(riskEvidence.text,/3 دقيقة/);
 
 assert.equal(relationshipQuestions.length,6);
 const refs=acceptedQuestionReferences('data');
@@ -50,22 +38,22 @@ const completedAxes=axes.map(axis=>axis.id);
 const analysisState={answers:perfectAnswers,evidence:['contract'],evidenceSort:{contract:'ind'},power:powerTargets.data,powerTouched:completedAxes,powerEdited:completedAxes};
 assert.equal(powerMapComplete(analysisState),true);
 const analysis=scoreAnalysis(scenarios.data,analysisState);
-assert.equal(analysis.questionCorrect,6);
-assert.equal(analysis.qScore,30);
-assert.equal(analysis.sortScore,30);
-assert.equal(analysis.powerScore,40);
-assert.equal(analysis.score,100);
+assert.equal(analysis.questionCorrect,6);assert.equal(analysis.qScore,30);assert.equal(analysis.sortScore,30);assert.equal(analysis.powerScore,40);assert.equal(analysis.score,100);
 
-assert.equal(acceptanceRate(3,4),75);
-assert.equal(acceptanceRate(0,0),100);
-const box={x:.2,y:.3,w:.4,h:.3};
-close(intersectionOverUnion(box,box),1);
+assert.equal(acceptanceRate(3,4),75);assert.equal(acceptanceRate(0,0),100);
+const box={x:.2,y:.3,w:.4,h:.3};close(intersectionOverUnion(box,box),1);
 assert.equal(scoreWork(scenarios.translation,['A','A','A']),100);
 const firstTask=firstTaskOutcome(scenarios.data,{workAnswers:[{x:.27,y:.43,w:.34,h:.35},{x:.45,y:.43,w:.34,h:.35},{x:.36,y:.42,w:.34,h:.36}],quality:91,selectedJob:{duration:12,pay:2.1,clientValue:5.8},stress:24,time:0,paidTime:0,grossWorker:0,clientPaid:0,jobsDone:0});
-assert.equal(firstTask.score,100);
-assert.equal(firstTask.quality,94);
-assert.equal(firstTask.changes.paidTime,12);
-assert.equal(firstTask.changes.grossWorker,2.1);
-assert.equal(firstTask.changes.stress,34);
+assert.equal(firstTask.score,100);assert.equal(firstTask.quality,94);assert.equal(firstTask.changes.paidTime,12);assert.equal(firstTask.changes.grossWorker,2.1);assert.equal(firstTask.changes.stress,34);
+
+const managedState={quality:94,acceptance:100};
+assert.equal(computeManagedAccess(scenarios.data,managedState),95);
+assert.equal(buildSecondOffer(scenarios.data,95).premium,true);
+assert.equal(buildSecondOffer(scenarios.data,70).premium,false);
+const rejectedDecision=secondOfferDecision({secondOffer:{title:'دفعة',pay:1.8,duration:11},acceptance:100,access:80,stress:30,rejections:0,offerDecisions:1,acceptedOffers:1},false);
+assert.equal(rejectedDecision.offerDecisions,2);assert.equal(rejectedDecision.acceptance,50);assert.equal(rejectedDecision.rejections,1);
+const secondCompletion=completeSecondTask({secondOffer:{pay:3.85,duration:18,clientValue:8,premium:true},offerDecisionResult:{accepted:true,beforeAccess:80},access:80,stress:30,grossWorker:2.1,clientPaid:5.8,time:12,paidTime:12,jobsDone:1});
+assert.equal(secondCompletion.changes.access,85);assert.equal(secondCompletion.changes.stress,42);assert.equal(secondCompletion.changes.paidTime,30);
+const breakDecision=monitorDecision({stress:42},true);assert.equal(breakDecision.stressAfter,32);assert.equal(breakDecision.breakDelta,1);
 
 console.log('No Boss domain checks passed');
