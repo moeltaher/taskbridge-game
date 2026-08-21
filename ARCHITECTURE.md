@@ -36,6 +36,8 @@ Core modules own application infrastructure rather than simulation rules.
 - `html.js` — shared HTML/attribute escaping helpers.
 - `power-scoring.js` — tie-aware relative power-map helpers.
 
+Route metadata is read directly from `routes.js`; `state.js` does not duplicate or re-export the route manifest.
+
 ### `assets/js/domain/`
 
 Domain modules contain simulation and analysis rules that do not depend on the DOM. They are directly testable from Node.
@@ -55,12 +57,14 @@ New simulation rules should be added here rather than embedded in page rendering
 
 Data is split by concern rather than being kept in one large file:
 
-- `scenarios.js` — worker/scenario facts and a compatibility re-export surface for existing consumers.
+- `scenarios.js` — worker/scenario facts only.
 - `parties.js` — party identifiers, Arabic labels, and the six power-map axes.
 - `power-targets.js` — reference power distributions used by analytical scoring and feedback.
 - `question-references.js` — accepted reference answers by scenario type.
 - `evidence-templates.js` — evidence titles, default descriptions, and accepted classifications.
 - `samples.js` — moderation, AI, and translation task samples.
+
+Consumers import data from the module that owns it. `scenarios.js` is not a compatibility re-export hub for the other data modules.
 
 These modules contain data only; they do not own browser persistence, navigation, rendering, or simulation side effects.
 
@@ -77,6 +81,8 @@ Each page module owns one logical route. Page modules should primarily:
 
 They should not duplicate scoring, settlement, access, dispute, or evidence rules already owned by `domain/`.
 
+Page `render()` functions are synchronous unless the route genuinely performs asynchronous work. `bootstrap.js` may still await a renderer so a future asynchronous route remains compatible without changing the loader contract.
+
 ### `assets/css/`
 
 - `base.css` — variables and element defaults.
@@ -84,7 +90,7 @@ They should not duplicate scoring, settlement, access, dispute, or evidence rule
 - `components.css` — reusable panels, grids, buttons, notices, metrics, pills, receipts, and generic visual components.
 - `game.css` — game-specific cards, tasks, annotation UI, investigation, power map, rights, result visuals, and route-specific responsive rules.
 
-Static reusable visual rules belong in CSS. Inline styles are reserved for genuinely dynamic values such as power-segment widths and annotation-box geometry.
+Static reusable visual rules belong in CSS. Inline styles are reserved for genuinely dynamic values such as power-segment widths, scenario-specific colors, and annotation-box geometry.
 
 ## State transactions
 
@@ -95,7 +101,7 @@ Static reusable visual rules belong in CSS. Inline styles are reserved for genui
 - one timeline/log entry;
 - acceptance-rate recalculation.
 
-The operation persists once after all changes have been applied. `patch()`, `addEvidence()`, `addLog()`, and `recalcAcceptance()` remain small compatibility wrappers around the same commit mechanism for simple or not-yet-migrated callers.
+The operation persists once after all changes have been applied. `patch()` is the simple single-concern convenience path and delegates to `commit()`. Obsolete evidence/log/acceptance wrappers were removed; callers that need those concerns use `commit()` explicitly.
 
 This avoids generating several storage revisions for one logical user action and reduces partially-applied transitions. Entering a route also records its checkpoint and current page with one persistence write, and re-entering the current page is a no-op.
 
@@ -136,26 +142,32 @@ The physical route directories remain checked into the repository for GitHub Pag
 node scripts/generate-pages.mjs
 ```
 
-CI runs `node scripts/generate-pages.mjs --check` so a route title, slug, or version cannot silently drift from `core/routes.js` and `core/config.js`.
+CI runs the generator in `--check` mode so a route title, slug, or version cannot silently drift from `core/routes.js` and `core/config.js`.
 
 ## Development and release checks
 
-The project uses Node-only checks:
+Repository checks are exposed through `package.json` so local and CI commands stay aligned:
 
 ```bash
-node scripts/generate-pages.mjs --check
-node scripts/structural-check.mjs
-node scripts/check.mjs
-node scripts/domain-check.mjs
+npm run check
 ```
 
-Then run `node --check` on JavaScript files. `.github/workflows/check.yml` performs route-shell, structural, regression, domain, and syntax checks automatically on pushes and pull requests.
+That command runs, in order:
 
-The check layers have distinct roles:
+- `check:routes` — generated route shell drift;
+- `check:structural` — required files and architectural guardrails;
+- `check:regression` — route/state/storage/navigation regression cases;
+- `check:domain` — pure simulation and scoring rules;
+- `check:syntax` — JavaScript syntax checks across `assets/js`, `scripts`, and `tests`.
 
-- `generate-pages.mjs --check` — generated route shell drift;
-- `structural-check.mjs` — required files and architectural guardrails;
-- `check.mjs` — route/state/storage/navigation regression cases;
-- `domain-check.mjs` — pure simulation and scoring rules.
+Browser coverage is separate because it requires Playwright and Chromium:
+
+```bash
+npm install
+npx playwright install chromium
+npm run test:e2e
+```
+
+`.github/workflows/check.yml` runs the same named package scripts, then the desktop/mobile browser suite and visual-review screenshot upload.
 
 For GitHub Pages deployment, publish the repository structure intact: root `index.html`, `.nojekyll`, `assets/`, and every route directory are required. See `DEPLOY_GITHUB_AR.txt`.

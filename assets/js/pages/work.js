@@ -1,4 +1,5 @@
-import {scenarios,samples} from '../data/scenarios.js';
+import {scenarios} from '../data/scenarios.js';
+import {samples} from '../data/samples.js';
 import {getState,patch,commit,clamp,money,reset} from '../core/state.js';
 import {href} from '../core/routes.js';
 import {refreshStats} from '../core/ui.js';

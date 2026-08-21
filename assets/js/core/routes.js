@@ -14,15 +14,18 @@ export const pages={
  result:{slug:'result',stage:11,progress:100,title:'النتيجة',mode:'researcher',stageDefault:true},
  rights:{slug:'rights',stage:11,progress:100,title:'خريطة الحقوق',mode:'researcher'}
 };
-export const routes=Object.fromEntries(Object.entries(pages).map(([id,p])=>[id,p.slug]));
-export const progress=Object.fromEntries(Object.entries(pages).map(([id,p])=>[id,[p.progress,p.title]]));
-const publicPages=new Set(Object.entries(pages).filter(([,p])=>p.public).map(([id])=>id));
+
+export const progress=Object.fromEntries(Object.entries(pages).map(([id,page])=>[id,[page.progress,page.title]]));
+const pageBySlug=new Map(Object.entries(pages).map(([id,page])=>[page.slug,id]));
+const routeSlugs=new Set([...pageBySlug.keys()].filter(Boolean));
+const publicPages=new Set(Object.entries(pages).filter(([,page])=>page.public).map(([id])=>id));
 const stageDefaults=new Map();
-for(const [id,p] of Object.entries(pages)){if(p.stageDefault||!stageDefaults.has(p.stage))stageDefaults.set(p.stage,id)}
+for(const [id,page] of Object.entries(pages)){if(page.stageDefault||!stageDefaults.has(page.stage))stageDefaults.set(page.stage,id)}
+
 function pathParts(){const parts=location.pathname.split('/').filter(Boolean);if(parts.at(-1)?.toLowerCase()==='index.html')parts.pop();return parts}
-export function projectBase(){const parts=pathParts(),known=new Set(Object.values(routes).filter(Boolean));if(parts.length&&known.has(parts.at(-1)))parts.pop();return '/'+(parts.length?parts.join('/')+'/':'');}
+export function projectBase(){const parts=pathParts();if(parts.length&&routeSlugs.has(parts.at(-1)))parts.pop();return '/'+(parts.length?parts.join('/')+'/':'');}
 export function href(page){const slug=pages[page]?.slug??'';return projectBase()+(slug?slug+'/':'');}
-export function pageFromPath(){const parts=pathParts(),last=parts.at(-1)||'';for(const [id,p] of Object.entries(pages))if(p.slug===last)return id;return 'home';}
+export function pageFromPath(){const last=pathParts().at(-1)||'';return pageBySlug.get(last)||'home'}
 export function pageForStage(stage){return stageDefaults.get(Number(stage))||'scenario'}
 export function stageForPage(page){return pages[page]?.stage??0}
 export function isPublicPage(page){return publicPages.has(page)}

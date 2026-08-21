@@ -1,4 +1,4 @@
-import {axes} from '../data/scenarios.js';
+import {axes} from '../data/parties.js';
 import {APP_VERSION,TIME_MODEL_VERSION} from './config.js';
 import {pageForStage as routePageForStage,stageForPage as routeStageForPage,isPublicPage} from './routes.js';
 import {saveState,loadState,clearState,stateStorageMode,latestStateRevision} from './storage.js';
@@ -24,10 +24,7 @@ export function checkpoint(targetPage,{persistNow=true}={}){const snap=structure
 export function enterPage(page,{record=true}={}){if(state.currentPage===page)return state;if(record)checkpoint(page,{persistNow:false});state.currentPage=page;persist();return state}
 export function undoCheckpoint(){const item=state.checkpoints.pop();if(!item)return null;const keep=state.checkpoints;state=migrateState(item.snapshot);state.checkpoints=keep;state.stage=routeStageForPage(item.page);state.currentPage=item.page;persist();return item.page}
 export function consumeCheckpointTo(expectedPage){const item=state.checkpoints.at(-1);if(item?.page!==expectedPage)return null;state.checkpoints.pop();state.currentPage=expectedPage;state.stage=routeStageForPage(expectedPage);persist();return expectedPage}
-export function addEvidence(id){return commit({evidence:[id]})}
-export function addLog(title,text){return commit({log:{title,text}})}
-export function recalcAcceptance(){return commit({recalculateAcceptance:true})}
 export function timeBreakdown(s=state){return {taskTime:Number(s.paidTime||0),extraWorkTime:Number(s.extraWorkTime||0),breakTime:Number(s.breakTime||0),totalTime:Number(s.time||0)}}
 export function wellbeingLabel(v){return v>=70?'عبء مرتفع':v>=40?'عبء متوسط':'عبء منخفض'}
-export function stageForPage(page){return routeStageForPage(page)}
-export const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));export const money=v=>'$'+Number(v||0).toFixed(2);
+export const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+export const money=v=>'$'+Number(v||0).toFixed(2);

@@ -1,4 +1,4 @@
-import {axes,parties,partyNames} from '../data/scenarios.js';import {getState,patch} from '../core/state.js';import {href} from '../core/routes.js';import {escapeAttribute} from '../core/html.js';
+import {axes,parties,partyNames} from '../data/parties.js';import {getState,patch} from '../core/state.js';import {href} from '../core/routes.js';import {escapeAttribute} from '../core/html.js';
 function rawValuesFor(root,axis){const v={};root.querySelectorAll(`input[data-axis="${axis}"]`).forEach(inp=>v[inp.dataset.party]=inp.value);return v}
 function numericValues(raw){const v={};for(const p of parties)v[p]=String(raw[p]??'').trim()===''?NaN:Number(raw[p]);return v}
 function valuesFor(root,axis){return numericValues(rawValuesFor(root,axis))}

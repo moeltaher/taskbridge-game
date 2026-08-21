@@ -13,5 +13,5 @@ export function buildPaymentSettlement(sc,state){
  const cashBeforeOperating=contracted-hold-mediator-transfer;
  const cashPayout=Math.max(0,cashBeforeOperating);
  const net=cashPayout-operating;
- return {clientPaid,contracted,platformService,mediator,transfer,hold,operating,cashBeforeOperating,cashPayout,workerBeforeCosts:cashPayout,net};
+ return {clientPaid,contracted,platformService,mediator,transfer,hold,operating,cashBeforeOperating,cashPayout,net};
 }

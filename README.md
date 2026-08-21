@@ -26,10 +26,12 @@
 - التخزين المحلي: `assets/js/core/storage.js`
 - الواجهة المشتركة: `assets/js/core/ui.js`
 - قواعد المحاكاة القابلة للاختبار: `assets/js/domain/`
-- السيناريوهات والبيانات: `assets/js/data/`
+- بيانات السيناريوهات والأطراف والأدلة والمراجع والعينات: `assets/js/data/`
 - واجهات المراحل: `assets/js/pages/`
 - CSS: `assets/css/`
 - اختبارات المتصفح: `tests/e2e/`
+
+كل ملف بيانات يملك نوع البيانات الخاص به؛ لا يعيد `scenarios.js` تصدير بقية ملفات `data/`. ينبغي استيراد `samples` أو `axes` أو `powerTargets` أو غيرها مباشرة من الملف الذي يملكها.
 
 ملفات HTML الخاصة بالمسارات مولدة من route manifest. بعد تغيير عنوان أو مسار أو إصدار، شغّل:
 
@@ -40,18 +42,25 @@ node scripts/generate-pages.mjs
 ويمكن التحقق من عدم وجود اختلاف بين الملفات المولدة والـmanifest من دون تعديل الملفات عبر:
 
 ```bash
-node scripts/generate-pages.mjs --check
+npm run check:routes
 ```
 
 ## التحقق قبل النشر
 
-الفحوص السريعة التي لا تحتاج متصفحًا:
+لتشغيل جميع الفحوص التي لا تحتاج متصفحًا:
 
 ```bash
-node scripts/generate-pages.mjs --check
-node scripts/structural-check.mjs
-node scripts/check.mjs
-node scripts/domain-check.mjs
+npm run check
+```
+
+وتتوفر كل طبقة منفردة أيضًا:
+
+```bash
+npm run check:routes
+npm run check:structural
+npm run check:regression
+npm run check:domain
+npm run check:syntax
 ```
 
 لاختبارات المتصفح الفعلية ثبّت الاعتمادات ومتصفح Chromium ثم شغّل Playwright:
@@ -62,9 +71,9 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-تعمل اختبارات E2E على Chromium في viewport مكتبي وهاتفي، وتشمل بدء الجولة، اختيار الحالة، الانتقال من onboarding إلى work، الرجوع واستعادة checkpoint، حفظ الجولة واستئنافها من الرئيسية، استمرار المسار بعد reload، وحماية الروابط المباشرة للمراحل الداخلية دون جلسة.
+تعمل اختبارات E2E على Chromium في viewport مكتبي وهاتفي. تشمل smoke tests للاستئناف والرجوع وحماية الروابط، ومسارًا كاملًا من اختيار الحالة حتى النتيجة وخريطة الحقوق، إضافة إلى المسار غير البصري المكافئ لمهمة تعليم الصور في سيناريو سامر. كما تتحقق الرحلة الكاملة من عدم وجود horizontal overflow وتنتج screenshots للمراجعة البصرية.
 
-GitHub Actions تشغل تلقائيًا فحوص route shells والبنية وregression وقواعد المحاكاة وصياغة JavaScript، ثم اختبارات Playwright داخل Chromium.
+GitHub Actions تشغل الأوامر نفسها المعرفة في `package.json`، ثم اختبارات Playwright داخل Chromium وترفع صور المراجعة البصرية كـartifact قصير العمر.
 
 ## ملاحظة قانونية
 

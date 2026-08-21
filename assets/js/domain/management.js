@@ -1,6 +1,14 @@
 import {acceptanceRate} from './work.js';
 
+export const SECOND_TASK_ACCESS_BONUS=5;
+export const SECOND_TASK_PREMIUM_STRESS=12;
+export const SECOND_TASK_STANDARD_STRESS=9;
+export const BREAK_MINUTES=1;
+export const BREAK_STRESS_REDUCTION=10;
+
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+
+export function secondTaskStressDelta(offer){return offer.premium?SECOND_TASK_PREMIUM_STRESS:SECOND_TASK_STANDARD_STRESS}
 
 export function computeManagedAccess(scenario,state){
  let qualityWeight=.60,acceptanceWeight=.30,base=10;
@@ -19,8 +27,8 @@ export function secondOfferDecision(state,accepted){
 }
 
 export function completeSecondTask(state){
- const offer=state.secondOffer,decision=state.offerDecisionResult,stressDelta=offer.premium?12:9,afterAccess=clamp(state.access+5,0,100),afterStress=clamp(state.stress+stressDelta,0,100);
+ const offer=state.secondOffer,decision=state.offerDecisionResult,stressDelta=secondTaskStressDelta(offer),afterAccess=clamp(state.access+SECOND_TASK_ACCESS_BONUS,0,100),afterStress=clamp(state.stress+stressDelta,0,100);
  return {stressDelta,afterAccess,afterStress,changes:{grossWorker:state.grossWorker+offer.pay,clientPaid:state.clientPaid+offer.clientValue,time:state.time+offer.duration,paidTime:state.paidTime+offer.duration,jobsDone:state.jobsDone+1,stress:afterStress,access:afterAccess,offerDecisionResult:{...decision,completed:true,afterAccess,afterStress,stressDelta,accessDelta:afterAccess-decision.beforeAccess},managementStep:'offerResult',status:'اكتملت المهمة الثانية'}};
 }
 
-export function monitorDecision(state,takeBreak){const before=state.stress,after=takeBreak?clamp(before-10,0,100):before;return {tookBreak:takeBreak,stressBefore:before,stressAfter:after,stressDelta:after-before,timeDelta:takeBreak?1:0,breakDelta:takeBreak?1:0}}
+export function monitorDecision(state,takeBreak){const before=state.stress,after=takeBreak?clamp(before-BREAK_STRESS_REDUCTION,0,100):before;return {tookBreak:takeBreak,stressBefore:before,stressAfter:after,stressDelta:after-before,timeDelta:takeBreak?BREAK_MINUTES:0,breakDelta:takeBreak?BREAK_MINUTES:0}}
