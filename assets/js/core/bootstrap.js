@@ -4,7 +4,7 @@ import {getState,enterPage,stageForPage,persistenceStatus} from './state.js';
 import {shell,bindShell} from './ui.js';
 const page=document.body.dataset.page||pageFromPath();
 document.title=`${pageTitle(page)} | No Boss v${APP_VERSION}`;
-addEventListener('beforeunload',e=>{if(persistenceStatus().status==='failed'){e.preventDefault();e.returnValue=''}});
+addEventListener('beforeunload',e=>{if(['failed','session'].includes(persistenceStatus().status)){e.preventDefault();e.returnValue=''}});
 let state=getState();
 const requestedStage=stageForPage(page),currentStage=Number(state.stage||0),currentRoute=pageForStage(currentStage);
 if(!isPublicPage(page)&&!state.scenarioKey){location.replace(href('home'))}
