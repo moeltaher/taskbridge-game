@@ -5,18 +5,12 @@ export default defineConfig({
   fullyParallel:false,
   retries:1,
   reporter:'list',
-  use:{
-    baseURL:'http://127.0.0.1:4173',
-    trace:'retain-on-failure'
-  },
+  use:{baseURL:'http://127.0.0.1:4173',trace:'retain-on-failure'},
   projects:[
     {name:'chromium',use:{...devices['Desktop Chrome']}},
-    {name:'mobile-chromium',use:{...devices['Pixel 7']}}
+    {name:'mobile-chromium',use:{...devices['Pixel 7']}},
+    {name:'webkit',use:{...devices['Desktop Safari']}},
+    {name:'mobile-webkit',use:{...devices['iPhone 13']}}
   ],
-  webServer:{
-    command:'node scripts/serve-static.mjs 4173',
-    url:'http://127.0.0.1:4173',
-    reuseExistingServer:true,
-    timeout:15000
-  }
+  webServer:{command:'node scripts/serve-static.mjs 4173',url:'http://127.0.0.1:4173',reuseExistingServer:true,timeout:15000}
 });
