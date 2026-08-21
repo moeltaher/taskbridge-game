@@ -1,4 +1,5 @@
-import {axes,powerTargets} from '../data/scenarios.js';
+import {axes} from '../data/parties.js';
+import {powerTargets} from '../data/power-targets.js';
 import {SCORING_VERSION} from '../core/config.js';
 import {powerAxisCredit} from '../core/power-scoring.js';
 import {evidenceFor} from './evidence.js';
