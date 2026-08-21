@@ -1,4 +1,4 @@
-# No Boss v3.0.2 Architecture
+# No Boss v3.1.0 Architecture
 
 No Boss is a static multi-page training simulation designed for GitHub Pages. It does not require a backend, database, framework, API, or build-time server.
 
@@ -15,16 +15,16 @@ Worker progress reaches 100% at the end of `/access/`. Researcher progress then 
 
 - `/` — landing page and resume/new-session controls
 - `/scenario/` — worker/scenario selection
-- `/onboarding/` — service-provider agreement and pre-work context
-- `/work/` — marketplace, task execution, first-task result, or a valid no-work ending
+- `/onboarding/` — service-provider agreement and pre-work context, including a real decline path
+- `/work/` — marketplace, unpaid market/search time, task execution, first-task result, or a valid no-work ending
 - `/management/` — ranking, second offer, task/monitoring decisions
-- `/risk/` — work-related risk and extra-work-time impact
-- `/dispute/` — first review, optional second review, and final quality outcome
+- `/risk/` — contingent work-related risk and extra-work-time impact
+- `/dispute/` — first review, reasoned optional second review, and final quality outcome
 - `/payment/` — payment/value distribution
 - `/access/` — final access decision and worker-to-researcher transition
 - `/investigation/` — case file, evidence sorting, relationship questions
 - `/power/` — auto-balanced 100-point power map
-- `/conclusion/` — participant conclusion and selected supporting evidence
+- `/conclusion/` — participant conclusion with supporting and counter-evidence
 - `/result/` — concise dashboard plus expandable analytical detail
 - `/rights/` — rights discussion personalized to events in the run
 
@@ -36,12 +36,12 @@ The router accepts clean GitHub Pages paths such as `/work/` and explicit docume
 
 - `config.js` — application name and current release label.
 - `routes.js` — route manifest, stages, chapter-specific progress, titles, public-entry status, researcher mode, and stage-default routes.
-- `state.js` — live-state schema, checkpoints, transaction-style commits, logs, time buckets, and navigation state.
-- `storage.js` — guarded local/session storage, revision-aware state selection, compact archived results, and result retrieval.
+- `state.js` — versioned live-state schema, normalization/migration, stale-tab synchronization, checkpoints, transaction-style commits, logs, time buckets, and navigation state.
+- `storage.js` — guarded local/session storage, revision-aware state selection, latest-state snapshot access, compact archived results, and result retrieval.
 - `ui.js` — shared shell, chapter progress, desktop state summary, compact mobile summary, and reusable helpers.
 - `bootstrap.js` — route validation, resume/redirect behavior, shell loading, and page-controller loading.
 - `html.js` — HTML/attribute escaping helpers.
-- `power-scoring.js` — tie-aware relative power-map helpers.
+- `power-scoring.js` — tie-aware qualitative power-map helpers based on leaders and strongest groups rather than hidden exact percentages.
 
 ### `assets/js/domain/`
 
@@ -49,22 +49,23 @@ Domain modules contain simulation rules independent from the DOM:
 
 - `work.js` — acceptance rate, image IoU, partial-credit task scoring, and first-task outcome.
 - `management.js` — managed access, second-offer logic, second-task completion, and the break decision.
-- `risk.js` — work-related risk event and time/stress transition.
-- `dispute.js` — initial review severity, second-review effect, hold/penalty rules, appeal cost, and final review outcome.
+- `risk.js` — reproducible contingent risk selection and time/stress transition; structural risk is not treated as an inevitable incident.
+- `dispute.js` — initial review severity, explicit appeal grounds, second-review effect, hold/penalty rules, appeal cost, and final review outcome.
 - `payment.js` — settlement and worker economic outcome.
 - `access.js` — final restriction/suspension decision using only independent final factors.
 - `evidence.js` — normalized evidence text and accepted evidence classifications.
-- `questions.js` — relationship questions, including shared platform/client authority where supported by a scenario.
+- `questions.js` — relationship questions derived against the same authority model used by the power map.
 - `analysis.js` — power-map completion and final analytical score.
 
-The final access decision deliberately does **not** reuse current quality, task score, acceptance rate, or the temporary access number after those facts have already influenced earlier stages. It uses the final quality-review severity and the run's rejection record, avoiding duplicate counting of the same event.
+The final access decision deliberately does **not** reuse current quality, task score, acceptance rate, or the temporary access number after those facts have already influenced earlier stages. It uses the final quality-review severity and the run's rejection record, avoiding duplicate counting of the same event. The earlier opportunity-ranking event is recorded separately as `opportunityRankingDecision`, so rights explanations can distinguish it from the final access decision.
 
 ### `assets/js/data/`
 
 - `scenarios.js` — worker facts, explicit final-access thresholds, costs, mechanisms, and content warnings.
 - `parties.js` — party identifiers, Arabic labels, and six power-map axes.
-- `power-targets.js` — reference relative power distributions.
-- `question-references.js` — accepted reference answers by scenario type.
+- `authority-model.js` — the single distribution source from which primary authority is derived.
+- `power-targets.js` — reference relative power distributions derived from the authority model.
+- `question-references.js` — accepted primary-authority answers derived from the same model.
 - `evidence-templates.js` — evidence descriptions and accepted classifications. Contract wording is contextual evidence rather than proof of actual independence.
 - `samples.js` — moderation, AI, and translation samples using preferred and defensible alternative answers.
 
@@ -76,8 +77,11 @@ Each page controller reads state, renders the current task/event/decision/result
 
 - Offer size and the number of samples actually completed are aligned.
 - A participant can reject all visible offers and finish a valid no-work shift. The game must not fabricate a task, dispute, payment, or quality outcome for that branch.
-- The temporary access score is used to determine which subsequent opportunity appears. Completing the second task no longer receives an unused synthetic access bonus.
-- An appeal is a real second review: when applicable it changes the final review severity, which changes the hold/quality consequence and is the severity later consumed by the final access decision.
+- Time spent browsing and deciding in the marketplace is recorded as `marketTime` even when the shift ends without paid work.
+- The temporary access score is used to determine which subsequent opportunity appears and is stored as a distinct event. Completing the second task no longer receives an unused synthetic access bonus.
+- The two data-labeling tasks preserve the same visual bounding-box and nonvisual semantic modes.
+- An appeal is a real second review: it requires a stated ground and changes the result only when that ground is relevant to a reviewable error.
+- Risk is structural but incidents are contingent. A run may validly reach the risk stage without adding an incident, extra minutes, or extra stress.
 - Breaks affect shift time and simulated workload only; they are not silently converted into pay or access penalties.
 - `dependency` remains narrative context for the economic importance of platform access and is not a hidden scoring or punishment factor.
 
@@ -94,13 +98,13 @@ Worker, platform, client, and payment mediator retain stable visual identities a
 
 ## Power map
 
-The map still represents 100 points of authority across worker, platform, client, and mediator for each axis. The participant now uses range controls; changing one party automatically redistributes the remaining points so the total remains 100. This removes manual arithmetic and the former per-axis approval step.
+The map represents 100 points of authority across worker, platform, client, and mediator for each axis. The participant uses range controls; changing one party automatically redistributes the remaining points so the total remains 100. The numeric values are an interaction aid, not hidden answer keys.
 
-Scoring remains relative: it compares the exact leading set and a tie-aware top group instead of requiring numeric agreement with a hidden target.
+Scoring is qualitative and relative: 65% of each axis credit compares the leading party/set, and 35% compares the strongest two-level group. Exact percentage proximity is not graded.
 
 ## Result and archive
 
-The result opens with a compact dashboard: analytical score, economic net, task time, extra work-related time, final workload, and account-access outcome. Detailed material lives in expandable sections. The participant's own conclusion and the evidence explicitly selected to support it are shown together.
+The result opens with a compact dashboard: analytical score, economic net, task time, market/search time, extra work-related time, final workload, and account-access outcome. Detailed material lives in expandable sections. The participant's conclusion is shown with evidence explicitly selected to support it and evidence selected to limit or complicate it.
 
 Archived results contain only compact comparison fields. The home page groups them by `scenarioName`; stars are only calculated inside runs of the same scenario, and shorter time is not automatically labeled better because it may reflect skipped breaks or different extra-work events.
 
@@ -108,7 +112,9 @@ Archived results contain only compact comparison fields. The home page groups th
 
 The live state is stored under `no_boss_state`; compact archived results use `no_boss_results`. Durable `localStorage` and tab-scoped `sessionStorage` are guarded and reconciled by monotonic `storageRevision` plus `storageWriterId`.
 
-Moving into a route records a checkpoint. In-game Back restores the checkpoint snapshot rather than relying on browser history. There is one current state/result schema and no legacy migration layer.
+The current schema is versioned by `STATE_SCHEMA_VERSION`. Saved states are normalized against `freshState()` so newly added arrays, objects, time buckets, and fields exist after upgrades; checkpoints from an older schema are discarded because their snapshots cannot be assumed compatible. Before writes/navigation, a tab adopts a newer persisted state written by another tab instead of overwriting it from a stale revision.
+
+Moving into a route records a checkpoint. In-game Back restores the checkpoint snapshot rather than relying on browser history.
 
 ## Generated route shells and verification
 
@@ -124,6 +130,7 @@ CI validates:
 - structural invariants;
 - state/storage regressions;
 - domain rules;
+- cross-component semantic invariants;
 - JavaScript syntax;
 - desktop and mobile Playwright journeys;
 - horizontal overflow and visual-review screenshots.

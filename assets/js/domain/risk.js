@@ -1,16 +1,16 @@
 const profiles={
- wellbeing:{icon:'🧠',kind:'وقت تعافٍ صحي ونفسي مرتبط بالعمل',title:'ظهرت آثار التعرض للمحتوى الذي راجعته',cause:'بعد إنهاء دفعة المراجعة، احتجت إلى 3 دقائق بعيدًا عن المنصة قبل متابعة الوردية بسبب أثر المحتوى المزعج الذي ظهر في المهمة المنجزة. هذا هو أول ظهور لهذا الأثر في الجولة.',minutes:3,stress:18,consequence:'سجلت المحاكاة 3 دقائق تحديدًا كوقت تعافٍ مرتبط بالعمل بلا مقابل مستقل، وليس كوقت تنفيذ مهمة جديدة.'},
- timeout:{icon:'⏱',kind:'تحديث تعليمات بعد التسليم',title:'وصل تحديث يستلزم إعادة التحقق من عينة مسلمة',cause:'بعد تسليم مهمة التقييم، ظهر تحديث جديد لإرشادات المشروع وطلبت No Boss إعادة التحقق من جزء من الإجابات التي أرسلتها. احتجت إلى دقيقتين لهذه المراجعة الإضافية. هذا هو أول ظهور للتحديث في الجولة.',minutes:2,stress:10,consequence:'سجلت المحاكاة دقيقتين إضافيتين مرتبطتين بالعمل من دون مهمة جديدة ذات سعر مستقل.'},
- revision:{icon:'↺',kind:'طلب تعديل بعد التسليم',title:'وصل الآن طلب تعديل من العميل',cause:'ظهر إشعار جديد في No Boss: العميل يطلب تغيير بعض المصطلحات في ترجمة سبق أن سلمتها وفق نسخة محدثة من دليل المشروع. هذا هو أول ظهور لهذا الطلب في الجولة.',minutes:4,stress:7,consequence:'احتاج تنفيذ التعديل إلى 4 دقائق إضافية مرتبطة بالعمل لم يسجل لها مقابل مستقل.'},
- connection:{icon:'⌁',kind:'تعطل تقني بعد التنفيذ',title:'تعطلت مزامنة نتائج المهمة مع الخادم',cause:'بعد إنهاء مهمة التصنيف وأثناء مزامنة النتائج المسلمة، انقطع الاتصال بالخادم. استغرقت استعادة الاتصال والتحقق من اكتمال المزامنة دقيقتين. هذا هو أول ظهور لهذا الانقطاع في الجولة.',minutes:2,stress:9,consequence:'سجلت المحاكاة دقيقتين إضافيتين مرتبطتين بالعمل بسبب استعادة الاتصال والتحقق من التسليم.'}
+ wellbeing:{occurred:true,icon:'🧠',kind:'وقت تعافٍ صحي ونفسي مرتبط بالعمل',title:'ظهرت آثار التعرض للمحتوى الذي راجعته',cause:'بعد إنهاء دفعة المراجعة، احتجت إلى 3 دقائق بعيدًا عن المنصة قبل متابعة الوردية بسبب أثر المحتوى المزعج الذي ظهر في المهمة المنجزة.',minutes:3,stress:18,consequence:'سجلت المحاكاة 3 دقائق تحديدًا كوقت تعافٍ مرتبط بالعمل بلا مقابل مستقل، وليس كوقت تنفيذ مهمة جديدة.'},
+ timeout:{occurred:true,icon:'⏱',kind:'تحديث تعليمات بعد التسليم',title:'وصل تحديث يستلزم إعادة التحقق من عينة مسلمة',cause:'بعد تسليم مهمة التقييم، ظهر تحديث جديد لإرشادات المشروع وطلبت No Boss إعادة التحقق من جزء من الإجابات التي أرسلتها. احتجت إلى دقيقتين لهذه المراجعة الإضافية.',minutes:2,stress:10,consequence:'سجلت المحاكاة دقيقتين إضافيتين مرتبطتين بالعمل من دون مهمة جديدة ذات سعر مستقل.'},
+ revision:{occurred:true,icon:'↺',kind:'طلب تعديل بعد التسليم',title:'وصل الآن طلب تعديل من العميل',cause:'ظهر إشعار جديد في No Boss: العميل يطلب تغيير بعض المصطلحات في ترجمة سبق أن سلمتها وفق نسخة محدثة من دليل المشروع.',minutes:4,stress:7,consequence:'احتاج تنفيذ التعديل إلى 4 دقائق إضافية مرتبطة بالعمل لم يسجل لها مقابل مستقل.'},
+ connection:{occurred:true,icon:'⌁',kind:'تعطل تقني بعد التنفيذ',title:'تعطلت مزامنة نتائج المهمة مع الخادم',cause:'بعد إنهاء مهمة التصنيف وأثناء مزامنة النتائج المسلمة، انقطع الاتصال بالخادم. استغرقت استعادة الاتصال والتحقق من اكتمال المزامنة دقيقتين.',minutes:2,stress:9,consequence:'سجلت المحاكاة دقيقتين إضافيتين مرتبطتين بالعمل بسبب استعادة الاتصال والتحقق من التسليم.'}
 };
-
+const noEvent={occurred:false,icon:'✓',kind:'لم يقع حدث إضافي',title:'لم يقع حدث إضافي في هذه الوردية',cause:'وجود خطر بنيوي في هذا النوع من العمل لا يعني أن الضرر أو التعطل يقع في كل وردية. هذه الجولة انتهت دون حادث إضافي بعد التسليم.',minutes:0,stress:0,consequence:'لا يضاف وقت أو عبء بسبب حدث افتراضي لم يقع؛ يظل الخطر جزءًا من سياق العمل لا نتيجة حتمية.'};
+const probability={wellbeing:85,connection:65,timeout:60,revision:55};
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
-
 function riskProfile(type){return profiles[type]||profiles.connection}
-
+function deterministicRoll(scenario,state){const seed=`${scenario.type}|${scenario.riskType}|${(state.sampleSequence||[]).join(',')}|${(state.completedTasks||[]).map(t=>t.score).join(',')}|${state.rejections||0}|${state.breakTime||0}`;let hash=0;for(let i=0;i<seed.length;i++)hash=(hash*31+seed.charCodeAt(i))>>>0;return hash%100}
 export function riskTransition(scenario,state){
  if(state.riskEvent)return {event:state.riskEvent,changes:null};
- const event=riskProfile(scenario.riskType),time=Number(state.time||0),extraWorkTime=Number(state.extraWorkTime||0),stress=Number(state.stress||0);
- return {event,changes:{riskEvent:event,time:time+event.minutes,extraWorkTime:extraWorkTime+event.minutes,stress:clamp(stress+event.stress,0,100),status:'حدث موقف إضافي مرتبط بالعمل'}};
+ const profile=riskProfile(scenario.riskType),threshold=probability[scenario.riskType]??65,event=deterministicRoll(scenario,state)<threshold?profile:noEvent,time=Number(state.time||0),extraWorkTime=Number(state.extraWorkTime||0),stress=Number(state.stress||0);
+ return {event,changes:{riskEvent:event,time:time+event.minutes,extraWorkTime:extraWorkTime+event.minutes,stress:clamp(stress+event.stress,0,100),status:event.occurred?'حدث موقف إضافي مرتبط بالعمل':'انتهت الوردية دون حدث إضافي'}};
 }
