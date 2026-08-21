@@ -29,10 +29,16 @@ jobs:
         run: npm run check:semantic
       - name: JavaScript syntax checks
         run: npm run check:syntax
-      - name: Install browser-test dependencies
+      - name: Install browser-test dependencies and generate lockfile
         run: npm install --no-audit --no-fund
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Upload generated dependency lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-lockfile
+          path: package-lock.json
+          retention-days: 2
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
       - name: Browser E2E checks
         run: npm run test:e2e
       - name: Upload visual review screenshots
