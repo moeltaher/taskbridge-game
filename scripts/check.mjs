@@ -37,13 +37,13 @@ globalThis.localStorage=localStorageObject;
 globalThis.sessionStorage=sessionStorageObject;
 
 const stateModule=await import('../assets/js/core/state.js');
-const {getState,setState,commit,consumeCheckpointTo,pageForStage:statePageForStage,resumePage,enterPage,undoCheckpoint,freshState}=stateModule;
+const {getState,setState,commit,consumeCheckpointTo,resumePage,enterPage,undoCheckpoint,freshState}=stateModule;
 assert.deepEqual(getState(),freshState(),'empty storage must start from a fresh state');
 const draft={price:{worker:'10',platform:'50',client:'35',mediator:'5'}};
 setState({...getState(),powerDraft:draft,powerEdited:['price'],powerTouched:[]});
 assert.deepEqual(getState().powerDraft,draft,'state writes must preserve the current power draft');
 const beforeCommitRevision=getState().storageRevision;
-commit({changes:{status:'اختبار دفعة واحدة'},evidence:['contract','ownTools'],log:{title:'اختبار',text:'عملية واحدة'},recalculateAcceptance:true});
+commit({changes:{status:'اختبار دفعة واحدة'},evidence:['contract','ownTools'],log:{title:'اختبار',text:'عملية واحدة'}});
 assert.equal(getState().storageRevision,beforeCommitRevision+1,'a batched commit must persist once');
 assert.deepEqual(getState().evidence,['contract','ownTools']);
 assert.equal(getState().log.at(-1)?.title,'اختبار');
@@ -61,7 +61,6 @@ const samePageRevision=getState().storageRevision;
 enterPage('onboarding');
 assert.equal(getState().storageRevision,samePageRevision,'re-entering the current page must not create a storage write');
 assert.equal(undoCheckpoint(),'scenario','Back from Onboarding must return to Scenario');
-assert.equal(statePageForStage(1),'onboarding');
 assert.equal(resumePage({scenarioKey:'data',stage:1,currentPage:'scenario'}),'onboarding');
 assert.equal(resumePage({scenarioKey:'data',stage:11,currentPage:'rights'}),'rights');
 assert.equal(resumePage({scenarioKey:'data',stage:5,currentPage:'work'}),'dispute');
@@ -93,14 +92,13 @@ assert.equal(storage.loadState().currentPage,'risk','fallback reads must choose 
 assert.equal(storage.archiveResult({runId:'x'}),false,'result archive must require persistent storage');
 localStorageObject.setItem=originalLocalSet;
 
-const archived=storage.archiveResult({runId:'compact',scenario:'data',scenarioName:'سامي',score:88,outcome:'warning',simMinutes:42,netEconomic:3.25,finalStress:51,breakTaken:true,createdAt:'2026-08-21T12:00:00.000Z',analysis:'لا حاجة للاحتفاظ بهذا النص',answers:{price:'المنصة'},power:{price:{worker:1,platform:99}}});
+assert.equal(storage.archiveResult({scenarioName:'بلا معرف',score:1}),false,'current result archive must require a run id');
+const archived=storage.archiveResult({runId:'compact',scenarioName:'سامي',score:88,outcome:'warning',simMinutes:42,netEconomic:3.25,finalStress:51,breakTaken:true,analysis:'لا حاجة للاحتفاظ بهذا النص',answers:{price:'المنصة'},power:{price:{worker:1,platform:99}},createdAt:'2026-08-21T12:00:00.000Z',scenario:'data'});
 assert.equal(archived,true);
 const storedArchive=JSON.parse(localStore.get('no_boss_results'));
 const compact=storedArchive.find(result=>result.runId==='compact');
 assert.ok(compact,'the compact result must be persisted');
-assert.equal(compact.analysis,undefined,'archived results must not retain free-text analysis');
-assert.equal(compact.answers,undefined,'archived results must not retain investigation answers');
-assert.equal(compact.power,undefined,'archived results must not retain the full power map');
+assert.deepEqual(Object.keys(compact).sort(),['breakTaken','finalStress','netEconomic','outcome','runId','scenarioName','score','simMinutes'].sort(),'archive must retain only the current comparison schema');
 assert.equal(compact.score,88);
 
 Object.defineProperty(globalThis,'localStorage',{configurable:true,get(){throw new Error('blocked')}});
