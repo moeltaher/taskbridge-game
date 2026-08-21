@@ -1,6 +1,6 @@
 export const pages={
  home:{slug:'',stage:0,progress:0,title:'قبل الوردية',public:true,mode:'worker'},
- scenario:{slug:'scenario',stage:0,progress:4,title:'اختيار الحالة',public:true,mode:'worker'},
+ scenario:{slug:'scenario',stage:0,progress:4,title:'اختيار الحالة',public:true,mode:'worker',stageDefault:true},
  onboarding:{slug:'onboarding',stage:1,progress:9,title:'العقد',mode:'worker'},
  work:{slug:'work',stage:2,progress:28,title:'تنفيذ العمل',mode:'worker'},
  management:{slug:'management',stage:3,progress:48,title:'الإدارة الخوارزمية',mode:'worker'},
