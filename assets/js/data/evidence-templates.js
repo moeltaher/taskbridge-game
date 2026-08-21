@@ -9,6 +9,7 @@ export const evidenceTemplates={
  monitoring:{title:'تقرير الأداء',dimension:'monitoring',preferredKind:'ctrl',validKinds:['ctrl','dep'],text:'جمع مؤشرات الأداء واستخدامها في الترتيب أو القرارات هو أقرب إلى دليل سلطة، مع بقاء السياق مهمًا لفهم شدتها.'},
  clientQuality:{title:'معيار جودة المشروع',dimension:'monitoring',preferredKind:'ctrl',validKinds:['ctrl','dep'],text:'تحديد العميل لمعيار الجودة يؤثر في كيفية تنفيذ العمل، ويمكن أن يعكس سلطة على المخرجات أو علاقة مشروع تحتاج سياقًا.'},
  appeal:{title:'نظام الاعتراض',dimension:'access',preferredKind:'dep',validKinds:['ctrl','dep'],text:'No Boss تدير مسار الاعتراض. وجود قناة مراجعة مهم، لكن كلفتها الإجرائية وسلطة المنصة على النتيجة يجعلان القراءة المختلطة أقوى.'},
+ accessDecision:{title:'قرار الوصول النهائي',dimension:'access',preferredKind:'ctrl',validKinds:['ctrl'],text:'No Boss تجمع العوامل المعلنة وتصدر قرار الوصول النهائي إلى السوق أو المشروع؛ هذا دليل مباشر على سلطة المنصة على بوابة العمل.'},
  risk:{title:'وقت إضافي مرتبط بالعمل',dimension:'risk',preferredKind:'dep',validKinds:['dep'],text:'تحمل العامل وقتًا أو تكلفة مرتبطة بالعمل لم تنشئ مهمة جديدة ذات مقابل مستقل.'},
  payment:{title:'كشف الدفع',dimension:'risk',preferredKind:'dep',validKinds:['dep'],text:'المقابل الذي يصل إلى العامل يختلف عن فاتورة العميل، كما يتحمل العامل رسومًا وتكاليف تشغيل في المحاكاة.'},
  suspension:{title:'تعليق الوصول',dimension:'access',preferredKind:'ctrl',validKinds:['ctrl'],text:'No Boss هي الجهة التي تدير الحساب العام والوصول إلى سوق المهام في المحاكاة.'},
