@@ -1,6 +1,6 @@
 # No Boss v3.0.2 Architecture
 
-No Boss is a static multi-page application designed for GitHub Pages. It does not require a backend, database, framework, or build-time server.
+No Boss is a static multi-page application designed for GitHub Pages. It does not require a backend, database, framework, API, or build-time server.
 
 ## Public routes
 
@@ -19,47 +19,99 @@ No Boss is a static multi-page application designed for GitHub Pages. It does no
 - `/result/` — analysis result and debrief
 - `/rights/` — labor-rights mapping
 
-The router accepts both clean GitHub Pages paths such as `/work/` and explicit document paths such as `/work/index.html`.
+The router accepts clean GitHub Pages paths such as `/work/` and explicit document paths such as `/work/index.html`.
 
 ## Source structure
 
-### Core
+### `assets/js/core/`
 
-`assets/js/core/config.js` is the single source for application, result, scoring, and time-model version constants.
+Core modules own application infrastructure rather than simulation rules.
 
-`assets/js/core/routes.js` is the single source for route metadata: slugs, stage numbers, progress, titles, public-entry status, researcher/worker mode, and the default route for each stage.
+- `config.js` — single source for application, result, scoring, and time-model versions.
+- `routes.js` — single route manifest for slugs, stages, progress, titles, public-entry status, researcher mode, and stage-default routes.
+- `state.js` — live state schema, migration, checkpoints, transaction-style state commits, logs, derived time buckets, and navigation-state operations.
+- `storage.js` — guarded `localStorage`/`sessionStorage` access, state selection, revision metadata, legacy migration, and archived results.
+- `ui.js` — shared shell, progress, summary stats, and reusable presentation helpers.
+- `bootstrap.js` — route validation, safe resume/redirect behavior, shell loading, and page-controller loading.
+- `html.js` — shared HTML/attribute escaping helpers.
+- `power-scoring.js` — tie-aware relative power-map helpers.
 
-`assets/js/core/state.js` owns the live game-state schema, checkpoints, logs, derived time buckets, and state persistence entry points. `storage.js` owns browser persistence and archived results. `ui.js` owns the shared shell, progress, stats, and presentation helpers. `bootstrap.js` resolves the current route and loads its page controller.
+### `assets/js/domain/`
 
-`power-scoring.js` owns the reusable tie-aware scoring helpers for the power map.
+Domain modules contain simulation and analysis rules that do not depend on the DOM. They are directly testable from Node.
 
-### Domain
+- `work.js` — acceptance-rate calculation, bounding-box IoU, task scoring, and first-task outcome.
+- `management.js` — managed-access calculation, second-offer generation/decision/completion, and monitoring-break outcome.
+- `dispute.js` — dispute severity, hold/penalty rules, appeal cost, final dispute outcome, and published translation reference selection.
+- `payment.js` — payment settlement and worker economic outcome.
+- `access.js` — final restriction/suspension decision and factor scoring.
+- `evidence.js` — normalized evidence text and accepted evidence classifications.
+- `questions.js` — relationship-question definitions and accepted reference answers.
+- `analysis.js` — power-map completion and final analytical score.
 
-`assets/js/domain/` contains pure simulation rules that can be tested without the DOM. Payment settlement and the final access decision already live here. Other simulation rules should move into this layer as they are refactored.
+New simulation rules should be added here rather than embedded in page rendering code.
 
-### Data
+### `assets/js/data/`
 
-`assets/js/data/scenarios.js` remains the current source for scenario facts, work samples, evidence metadata, scoring references, and target power distributions. These concerns may be split into smaller data modules when that reduces duplication without changing behavior.
+`scenarios.js` is the source for scenario facts, work samples, evidence templates, reference answers, and target power distributions. It contains data, not browser persistence or route behavior.
 
-### Pages
+### `assets/js/pages/`
 
-Each file under `assets/js/pages/` owns one logical route and should primarily handle rendering and user interaction. New business rules should not be embedded in page controllers when they can be expressed as pure domain functions.
+Each page module owns one logical route. Page modules should primarily:
 
-### CSS
+1. read current state and scenario data;
+2. render the route UI;
+3. bind user interactions;
+4. call pure domain functions for calculations;
+5. commit the resulting state transition;
+6. navigate to the next route.
 
-CSS is split into `base.css`, `layout.css`, `components.css`, and `game.css`. Shared visual rules should stay in these layers rather than being duplicated across pages.
+They should not duplicate scoring, settlement, access, dispute, or evidence rules already owned by `domain/`.
 
-## State, storage and navigation
+### `assets/css/`
 
-The current game state is persisted under `no_boss_v3_state`, and archived results use `no_boss_v3_results`. Compatible current-version state stored under the former TaskBridge v2 key can be migrated into the current slot; incompatible sessions remain separate.
+- `base.css` — variables and element defaults.
+- `layout.css` — application shell, responsive layout, top bar, sidebar, progress, and shared shift summary.
+- `components.css` — reusable panels, grids, buttons, notices, metrics, pills, receipts, and generic visual components.
+- `game.css` — game-specific cards, tasks, annotation UI, investigation, power map, rights, result visuals, and route-specific responsive rules.
 
-Game-state writes target both `localStorage` and `sessionStorage`. `localStorage` is the durable store; `sessionStorage` is a tab-scoped fallback when durable storage cannot be written. Each saved state carries a monotonically increasing `storageRevision`, and reads select the newest valid copy rather than blindly preferring one backend. Access to either Web Storage API is guarded because some browser/privacy policies can throw before a storage operation begins.
+Static reusable visual rules belong in CSS. Inline styles are reserved for genuinely dynamic values such as power-segment widths and annotation-box geometry.
 
-Archived comparison results require durable `localStorage`. A tab-only result is not reported as successfully archived.
+## State transactions
 
-Moving between route pages does not lose the session. The in-game Back control restores a checkpoint rather than only displaying an old page, so later decisions are undone when the participant intentionally goes back. Back is disabled on landing and scenario-selection pages. Resume preserves a matching non-public route, including `/rights/`; stale routes are repaired using the route manifest and saved stage.
+`state.js` exposes `commit()` as the preferred write path for a user action that changes several state concerns together. A transaction can combine:
 
-If only session-scoped persistence is available, the interface warns the participant and the `beforeunload` handler requests confirmation before leaving where the browser permits it.
+- state-field changes;
+- newly collected evidence;
+- one timeline/log entry;
+- acceptance-rate recalculation.
+
+The operation persists once after all changes have been applied. `patch()`, `addEvidence()`, `addLog()`, and `recalcAcceptance()` remain small compatibility wrappers around the same commit mechanism for simple or not-yet-migrated callers.
+
+This avoids generating several storage revisions for one logical user action and reduces partially-applied transitions.
+
+## Storage and multi-tab behavior
+
+The current game state is stored under `no_boss_v3_state`; archived results use `no_boss_v3_results`.
+
+Live-state writes target both `localStorage` and `sessionStorage`:
+
+- `localStorage` is the durable shared copy;
+- `sessionStorage` is a tab-scoped copy and fallback when durable storage is unavailable.
+
+Every saved state carries a monotonically increasing `storageRevision` and a tab-scoped `storageWriterId`. Before a new state is persisted, state code reads the latest shared revision and advances from the highest known value. When local and session copies have equal revisions but were written by different writers, the current tab's session copy wins rather than being silently replaced by another tab's equal-revision state.
+
+All Web Storage access is guarded because privacy/browser policies can throw before a read or write begins. When only session storage works, the UI warns the participant and `beforeunload` requests confirmation where the browser permits it.
+
+Archived comparison results are intentionally different: they require durable `localStorage`. A tab-only result is not reported as successfully archived.
+
+Compatible current-version state stored under the former TaskBridge v2 key can be migrated into the current slot. Incompatible sessions remain separate.
+
+## Navigation and checkpoints
+
+Moving between route pages does not lose the session. The in-game Back control restores a state checkpoint rather than merely loading the previous URL, so later decisions are undone when the participant intentionally goes back.
+
+Back is disabled on landing and scenario-selection pages. Resume preserves the saved non-public route when it matches the current stage, including `/rights/`; stale or mismatched routes are repaired using the shared route manifest and saved stage.
 
 ## Power-map scoring
 
@@ -69,7 +121,7 @@ Archived results include an internal scoring version. Results created by an olde
 
 ## Development and release checks
 
-Run before release:
+The project uses Node-only checks:
 
 ```bash
 node scripts/structural-check.mjs
@@ -77,6 +129,12 @@ node scripts/check.mjs
 node scripts/domain-check.mjs
 ```
 
-Then run `node --check` on JavaScript files changed in the release. `.github/workflows/check.yml` runs the structural, regression, domain, and syntax checks automatically on pushes and pull requests.
+Then run `node --check` on JavaScript files. `.github/workflows/check.yml` performs structural, regression, domain, and syntax checks automatically on pushes and pull requests.
 
-For GitHub Pages deployment, publish the repository structure intact: the root `index.html`, `.nojekyll`, `assets/`, and every route directory are required. See `DEPLOY_GITHUB_AR.txt`.
+The three check layers have distinct roles:
+
+- `structural-check.mjs` — required files, route shells, and architectural guardrails;
+- `check.mjs` — route/state/storage/navigation regression cases;
+- `domain-check.mjs` — pure simulation and scoring rules.
+
+For GitHub Pages deployment, publish the repository structure intact: root `index.html`, `.nojekyll`, `assets/`, and every route directory are required. See `DEPLOY_GITHUB_AR.txt`.
