@@ -1,17 +1,15 @@
-function qualityPoints(value){return value<70?2:value<82?1:0}
-function rejectionPoints(count){return count>=3?2:count>=1?1:0}
+function rejectionPoints(count){return count>=2?2:count>=1?1:0}
 function disputePoints(severity){return severity>=2?2:severity===1?1:0}
 
 export function assessAccessDecision(sc,state){
- const qualityBeforeDispute=Number(state.qualityBeforeDispute);
+ const finalSeverity=Number(state.finalReviewSeverity??state.disputeSeverity??0);
  const factors=[
-  {title:'نتيجة مراجعة الجودة',value:state.disputeSeverity>=2?'اختلاف جوهري':state.disputeSeverity===1?'اختلاف محدود':'لا اختلاف مؤثر',points:disputePoints(state.disputeSeverity),why:'يستخدم هذا العامل شدة المراجعة نفسها مرة واحدة فقط.'},
-  {title:'جودة الحساب قبل عقوبة النزاع',value:`${qualityBeforeDispute}%`,points:qualityPoints(qualityBeforeDispute),why:'نستخدم قيمة الجودة قبل خفض النزاع حتى لا نحسب الواقعة نفسها مرتين.'},
-  {title:'سجل رفض العروض',value:`${state.rejections} مرة`,points:rejectionPoints(state.rejections),why:'يسجل الرفض كعامل مستقل هنا مرة واحدة. لا نستخدم معدل القبول أو مؤشر الوصول المرحلي مرة ثانية في قرار التقييد النهائي.'}
+  {title:'نتيجة المراجعة النهائية',value:finalSeverity>=2?'اختلاف جوهري':finalSeverity===1?'اختلاف محدود':'لا اختلاف مؤثر',points:disputePoints(finalSeverity),why:'يستخدم القرار نتيجة المراجعة النهائية بعد الاعتراض إن حدث؛ ولا يعيد إدخال نتيجة المهمة أو جودة الحساب كعامل ثانٍ.'},
+  {title:'سجل رفض العروض',value:`${state.rejections} مرة`,points:rejectionPoints(state.rejections),why:'رفض واحد يضيف نقطة ورفضان يضيفان نقطتين. لا يستخدم القرار معدل القبول أو مؤشر الوصول المرحلي مرة أخرى.'}
  ];
  const points=factors.reduce((sum,item)=>sum+item.points,0);
- const projectAt=3+Math.floor(sc.outcomeStrictness/2);
- const suspendAt=5+Math.floor(sc.outcomeStrictness/3);
+ const projectAt=sc.accessPolicy?.projectAt??3;
+ const suspendAt=sc.accessPolicy?.suspendAt??4;
  const outcome=points>=suspendAt?'suspended':points>=projectAt?'project':'warning';
  return {points,projectAt,suspendAt,outcome,factors};
 }
