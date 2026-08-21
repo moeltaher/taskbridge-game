@@ -91,7 +91,7 @@ Static reusable visual rules belong in CSS. Inline styles are reserved for genui
 
 ## State transactions
 
-`state.js` exposes `commit()` as the preferred write path for a user action that changes several state concerns together. A transaction can combine state-field changes, newly collected evidence, a timeline entry, and acceptance-rate recalculation. The operation persists once after all changes have been applied. `patch()` handles simple field changes and delegates to `commit()`.
+`state.js` exposes `commit()` as the preferred write path for a user action that changes several state concerns together. A transaction can combine state-field changes, newly collected evidence, and a timeline entry. The operation persists once after all changes have been applied. `patch()` handles simple field changes and delegates to `commit()`.
 
 Moving into a route records its checkpoint and current page with one persistence write. Re-entering the current page is a no-op. Returning through the in-game Back control restores the checkpoint snapshot and removes decisions made after it.
 

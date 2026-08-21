@@ -7,7 +7,7 @@ const profiles={
 
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 
-export function riskProfile(type){return profiles[type]||profiles.connection}
+function riskProfile(type){return profiles[type]||profiles.connection}
 
 export function riskTransition(scenario,state){
  if(state.riskEvent)return {event:state.riskEvent,changes:null};

@@ -47,7 +47,7 @@ commit({changes:{status:'اختبار دفعة واحدة'},evidence:['contract'
 assert.equal(getState().storageRevision,beforeCommitRevision+1,'a batched commit must persist once');
 assert.deepEqual(getState().evidence,['contract','ownTools']);
 assert.equal(getState().log.at(-1)?.title,'اختبار');
-setState({...getState(),selectedRights:['privacy'],currentPage:'rights',stage:11,checkpoints:[{page:'result',target:'rights',snapshot:{}}]});
+setState({...getState(),selectedRights:['privacy'],currentPage:'rights',stage:11,checkpoints:[{page:'result',snapshot:{}}]});
 assert.equal(consumeCheckpointTo('result'),'result');
 assert.deepEqual(getState().selectedRights,['privacy'],'returning from Rights must keep current result state');
 
@@ -57,6 +57,7 @@ enterPage('onboarding');
 assert.equal(getState().storageRevision,beforeEnterRevision+1,'entering a new page must persist checkpoint and current page once');
 assert.equal(getState().currentPage,'onboarding');
 assert.equal(getState().checkpoints.at(-1)?.page,'scenario','entering Onboarding must preserve a Scenario checkpoint');
+assert.deepEqual(Object.keys(getState().checkpoints.at(-1)).sort(),['page','snapshot'],'checkpoint must store only restoration data');
 const samePageRevision=getState().storageRevision;
 enterPage('onboarding');
 assert.equal(getState().storageRevision,samePageRevision,'re-entering the current page must not create a storage write');
