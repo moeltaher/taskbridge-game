@@ -29,6 +29,7 @@
 - السيناريوهات والبيانات: `assets/js/data/`
 - واجهات المراحل: `assets/js/pages/`
 - CSS: `assets/css/`
+- اختبارات المتصفح: `tests/e2e/`
 
 ملفات HTML الخاصة بالمسارات مولدة من route manifest. بعد تغيير عنوان أو مسار أو إصدار، شغّل:
 
@@ -44,6 +45,8 @@ node scripts/generate-pages.mjs --check
 
 ## التحقق قبل النشر
 
+الفحوص السريعة التي لا تحتاج متصفحًا:
+
 ```bash
 node scripts/generate-pages.mjs --check
 node scripts/structural-check.mjs
@@ -51,7 +54,17 @@ node scripts/check.mjs
 node scripts/domain-check.mjs
 ```
 
-كما تتحقق GitHub Actions من صياغة ملفات JavaScript تلقائيًا.
+لاختبارات المتصفح الفعلية ثبّت الاعتمادات ومتصفح Chromium ثم شغّل Playwright:
+
+```bash
+npm install
+npx playwright install chromium
+npm run test:e2e
+```
+
+تعمل اختبارات E2E على Chromium في viewport مكتبي وهاتفي، وتشمل بدء الجولة، اختيار الحالة، الانتقال من onboarding إلى work، الرجوع واستعادة checkpoint، حفظ الجولة واستئنافها من الرئيسية، استمرار المسار بعد reload، وحماية الروابط المباشرة للمراحل الداخلية دون جلسة.
+
+GitHub Actions تشغل تلقائيًا فحوص route shells والبنية وregression وقواعد المحاكاة وصياغة JavaScript، ثم اختبارات Playwright داخل Chromium.
 
 ## ملاحظة قانونية
 
