@@ -9,5 +9,6 @@ export const relationshipQuestions=[
  {id:'risk',title:'من تحمل الجزء الأكبر من تكاليف الأدوات والوقت الإضافي المرتبط بالعمل؟',resultTitle:'الطرف الذي تحمل الجزء الأكبر من التكاليف والوقت الإضافي',options:['العامل','المنصة','العميل','سلطة مشتركة بين المنصة والعميل','الوسيط']},
  {id:'termination',title:'من يملك صلاحية الحساب العام والوصول إلى سوق المهام؟',resultTitle:'الطرف الذي يملك الحساب العام والوصول للسوق',options:authorityOptions}
 ];
+export function questionsForState(state){return state?.noWorkEnding?relationshipQuestions.filter(q=>['parties','price','allocation','termination'].includes(q.id)):relationshipQuestions}
 export function acceptedQuestionReferences(scenarioType){return {parties:['العامل + المنصة + العميل + الوسيط'],...questionRef[scenarioType]}}
 export function acceptedQuestionAnswer(reference,answer){const values=Array.isArray(reference)?reference:[reference];return values.includes(answer)}
