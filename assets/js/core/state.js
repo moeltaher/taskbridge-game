@@ -20,7 +20,7 @@ export function checkpoint(targetPage){const snap=structuredClone(state);snap.ch
 export function enterPage(page,{record=true}={}){if(record&&state.currentPage!==page)checkpoint(page);state.currentPage=page;persist()}
 export function undoCheckpoint(){const item=state.checkpoints.pop();if(!item)return null;const keep=state.checkpoints;state=migrateState(item.snapshot);state.checkpoints=keep;state.stage=routeStageForPage(item.page);state.currentPage=item.page;persist();return item.page}
 export function consumeCheckpointTo(expectedPage){const item=state.checkpoints.at(-1);if(item?.page!==expectedPage)return null;state.checkpoints.pop();state.currentPage=expectedPage;state.stage=routeStageForPage(expectedPage);persist();return expectedPage}
-export function addEvidence(id){if(!state.evidence.includes(id))state.evidence.push(id);persist()}
+export function addEvidence(id){if(state.evidence.includes(id))return state;state.evidence.push(id);persist();return state}
 export function addLog(title,text){const h=9+Math.floor(state.time/60),m=String(state.time%60).padStart(2,'0');state.log.push({time:`${String(h).padStart(2,'0')}:${m}`,title,text});persist()}
 export function recalcAcceptance(){state.acceptance=state.offerDecisions?Math.round(state.acceptedOffers/state.offerDecisions*100):100;persist()}
 export function timeBreakdown(s=state){const taskTime=Number(s.paidTime||0),extraWorkTime=Number(s.extraWorkTime||0),breakTime=Number(s.breakTime||0),outsideTaskTime=extraWorkTime+breakTime,totalTime=Number(s.time||0);return {taskTime,extraWorkTime,breakTime,outsideTaskTime,totalTime,outsidePct:Math.round(outsideTaskTime/Math.max(1,totalTime)*100)}}
