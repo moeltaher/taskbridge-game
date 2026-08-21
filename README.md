@@ -8,7 +8,7 @@
 
 المشروع تطبيق ثابت متعدد الصفحات يعمل على GitHub Pages، من دون backend أو API أو قاعدة بيانات أو إطار عمل مثل React/Vue.
 
-راجع [CHANGELOG.md](CHANGELOG.md) لتاريخ الإصدارات و[ARCHITECTURE.md](ARCHITECTURE.md) لتفاصيل الهيكل ومسؤولية كل طبقة.
+راجع [CHANGELOG.md](CHANGELOG.md) لملخص تغييرات الإصدار الحالي و[ARCHITECTURE.md](ARCHITECTURE.md) لتفاصيل الهيكل ومسؤولية كل طبقة.
 
 ## الروابط المنطقية
 
