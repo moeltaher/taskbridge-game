@@ -25,6 +25,8 @@ jobs:
         run: python scripts/check.py
       - name: Regression checks
         run: node scripts/check.mjs
+      - name: Domain rule checks
+        run: node scripts/domain-check.mjs
       - name: JavaScript syntax checks
         shell: bash
         run: |
