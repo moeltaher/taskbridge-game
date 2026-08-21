@@ -30,7 +30,7 @@ Core modules own application infrastructure rather than simulation rules.
 - `config.js` — single source for application, result, scoring, and time-model versions.
 - `routes.js` — single route manifest for slugs, stages, progress, titles, public-entry status, researcher mode, and stage-default routes.
 - `state.js` — live state schema, migration, checkpoints, transaction-style state commits, logs, derived time buckets, and navigation-state operations.
-- `storage.js` — guarded `localStorage`/`sessionStorage` access, state selection, revision metadata, legacy migration, and archived results.
+- `storage.js` — guarded `localStorage`/`sessionStorage` access, state selection, revision metadata, legacy migration, compact archived results, and result retrieval.
 - `ui.js` — shared shell, progress, summary stats, and reusable presentation helpers.
 - `bootstrap.js` — route validation, safe resume/redirect behavior, shell loading, and page-controller loading.
 - `html.js` — shared HTML/attribute escaping helpers.
@@ -53,7 +53,16 @@ New simulation rules should be added here rather than embedded in page rendering
 
 ### `assets/js/data/`
 
-`scenarios.js` is the source for scenario facts, work samples, evidence templates, reference answers, and target power distributions. It contains data, not browser persistence or route behavior.
+Data is split by concern rather than being kept in one large file:
+
+- `scenarios.js` — worker/scenario facts and a compatibility re-export surface for existing consumers.
+- `parties.js` — party identifiers, Arabic labels, and the six power-map axes.
+- `power-targets.js` — reference power distributions used by analytical scoring and feedback.
+- `question-references.js` — accepted reference answers by scenario type.
+- `evidence-templates.js` — evidence titles, default descriptions, and accepted classifications.
+- `samples.js` — moderation, AI, and translation task samples.
+
+These modules contain data only; they do not own browser persistence, navigation, rendering, or simulation side effects.
 
 ### `assets/js/pages/`
 
@@ -88,7 +97,7 @@ Static reusable visual rules belong in CSS. Inline styles are reserved for genui
 
 The operation persists once after all changes have been applied. `patch()`, `addEvidence()`, `addLog()`, and `recalcAcceptance()` remain small compatibility wrappers around the same commit mechanism for simple or not-yet-migrated callers.
 
-This avoids generating several storage revisions for one logical user action and reduces partially-applied transitions.
+This avoids generating several storage revisions for one logical user action and reduces partially-applied transitions. Entering a route also records its checkpoint and current page with one persistence write, and re-entering the current page is a no-op.
 
 ## Storage and multi-tab behavior
 
@@ -103,7 +112,7 @@ Every saved state carries a monotonically increasing `storageRevision` and a tab
 
 All Web Storage access is guarded because privacy/browser policies can throw before a read or write begins. When only session storage works, the UI warns the participant and `beforeunload` requests confirmation where the browser permits it.
 
-Archived comparison results are intentionally different: they require durable `localStorage`. A tab-only result is not reported as successfully archived.
+Archived comparison results are intentionally different: they require durable `localStorage` and store only the fields needed by the comparison UI. Free-text analysis, investigation answers, and full power-map values are not retained in the archive. A tab-only result is not reported as successfully archived.
 
 Compatible current-version state stored under the former TaskBridge v2 key can be migrated into the current slot. Incompatible sessions remain separate.
 
@@ -119,21 +128,33 @@ The power map starts at an equal 25/25/25/25 distribution for display only. A pa
 
 Archived results include an internal scoring version. Results created by an older scoring method remain stored but are excluded from direct comparison with results created by the current scoring method.
 
+## Generated route shells
+
+The physical route directories remain checked into the repository for GitHub Pages and direct linking, but their HTML shells are generated from the route manifest and application version:
+
+```bash
+node scripts/generate-pages.mjs
+```
+
+CI runs `node scripts/generate-pages.mjs --check` so a route title, slug, or version cannot silently drift from `core/routes.js` and `core/config.js`.
+
 ## Development and release checks
 
 The project uses Node-only checks:
 
 ```bash
+node scripts/generate-pages.mjs --check
 node scripts/structural-check.mjs
 node scripts/check.mjs
 node scripts/domain-check.mjs
 ```
 
-Then run `node --check` on JavaScript files. `.github/workflows/check.yml` performs structural, regression, domain, and syntax checks automatically on pushes and pull requests.
+Then run `node --check` on JavaScript files. `.github/workflows/check.yml` performs route-shell, structural, regression, domain, and syntax checks automatically on pushes and pull requests.
 
-The three check layers have distinct roles:
+The check layers have distinct roles:
 
-- `structural-check.mjs` — required files, route shells, and architectural guardrails;
+- `generate-pages.mjs --check` — generated route shell drift;
+- `structural-check.mjs` — required files and architectural guardrails;
 - `check.mjs` — route/state/storage/navigation regression cases;
 - `domain-check.mjs` — pure simulation and scoring rules.
 
