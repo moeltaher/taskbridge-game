@@ -51,13 +51,13 @@ test('complete worker-to-researcher journey reaches result and rights',async({pa
   await page.getByRole('button',{name:'متابعة إلى مراجعة جودة العمل'}).click();
   await expectRoute(page,'dispute');
 
-  const appeal=page.getByRole('button',{name:'طلب مراجعة بهذه التكلفة'});
-  if(await appeal.isVisible()){
-    await appeal.click();
+  await page.locator('#appeal,#skip').first().waitFor({state:'visible'});
+  if(await page.locator('#appeal').count()){
+    await page.locator('#appeal').click();
     await expect(page.getByText('طلب المراجعة مسجل')).toBeVisible();
-    await page.getByRole('button',{name:'إغلاق المراجعة ومتابعة التسوية'}).click();
+    await page.locator('#contAppeal').click();
   }else{
-    await page.getByRole('button',{name:'متابعة إلى التسوية'}).click();
+    await page.locator('#skip').click();
   }
   await expectRoute(page,'payment');
 
@@ -73,12 +73,12 @@ test('complete worker-to-researcher journey reaches result and rights',async({pa
   await page.getByRole('button',{name:'صنف الأدلة'}).click();
   await expect(page.getByText('صنف جميع الأدلة')).toBeVisible();
 
-  const evidenceCards=page.locator('.evidence-grid .doc');
-  const evidenceCount=await evidenceCards.count();
+  const evidenceCount=await page.locator('.evidence-grid .doc').count();
   expect(evidenceCount).toBeGreaterThan(0);
   for(let i=0;i<evidenceCount;i++){
-    await evidenceCards.nth(i).getByRole('button',{name:'يعتمد على السياق'}).click();
+    await page.locator('.sort[data-v="dep"]:not(.sel)').first().click();
   }
+  await expect(page.locator('.sort[data-v="dep"].sel')).toHaveCount(evidenceCount);
   await page.getByRole('button',{name:'انتقل إلى أسئلة العلاقة'}).click();
   await expect(page.getByText('حلل علاقة العمل')).toBeVisible();
 
@@ -113,7 +113,7 @@ test('complete worker-to-researcher journey reaches result and rights',async({pa
 
   await expect(page.getByText('درجة التمرين التحليلي')).toBeVisible();
   await expect(page.locator('.score')).toContainText('/100');
-  await expect(page.getByText('ليان',{exact:true})).toBeVisible();
+  await expect(page.getByText('ليان',{exact:true}).first()).toBeVisible();
   await page.getByRole('button',{name:'اربط التجربة بالحقوق'}).click();
   await expectRoute(page,'rights');
 
@@ -122,8 +122,8 @@ test('complete worker-to-researcher journey reaches result and rights',async({pa
   await page.getByRole('button',{name:/الشفافية والمراجعة البشرية/}).click();
   await page.getByRole('button',{name:'إظهار خريطة الحماية'}).click();
   await expect(page.getByText('خريطة حماية مقترحة للنقاش')).toBeVisible();
-  await expect(page.getByText('الخصوصية وبيانات العامل',{exact:true})).toBeVisible();
-  await expect(page.getByText('الشفافية والمراجعة البشرية',{exact:true})).toBeVisible();
+  await expect(page.getByText('الخصوصية وبيانات العامل',{exact:true}).first()).toBeVisible();
+  await expect(page.getByText('الشفافية والمراجعة البشرية',{exact:true}).first()).toBeVisible();
 
   await page.getByRole('button',{name:'العودة للنتيجة'}).click();
   await expectRoute(page,'result');
