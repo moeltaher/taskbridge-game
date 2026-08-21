@@ -28,7 +28,7 @@ export function secondOfferDecision(state,accepted){
 
 export function completeSecondTask(state){
  const offer=state.secondOffer,decision=state.offerDecisionResult,stressDelta=secondTaskStressDelta(offer),afterAccess=clamp(state.access+SECOND_TASK_ACCESS_BONUS,0,100),afterStress=clamp(state.stress+stressDelta,0,100);
- return {stressDelta,afterAccess,afterStress,changes:{grossWorker:state.grossWorker+offer.pay,clientPaid:state.clientPaid+offer.clientValue,time:state.time+offer.duration,paidTime:state.paidTime+offer.duration,jobsDone:state.jobsDone+1,stress:afterStress,access:afterAccess,offerDecisionResult:{...decision,completed:true,afterAccess,afterStress,stressDelta,accessDelta:afterAccess-decision.beforeAccess},managementStep:'offerResult',status:'اكتملت المهمة الثانية'}};
+ return {stressDelta,afterAccess,afterStress,changes:{grossWorker:state.grossWorker+offer.pay,clientPaid:state.clientPaid+offer.clientValue,time:state.time+offer.duration,paidTime:state.paidTime+offer.duration,stress:afterStress,access:afterAccess,offerDecisionResult:{...decision,completed:true,afterAccess,afterStress,stressDelta,accessDelta:afterAccess-decision.beforeAccess},managementStep:'offerResult',status:'اكتملت المهمة الثانية'}};
 }
 
 export function monitorDecision(state,takeBreak){const before=state.stress,after=takeBreak?clamp(before-BREAK_STRESS_REDUCTION,0,100):before;return {tookBreak:takeBreak,stressBefore:before,stressAfter:after,stressDelta:after-before,timeDelta:takeBreak?BREAK_MINUTES:0,breakDelta:takeBreak?BREAK_MINUTES:0}}

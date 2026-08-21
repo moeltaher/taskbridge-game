@@ -47,5 +47,5 @@ export function firstTaskOutcome(scenario,state){
  const stressDelta=scenario.type==='moderation'?16:10;
  const stressBefore=state.stress;
  const stressAfter=clamp(stressBefore+stressDelta,0,100);
- return {score,quality,job,stressBefore,stressAfter,stressDelta:stressAfter-stressBefore,changes:{workScore:score,quality,qualityAfterFirstTask:quality,time:state.time+job.duration,paidTime:state.paidTime+job.duration,grossWorker:state.grossWorker+job.pay,clientPaid:state.clientPaid+job.clientValue,jobsDone:state.jobsDone+1,stress:stressAfter,firstTaskStress:{before:stressBefore,after:stressAfter,delta:stressAfter-stressBefore},status:'اكتملت المهمة الأولى',workStep:'result'}};
+ return {score,quality,job,stressBefore,stressAfter,stressDelta:stressAfter-stressBefore,changes:{workScore:score,quality,qualityAfterFirstTask:quality,time:state.time+job.duration,paidTime:state.paidTime+job.duration,grossWorker:state.grossWorker+job.pay,clientPaid:state.clientPaid+job.clientValue,stress:stressAfter,firstTaskStress:{before:stressBefore,after:stressAfter,delta:stressAfter-stressBefore},status:'اكتملت المهمة الأولى',workStep:'result'}};
 }
