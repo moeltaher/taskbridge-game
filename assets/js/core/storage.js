@@ -17,8 +17,11 @@ function remove(key){let ok=false;for(const store of [local(),session()].filter(
 function asArray(x){return Array.isArray(x)?x:[]}
 function isCurrentState(x){return !!x&&x.version===CURRENT_VERSION}
 function stateRevision(x){const n=Number(x?.storageRevision);return Number.isFinite(n)&&n>=0?n:0}
-function currentStateCandidate(store,key,mode){const value=readFrom(store,key,MISSING);return isCurrentState(value)?{value,mode,revision:stateRevision(value)}:null}
-function newestCurrentState(key){const candidates=[currentStateCandidate(local(),key,'persistent'),currentStateCandidate(session(),key,'session')].filter(Boolean);candidates.sort((a,b)=>b.revision-a.revision||(a.mode==='persistent'?-1:1));return candidates[0]||null}
+function stateWriter(x){return typeof x?.storageWriterId==='string'?x.storageWriterId:''}
+function currentStateCandidate(store,key,mode){const value=readFrom(store,key,MISSING);return isCurrentState(value)?{value,mode,revision:stateRevision(value),writer:stateWriter(value)}:null}
+function compareStateCandidates(a,b){if(a.revision!==b.revision)return b.revision-a.revision;if(a.writer&&b.writer&&a.writer!==b.writer){if(a.mode==='session')return -1;if(b.mode==='session')return 1}return a.mode==='persistent'?-1:b.mode==='persistent'?1:0}
+function currentStateCandidates(key){return [currentStateCandidate(local(),key,'persistent'),currentStateCandidate(session(),key,'session')].filter(Boolean)}
+function newestCurrentState(key){const candidates=currentStateCandidates(key);candidates.sort(compareStateCandidates);return candidates[0]||null}
 function isCurrentResult(x){return x?.version===CURRENT_RESULT_VERSION&&x?.scoringVersion===CURRENT_SCORING_VERSION}
 function resultKey(x){return x?.runId||x?.createdAt}
 function mergeArrays(...arrays){const byKey=new Map();arrays.flatMap(asArray).forEach(x=>{const key=resultKey(x);if(x&&typeof x==='object'&&key)byKey.set(key,x)});return [...byKey.values()]}
@@ -28,6 +31,7 @@ function allResults(){return mergeArrays(readFrom(local(),LEGACY_RESULTS_KEY,[])
 
 export function saveState(state){return write(STATE_KEY,state)}
 export function loadState(){return migrateCurrentStateFromLegacyKey()}
+export function latestStateRevision(){const revisions=currentStateCandidates(STATE_KEY).map(candidate=>candidate.revision);return revisions.length?Math.max(...revisions):0}
 export function stateStorageMode(){const current=newestCurrentState(STATE_KEY);if(current)return current.mode;const legacy=newestCurrentState(LEGACY_STATE_KEY);return legacy?.mode||'none'}
 export function clearState(){return remove(STATE_KEY)}
 export function hasState(){return !!loadState()?.scenarioKey}
