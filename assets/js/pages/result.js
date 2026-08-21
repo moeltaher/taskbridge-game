@@ -1,4 +1,6 @@
-import {scenarios,axes,parties,partyNames,powerTargets} from '../data/scenarios.js';
+import {scenarios} from '../data/scenarios.js';
+import {axes,parties,partyNames} from '../data/parties.js';
+import {powerTargets} from '../data/power-targets.js';
 import {getState,money,timeBreakdown,reset,wellbeingLabel} from '../core/state.js';
 import {RESULT_VERSION,SCORING_VERSION} from '../core/config.js';
 import {escapeHTML} from '../core/html.js';
