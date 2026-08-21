@@ -43,7 +43,7 @@ assert.ok(investigation.includes('role="tabpanel"')&&investigation.includes('ari
 assert.ok(storage.includes('writePersistent')&&storage.includes('stateStorageMode')&&storage.includes('function local(){try')&&storage.includes('function session(){try'));
 assert.ok(payment.includes("from '../domain/payment.js'")&&payment.includes('commit({'));
 assert.ok(access.includes("from '../domain/access.js'")&&access.includes('commit({'));
-assert.ok(result.includes("from '../data/parties.js'")&&result.includes("from '../data/power-targets.js'")&&result.includes('const ok=archiveResult')&&result.includes('تعذر حفظ النتيجة'));
+assert.ok(result.includes("from '../data/parties.js'")&&result.includes("from '../data/power-targets.js'")&&result.includes('function archiveCurrentResult')&&result.includes('return archiveResult({')&&result.includes('const ok=archiveCurrentResult')&&result.includes('تعذر حفظ النتيجة'));
 assert.ok(analysis.includes("from '../data/parties.js'")&&analysis.includes("from '../data/power-targets.js'"));
 assert.ok(evidence.includes("from '../data/evidence-templates.js'"));
 assert.ok(questions.includes("from '../data/question-references.js'"));
