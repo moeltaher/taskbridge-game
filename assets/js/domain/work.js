@@ -1,4 +1,4 @@
-import {samples} from '../data/scenarios.js';
+import {samples} from '../data/samples.js';
 
 const DATA_TARGETS=[{x:.27,y:.43,w:.34,h:.35},{x:.45,y:.43,w:.34,h:.35},{x:.36,y:.42,w:.34,h:.36}];
 const DATA_REGION_X={left:.08,leftCenter:.27,center:.36,rightCenter:.45,right:.58};
