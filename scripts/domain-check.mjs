@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {buildPaymentSettlement,PAYMENT_PROCESSOR_RATE,PAYMENT_PROCESSOR_CAP} from '../assets/js/domain/payment.js';
 import {ACCESS_MODEL_VERSION,assessAccessDecision} from '../assets/js/domain/access.js';
+import {evidenceFor} from '../assets/js/domain/evidence.js';
 
 const close=(actual,expected,epsilon=1e-12)=>assert.ok(Math.abs(actual-expected)<epsilon,`${actual} != ${expected}`);
 
@@ -29,5 +30,13 @@ assert.equal(project.outcome,'project');
 const suspended=assessAccessDecision(baseScenario,{scenarioKey:'data',disputeSeverity:2,qualityBeforeDispute:65,accessBeforeDispute:70,rejections:3});
 assert.equal(suspended.points,6);
 assert.equal(suspended.outcome,'suspended');
+
+const evidenceScenario={priceMechanism:'سعر مخصص',allocationMechanism:'توزيع مخصص',monitoring:'timing'};
+assert.equal(evidenceFor('priceSetting',evidenceScenario,{}).text,'سعر مخصص');
+assert.deepEqual(evidenceFor('allocation',evidenceScenario,{}).validKinds,['ctrl','dep']);
+assert.match(evidenceFor('monitoring',evidenceScenario,{}).text,/تبديل التبويب/);
+const riskEvidence=evidenceFor('risk',evidenceScenario,{riskEvent:{title:'إعادة تحقق',minutes:3}});
+assert.equal(riskEvidence.title,'وقت إضافي مرتبط بالعمل بلا مقابل مستقل');
+assert.match(riskEvidence.text,/3 دقيقة/);
 
 console.log('No Boss domain checks passed');
