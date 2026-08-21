@@ -4,23 +4,52 @@ async function expectRoute(page,route){
   await expect(page).toHaveURL(new RegExp(`/${route}/$`));
 }
 
-async function startModerationScenario(page){
+async function assertViewportIntegrity(page){
+  const layout=await page.evaluate(()=>{
+    const root=document.documentElement;
+    const viewport=root.clientWidth;
+    const offenders=[];
+    for(const element of document.querySelectorAll('body *')){
+      const style=getComputedStyle(element);
+      if(style.display==='none'||style.visibility==='hidden')continue;
+      const rect=element.getBoundingClientRect();
+      if(rect.width===0&&rect.height===0)continue;
+      if(rect.left < -2 || rect.right > viewport+2){
+        if(style.overflowX==='auto'||style.overflowX==='scroll')continue;
+        offenders.push({tag:element.tagName,id:element.id||'',className:String(element.className||'').slice(0,80),left:Math.round(rect.left),right:Math.round(rect.right),viewport});
+        if(offenders.length>=8)break;
+      }
+    }
+    return {clientWidth:viewport,scrollWidth:root.scrollWidth,offenders};
+  });
+  expect(layout.scrollWidth,`horizontal overflow: ${JSON.stringify(layout.offenders)}`).toBeLessThanOrEqual(layout.clientWidth+2);
+}
+
+async function capture(page,testInfo,name){
+  await assertViewportIntegrity(page);
+  await page.screenshot({path:testInfo.outputPath(`${name}.png`),fullPage:true,animations:'disabled'});
+}
+
+async function startModerationScenario(page,testInfo){
   await page.goto('/');
+  await capture(page,testInfo,'01-home');
   await page.getByRole('button',{name:'ابدأ المحاكاة'}).click();
   await expectRoute(page,'scenario');
+  await capture(page,testInfo,'02-scenario');
   const layan=page.locator('article.scenario').filter({hasText:'ليان'});
   await expect(layan).toBeVisible();
   await layan.getByRole('button',{name:'اختيار هذه الحالة'}).click();
   await expectRoute(page,'onboarding');
+  await capture(page,testInfo,'03-onboarding');
   await page.getByRole('button',{name:'أوافق وأدخل No Boss'}).click();
   await expectRoute(page,'work');
+  await capture(page,testInfo,'04-work');
 }
 
 test('complete worker-to-researcher journey reaches result and rights',async({page},testInfo)=>{
-  test.skip(testInfo.project.name!=='chromium','the complete journey runs once on desktop Chromium; mobile behavior is covered by smoke tests');
   test.slow();
 
-  await startModerationScenario(page);
+  await startModerationScenario(page,testInfo);
 
   await expect(page.getByText('اختر أول مهمة')).toBeVisible();
   await page.getByRole('button',{name:'قبول',exact:true}).first().click();
@@ -35,6 +64,7 @@ test('complete worker-to-researcher journey reaches result and rights',async({pa
   await expect(page.getByText('نتيجة المهمة الأولى')).toBeVisible();
   await page.getByRole('button',{name:'متابعة إلى الإدارة الخوارزمية'}).click();
   await expectRoute(page,'management');
+  await capture(page,testInfo,'05-management');
 
   await expect(page.getByText('تم تحديث ترتيب حسابك')).toBeVisible();
   await page.getByRole('button',{name:'عرض مهمة ثانية'}).click();
@@ -46,10 +76,12 @@ test('complete worker-to-researcher journey reaches result and rights',async({pa
   await expect(page.getByText('أخذت استراحة قبل متابعة الوردية')).toBeVisible();
   await page.getByRole('button',{name:'متابعة الوردية'}).click();
   await expectRoute(page,'risk');
+  await capture(page,testInfo,'06-risk');
 
   await expect(page.getByText('ظهر موقف جديد بعد العمل المنجز')).toBeVisible();
   await page.getByRole('button',{name:'متابعة إلى مراجعة جودة العمل'}).click();
   await expectRoute(page,'dispute');
+  await capture(page,testInfo,'07-dispute');
 
   await page.locator('#appeal,#skip').first().waitFor({state:'visible'});
   if(await page.locator('#appeal').count()){
@@ -60,24 +92,26 @@ test('complete worker-to-researcher journey reaches result and rights',async({pa
     await page.locator('#skip').click();
   }
   await expectRoute(page,'payment');
+  await capture(page,testInfo,'08-payment');
 
   await expect(page.getByText('كيف تحولت قيمة المشروع إلى ما بقي لك؟')).toBeVisible();
   await page.getByRole('button',{name:'إنهاء التسوية ومراجعة الوصول'}).click();
   await expectRoute(page,'access');
+  await capture(page,testInfo,'09-access');
 
   await expect(page.getByText('No Boss تراجع الوصول بعد التسوية')).toBeVisible();
   await page.getByRole('button',{name:'انتقل من العامل إلى الباحث'}).click();
   await expectRoute(page,'investigation');
+  await capture(page,testInfo,'10-investigation');
 
   await expect(page.getByText('أنت الآن الباحث')).toBeVisible();
   await page.getByRole('button',{name:'صنف الأدلة'}).click();
   await expect(page.getByText('صنف جميع الأدلة')).toBeVisible();
 
-  const dependencyChoices=page.locator('.sort[data-v="dep"]');
-  const evidenceCount=await dependencyChoices.count();
+  const evidenceCount=await page.locator('.sort[data-v="dep"]').count();
   expect(evidenceCount).toBeGreaterThan(0);
   for(let i=0;i<evidenceCount;i++){
-    await page.locator('.sort[data-v="dep"]').nth(i).click();
+    await page.locator('.sort[data-v="dep"]:not(.sel)').first().click();
   }
   await expect(page.locator('.sort[data-v="dep"].sel')).toHaveCount(evidenceCount);
   await page.getByRole('button',{name:'انتقل إلى أسئلة العلاقة'}).click();
@@ -88,6 +122,7 @@ test('complete worker-to-researcher journey reaches result and rights',async({pa
   for(let i=0;i<6;i++)await questions.nth(i).selectOption({index:1});
   await page.getByRole('button',{name:'ابن خريطة السلطة'}).click();
   await expectRoute(page,'power');
+  await capture(page,testInfo,'11-power');
 
   await expect(page.getByText('وزع 100 نقطة من السلطة في كل محور')).toBeVisible();
   const powerCards=page.locator('fieldset.power-card');
@@ -105,18 +140,21 @@ test('complete worker-to-researcher journey reaches result and rights',async({pa
   await expect(page.getByText('أكملت 6 من 6 محاور')).toBeVisible();
   await page.getByRole('button',{name:'اكتب استنتاجك'}).click();
   await expectRoute(page,'conclusion');
+  await capture(page,testInfo,'12-conclusion');
 
   await expect(page.getByText('اكتب استنتاجك')).toBeVisible();
   const analysis='تتركز سلطة مؤثرة لدى المنصة والعميل لأنهما يحددان قواعد الوصول والتقييم وتوزيع العمل.';
   await page.locator('#analysis').fill(analysis);
   await page.getByRole('button',{name:'إظهار النتيجة'}).click();
   await expectRoute(page,'result');
+  await capture(page,testInfo,'13-result');
 
   await expect(page.getByText('درجة التمرين التحليلي')).toBeVisible();
   await expect(page.locator('.score')).toContainText('/100');
   await expect(page.getByText('ليان',{exact:true}).first()).toBeVisible();
   await page.getByRole('button',{name:'اربط التجربة بالحقوق'}).click();
   await expectRoute(page,'rights');
+  await capture(page,testInfo,'14-rights');
 
   await expect(page.getByText('من السلطة إلى الحقوق')).toBeVisible();
   await page.getByRole('button',{name:/الخصوصية وبيانات العامل/}).click();
