@@ -20,11 +20,11 @@ assert.ok(dispute.includes('نتيجة المراجعة الثانية')&&disput
 assert.ok(domainAccess.includes("points===0?'active'")&&domainAccess.includes('finalReviewSeverity')&&domainAccess.includes('rejectionPoints')&&!domainAccess.includes('qualityPoints')&&!domainAccess.includes('outcomeStrictness'));
 assert.ok(!scenarios.includes('outcomeStrictness')&&scenarios.includes('accessPolicy')&&scenarios.includes('contentWarning'));
 assert.ok(samples.includes('preferred')&&samples.includes('acceptable')&&samples.includes("preferred:'B'")&&!samples.includes("hidden:'"));
-assert.ok(evidenceTemplates.includes("dimension:'contract'")&&evidenceTemplates.includes('preferredKind'));
+assert.ok(evidenceTemplates.includes("dimension:'contract'")&&evidenceTemplates.includes('preferredKind')&&evidenceTemplates.includes('accessDecision'));
 assert.ok(payment.includes('payment-flow')&&payment.includes('money-ltr')&&payment.includes('actor-icon'));
-assert.ok(access.includes('انتهى الفصل الأول: وردية العامل')&&access.includes('نشط دون إجراء')&&access.includes('لم تُنفذ مهمة'));
+assert.ok(access.includes('انتهى الفصل الأول: وردية العامل')&&access.includes('نشط دون إجراء')&&access.includes('لم تُنفذ مهمة')&&access.includes("'accessDecision'"));
 assert.ok(investigation.includes('آخر الوقائع المهمة')&&investigation.includes('دليل مختلط / يحتاج سياقًا')&&investigation.includes('لم تقع أحداثها')===false);
-assert.ok(domainQuestions.includes('questionsForState')&&domainAnalysis.includes('analysisAxes')&&domainAnalysis.includes('evidenceCredit'));
+assert.ok(domainQuestions.includes('questionsForState')&&domainAnalysis.includes('analysisAxes')&&domainAnalysis.includes('evidenceCredit')&&domainAnalysis.includes('evidenceDimensions')&&domainAnalysis.includes("WORK_EVIDENCE_DIMENSIONS=['contract','price','allocation','monitoring','risk','access']")&&domainAnalysis.includes("NO_WORK_EVIDENCE_DIMENSIONS=['contract','price','allocation','access']"));
 assert.ok(power.includes('type="range"')&&power.includes('powerAxisIndex')&&power.includes('تعادل:')&&!power.includes('اعتماد هذا المحور')&&!power.includes('type="number"'));
 assert.ok(conclusion.includes('ستظهر تحت نصك في صفحة النتيجة'));
 assert.ok(result.includes('الخلاصة في لمحة')&&result.includes('<details')&&result.includes('في تحليلك أنت')&&result.includes('severityLabel'));
