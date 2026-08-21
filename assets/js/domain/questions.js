@@ -1,4 +1,4 @@
-import {questionRef} from '../data/scenarios.js';
+import {questionRef} from '../data/question-references.js';
 
 export const relationshipQuestions=[
  {id:'parties',title:'من الأطراف الفاعلة في علاقة العمل؟',resultTitle:'الأطراف الفاعلة',options:['العامل + المنصة + العميل + الوسيط','العامل + العميل فقط','العامل + المنصة فقط']},
