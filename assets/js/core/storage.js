@@ -8,7 +8,7 @@ function write(key,value){const raw=JSON.stringify(value),l=local(),s=session();
 function writePersistent(key,value){const l=local();try{if(!l)return false;l.setItem(key,JSON.stringify(value));return true}catch(e){console.warn('No Boss: تعذر حفظ الأرشيف بصورة دائمة',e);return false}}
 function remove(key){let ok=false;for(const store of [local(),session()].filter(Boolean)){try{store.removeItem(key);ok=true}catch(e){console.warn('No Boss: تعذر حذف البيانات من إحدى مساحات التخزين',e)}}return ok}
 function asArray(value){return Array.isArray(value)?value:[]}
-function isState(value){return !!value&&typeof value==='object'&&!Array.isArray(value)&&Number.isFinite(Number(value.storageRevision))&&typeof value.currentPage==='string'}
+function isState(value){return !!value&&typeof value==='object'&&!Array.isArray(value)&&Number.isFinite(Number(value.storageRevision??0))&&typeof value.currentPage==='string'}
 function stateRevision(value){const revision=Number(value?.storageRevision);return Number.isFinite(revision)&&revision>=0?revision:0}
 function stateWriter(value){return typeof value?.storageWriterId==='string'?value.storageWriterId:''}
 function stateCandidate(store,mode){const value=readFrom(store,STATE_KEY);return isState(value)?{value,mode,revision:stateRevision(value),writer:stateWriter(value)}:null}
@@ -20,6 +20,7 @@ function compactResult(value){return {runId:value?.runId,scenarioName:value?.sce
 export function saveState(state){return write(STATE_KEY,state)}
 export function loadState(){return newestState()?.value||null}
 export function latestStateRevision(){const revisions=stateCandidates().map(candidate=>candidate.revision);return revisions.length?Math.max(...revisions):0}
+export function latestStateSnapshot(){return newestState()?.value||null}
 export function stateStorageMode(){return newestState()?.mode||'none'}
 export function clearState(){return remove(STATE_KEY)}
 export function hasState(){return !!loadState()?.scenarioKey}
