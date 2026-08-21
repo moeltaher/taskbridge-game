@@ -10,8 +10,7 @@ export function buildPaymentSettlement(sc,state){
  const mediator=Math.min(PAYMENT_PROCESSOR_CAP,contracted*PAYMENT_PROCESSOR_RATE);
  const transfer=Number(costs.transfer||0);
  const operating=Number(costs.internet||0)+Number(costs.electricity||0)+Number(costs.device||0);
- const cashBeforeOperating=contracted-hold-mediator-transfer;
- const cashPayout=Math.max(0,cashBeforeOperating);
+ const cashPayout=Math.max(0,contracted-hold-mediator-transfer);
  const net=cashPayout-operating;
- return {clientPaid,contracted,platformService,mediator,transfer,hold,operating,cashBeforeOperating,cashPayout,net};
+ return {clientPaid,contracted,platformService,mediator,transfer,hold,operating,cashPayout,net};
 }
