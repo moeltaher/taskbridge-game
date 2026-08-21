@@ -1,5 +1,4 @@
 export const powerParties=['worker','platform','client','mediator'];
-export function rank(v){return [...powerParties].sort((a,b)=>Number(v[b]||0)-Number(v[a]||0))}
 export function leaders(v){const m=Math.max(...powerParties.map(p=>Number(v[p]||0)));return powerParties.filter(p=>Number(v[p]||0)===m)}
 export function topGroup(v,count=2){const values=[...new Set(powerParties.map(p=>Number(v[p]||0)))].sort((a,b)=>b-a),cutoff=values[Math.min(Math.max(count,1)-1,values.length-1)];return powerParties.filter(p=>Number(v[p]||0)>=cutoff)}
 function sameSet(a,b){return a.length===b.length&&a.every(x=>b.includes(x))}
