@@ -73,10 +73,11 @@ test('complete worker-to-researcher journey reaches result and rights',async({pa
   await page.getByRole('button',{name:'صنف الأدلة'}).click();
   await expect(page.getByText('صنف جميع الأدلة')).toBeVisible();
 
-  const evidenceCount=await page.locator('.evidence-grid .doc').count();
+  const dependencyChoices=page.locator('.sort[data-v="dep"]');
+  const evidenceCount=await dependencyChoices.count();
   expect(evidenceCount).toBeGreaterThan(0);
   for(let i=0;i<evidenceCount;i++){
-    await page.locator('.sort[data-v="dep"]:not(.sel)').first().click();
+    await page.locator('.sort[data-v="dep"]').nth(i).click();
   }
   await expect(page.locator('.sort[data-v="dep"].sel')).toHaveCount(evidenceCount);
   await page.getByRole('button',{name:'انتقل إلى أسئلة العلاقة'}).click();
