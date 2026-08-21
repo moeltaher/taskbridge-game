@@ -2,17 +2,14 @@ const CURRENT_VERSION='3.0.2';
 const CURRENT_RESULT_VERSION='No Boss v3.0.2';
 const CURRENT_SCORING_VERSION=6;
 const STATE_KEY='no_boss_v3_state';
-const SETTINGS_KEY='no_boss_v3_settings';
 const RESULTS_KEY='no_boss_v3_results';
 const LEGACY_STATE_KEY='taskbridge_v2_state';
-const LEGACY_SETTINGS_KEY='taskbridge_v2_settings';
 const LEGACY_RESULTS_KEY='taskbridge_v2_results';
 const MISSING=Symbol('missing');
 
 function local(){try{return globalThis.localStorage||null}catch{return null}}
 function session(){try{return globalThis.sessionStorage||null}catch{return null}}
 function readFrom(store,key,fallback=null){if(!store)return fallback;try{const raw=store.getItem(key);return raw===null?fallback:JSON.parse(raw)}catch{return fallback}}
-function readPreferred(key,fallback=null){const a=readFrom(local(),key,MISSING);if(a!==MISSING)return a;const b=readFrom(session(),key,MISSING);return b===MISSING?fallback:b}
 function write(key,value){const raw=JSON.stringify(value),l=local(),s=session();let persistent=false,temporary=false;try{l?.setItem(key,raw);persistent=!!l}catch(e){console.warn('No Boss: تعذر الحفظ الدائم',e)}try{s?.setItem(key,raw);temporary=!!s}catch(e){console.warn('No Boss: تعذر الحفظ المؤقت',e)}return {ok:persistent||temporary,status:persistent?'persistent':temporary?'session':'failed',persistent,session:temporary}}
 function writePersistent(key,value){const l=local();try{if(!l)return false;l.setItem(key,JSON.stringify(value));return true}catch(e){console.warn('No Boss: تعذر حفظ الأرشيف بصورة دائمة',e);return false}}
 function remove(key){let ok=false;for(const store of [local(),session()].filter(Boolean)){try{store.removeItem(key);ok=true}catch(e){console.warn('No Boss: تعذر حذف البيانات من إحدى مساحات التخزين',e)}}return ok}
@@ -35,8 +32,6 @@ export function clearState(){return remove(STATE_KEY)}
 export function hasState(){return !!loadState()?.scenarioKey}
 export function hasLegacyState(){const slots=[readFrom(local(),STATE_KEY),readFrom(session(),STATE_KEY),readFrom(local(),LEGACY_STATE_KEY),readFrom(session(),LEGACY_STATE_KEY)];return slots.some(x=>x?.scenarioKey&&!isCurrentState(x))}
 export function clearLegacyState(){for(const store of [local(),session()].filter(Boolean)){const current=readFrom(store,STATE_KEY);if(current&&!isCurrentState(current)){try{store.removeItem(STATE_KEY)}catch{}}try{store.removeItem(LEGACY_STATE_KEY)}catch{}}}
-export function saveSettings(x){return write(SETTINGS_KEY,x)}
-export function loadSettings(){const current=readPreferred(SETTINGS_KEY),legacy=readPreferred(LEGACY_SETTINGS_KEY,{});return current&&typeof current==='object'&&!Array.isArray(current)?current:legacy&&typeof legacy==='object'&&!Array.isArray(legacy)?legacy:{}}
 export function archiveResult(x){const current=allResults().filter(isCurrentResult),key=resultKey(x),i=current.findIndex(r=>resultKey(r)===key);if(i>=0)current[i]=x;else current.push(x);const old=allResults().filter(r=>!isCurrentResult(r));return writePersistent(RESULTS_KEY,[...old,...current.slice(-30)])}
 export function savedResults(){return allResults().filter(isCurrentResult).slice(-30)}
 export function legacyResults(){return allResults().filter(x=>!isCurrentResult(x))}
