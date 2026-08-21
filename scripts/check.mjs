@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import {APP_VERSION,RESULT_VERSION} from '../assets/js/core/config.js';
 import {powerAxisCredit,leaders,topGroup,distributionProximity} from '../assets/js/core/power-scoring.js';
 
-assert.equal(APP_VERSION,'3.0.2');
-assert.equal(RESULT_VERSION,'No Boss v3.0.2');
+assert.equal(APP_VERSION,'3.1.0');
+assert.equal(RESULT_VERSION,'No Boss v3.1.0');
 
 globalThis.location={pathname:'/taskbridge-game/work/index.html'};
 const {projectBase,pageFromPath,href,pageForStage,stageForPage,isPublicPage,isResearcherPage}=await import('../assets/js/core/routes.js');
@@ -11,7 +11,7 @@ assert.equal(pageFromPath(),'work');assert.equal(projectBase(),'/taskbridge-game
 
 const equal={worker:25,platform:25,client:25,mediator:25};
 const target={worker:8,platform:57,client:30,mediator:5};
-assert.deepEqual(leaders(equal),['worker','platform','client','mediator']);assert.deepEqual(topGroup(equal,2),['worker','platform','client','mediator']);assert.equal(powerAxisCredit(target,target),1);assert.equal(distributionProximity(target,target),1);assert.ok(powerAxisCredit(equal,target)<.5,'untouched equal distribution must remain substantially below the reference');assert.ok(powerAxisCredit({worker:60,platform:10,client:20,mediator:10},target)<.4,'wrong leader should not receive majority credit');assert.ok(powerAxisCredit({worker:0,platform:95,client:5,mediator:0},target)<.8,'correct leader with exaggerated distribution must lose proximity credit');
+assert.deepEqual(leaders(equal),['worker','platform','client','mediator']);assert.deepEqual(topGroup(equal,2),['worker','platform','client','mediator']);assert.equal(powerAxisCredit(target,target),1);assert.equal(distributionProximity(target,target),1);assert.ok(powerAxisCredit(equal,target)<.5,'untouched equal distribution must remain substantially below the reference');assert.ok(powerAxisCredit({worker:60,platform:10,client:20,mediator:10},target)<.4,'wrong leader should not receive majority credit');assert.equal(powerAxisCredit({worker:0,platform:95,client:5,mediator:0},target),1,'same primary and strongest group must not lose credit for hidden percentage distance');
 
 const localStore=new Map(),sessionStore=new Map();
 const localStorageObject={getItem:key=>localStore.has(key)?localStore.get(key):null,setItem:(key,value)=>localStore.set(key,String(value)),removeItem:key=>localStore.delete(key)};
@@ -19,9 +19,10 @@ const sessionStorageObject={getItem:key=>sessionStore.has(key)?sessionStore.get(
 globalThis.localStorage=localStorageObject;globalThis.sessionStorage=sessionStorageObject;
 
 const stateModule=await import('../assets/js/core/state.js');
-const {getState,setState,commit,consumeCheckpointTo,resumePage,enterPage,undoCheckpoint,freshState}=stateModule;
+const {getState,setState,commit,consumeCheckpointTo,resumePage,enterPage,undoCheckpoint,freshState,normalizeState,STATE_SCHEMA_VERSION}=stateModule;
 assert.deepEqual(getState(),freshState(),'empty storage must start from a fresh state');
-for(const key of ['completedTasks','sampleSequence','sampleCursor','marketExit','reviewTaskId'])assert.ok(key in getState(),`fresh state missing ${key}`);
+for(const key of ['completedTasks','sampleSequence','sampleCursor','marketExit','marketTime','reviewTaskId','opportunityRankingDecision','conclusionCounterEvidence'])assert.ok(key in getState(),`fresh state missing ${key}`);
+const migrated=normalizeState({storageRevision:2,currentPage:'work',stage:2,scenarioKey:'data',completedTasks:null,evidence:null});assert.equal(migrated.schemaVersion,STATE_SCHEMA_VERSION);assert.deepEqual(migrated.completedTasks,[]);assert.deepEqual(migrated.evidence,[]);assert.equal(migrated.marketTime,0);
 const draft={price:{worker:'10',platform:'50',client:'35',mediator:'5'}};setState({...getState(),powerDraft:draft,powerEdited:['price'],powerTouched:[]});assert.deepEqual(getState().powerDraft,draft,'state writes must preserve the current power draft');
 const beforeCommitRevision=getState().storageRevision;commit({changes:{status:'اختبار دفعة واحدة'},evidence:['contract','ownTools'],log:{title:'اختبار',text:'عملية واحدة'}});assert.equal(getState().storageRevision,beforeCommitRevision+1,'a batched commit must persist once');assert.deepEqual(getState().evidence,['contract','ownTools']);assert.equal(getState().log.at(-1)?.title,'اختبار');
 setState({...getState(),selectedRights:['privacy'],currentPage:'rights',stage:11,checkpoints:[{page:'result',snapshot:{}}]});assert.equal(consumeCheckpointTo('result'),'result');assert.deepEqual(getState().selectedRights,['privacy'],'returning from Rights must keep current result state');
