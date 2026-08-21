@@ -17,6 +17,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Route shell drift check
+        run: node scripts/generate-pages.mjs --check
       - name: Structural checks
         run: node scripts/structural-check.mjs
       - name: Regression checks
