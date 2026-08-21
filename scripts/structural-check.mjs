@@ -13,7 +13,7 @@ for(const file of routeFiles){
  assert.ok(source.includes('No Boss v3.0.2'),`old or missing version title in ${file}`);
  assert.ok(!source.includes('TaskBridge v2.0.0'),`legacy title remains in ${file}`);
 }
-const required=['assets/js/data/scenarios.js','assets/js/core/config.js','assets/js/core/html.js','assets/js/core/state.js','assets/js/core/storage.js','assets/js/core/routes.js','assets/js/core/ui.js','assets/js/core/bootstrap.js','assets/js/core/power-scoring.js','assets/js/domain/payment.js','assets/js/domain/access.js','ARCHITECTURE.md','assets/images/no-boss-logo.svg','scripts/check.mjs','scripts/domain-check.mjs','DEPLOY_GITHUB_AR.txt','.github/workflows/check.yml'];
+const required=['assets/js/data/scenarios.js','assets/js/core/config.js','assets/js/core/html.js','assets/js/core/state.js','assets/js/core/storage.js','assets/js/core/routes.js','assets/js/core/ui.js','assets/js/core/bootstrap.js','assets/js/core/power-scoring.js','assets/js/domain/payment.js','assets/js/domain/access.js','assets/js/domain/evidence.js','assets/js/domain/questions.js','assets/js/domain/analysis.js','ARCHITECTURE.md','assets/images/no-boss-logo.svg','scripts/check.mjs','scripts/domain-check.mjs','DEPLOY_GITHUB_AR.txt','.github/workflows/check.yml'];
 for(const file of required)assert.ok(existsSync(resolve(root,file)),`missing ${file}`);
 
 const config=read('assets/js/core/config.js');
@@ -58,10 +58,13 @@ assert.ok(rights.includes('summaryHTML')&&rights.includes('updateSummary'));
 assert.ok(power.includes('powerDraft')&&power.includes('rawValuesFor')&&power.includes('delete draft[axis]'));
 assert.ok(power.includes('powerEdited')&&power.includes('Number.isInteger')&&power.includes('escapeAttribute'));
 assert.ok(!power.includes('render(root).then'));
-assert.ok(conclusion.includes('powerComplete')&&conclusion.includes('powerEdited')&&conclusion.includes('label for="analysis"'));
+assert.ok(conclusion.includes('powerMapComplete')&&conclusion.includes('scoreAnalysis')&&conclusion.includes('label for="analysis"'));
+assert.ok(conclusion.includes("from '../domain/evidence.js'")&&conclusion.includes("from '../domain/analysis.js'"));
 assert.ok(work.includes('taskHTML(sc,s.workAnswers)')&&work.includes('ResizeObserver'));
 assert.ok(dispute.includes("patch({stage:6,status:'قيد التسوية'})"));
 assert.ok(investigation.includes('role="tabpanel"')&&investigation.includes('aria-controls')&&investigation.includes('data-v="${v}"'));
+assert.ok(investigation.includes("from '../domain/evidence.js'")&&investigation.includes("from '../domain/questions.js'"));
+assert.ok(!investigation.includes('render(root).then'));
 assert.ok(storage.includes('writePersistent')&&storage.includes('stateStorageMode')&&storage.includes('newestCurrentState'));
 assert.ok(storage.includes('function local(){try')&&storage.includes('function session(){try'));
 assert.ok(payment.includes("from '../domain/payment.js'"));
