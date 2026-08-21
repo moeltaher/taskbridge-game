@@ -1,14 +1,15 @@
 {
   "name": "no-boss",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "npm run check:routes && npm run check:structural && npm run check:regression && npm run check:domain && npm run check:syntax",
+    "check": "npm run check:routes && npm run check:structural && npm run check:regression && npm run check:domain && npm run check:semantic && npm run check:syntax",
     "check:routes": "node scripts/generate-pages.mjs --check",
     "check:structural": "node scripts/structural-check.mjs",
     "check:regression": "node scripts/check.mjs",
     "check:domain": "node scripts/domain-check.mjs",
+    "check:semantic": "node scripts/semantic-invariants-check.mjs",
     "check:syntax": "node scripts/syntax-check.mjs",
     "test:e2e": "playwright test"
   },
