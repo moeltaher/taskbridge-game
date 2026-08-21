@@ -1,0 +1,33 @@
+name: No Boss checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Structural checks
+        run: python scripts/check.py
+      - name: Regression checks
+        run: node scripts/check.mjs
+      - name: JavaScript syntax checks
+        shell: bash
+        run: |
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find assets/js scripts -type f -name '*.js' -o -name '*.mjs' -print0)
