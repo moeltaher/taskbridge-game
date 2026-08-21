@@ -6,7 +6,7 @@ import {buildPaymentSettlement} from '../domain/payment.js';
 export function render(root){
  const state=getState(),scenario=scenarios[state.scenarioKey];
  let payment=state.payment;
- if(!payment||payment.cashPayout===undefined){
+ if(!payment){
   payment=buildPaymentSettlement(scenario,state);
   commit({changes:{payment},evidence:['payment'],log:{title:'ظهرت تسوية المدفوعات',text:`المبلغ المحول للعامل ${money(payment.cashPayout)}، وصافي الوضع الاقتصادي بعد تكاليف التشغيل ${money(payment.net)}.`}});
  }
