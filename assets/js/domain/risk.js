@@ -1,8 +1,8 @@
 const profiles={
- wellbeing:{key:'wellbeing',icon:'🧠',kind:'وقت تعافٍ صحي ونفسي مرتبط بالعمل',title:'ظهرت آثار التعرض للمحتوى الذي راجعته',cause:'بعد إنهاء دفعة المراجعة، احتجت إلى 3 دقائق بعيدًا عن المنصة قبل متابعة الوردية بسبب أثر المحتوى المزعج الذي ظهر في المهمة المنجزة. هذا هو أول ظهور لهذا الأثر في الجولة.',minutes:3,stress:18,consequence:'سجلت المحاكاة 3 دقائق تحديدًا كوقت تعافٍ مرتبط بالعمل بلا مقابل مستقل، وليس كوقت تنفيذ مهمة جديدة.'},
- timeout:{key:'timeout',icon:'⏱',kind:'تحديث تعليمات بعد التسليم',title:'وصل تحديث يستلزم إعادة التحقق من عينة مسلمة',cause:'بعد تسليم مهمة التقييم، ظهر تحديث جديد لإرشادات المشروع وطلبت No Boss إعادة التحقق من جزء من الإجابات التي أرسلتها. احتجت إلى دقيقتين لهذه المراجعة الإضافية. هذا هو أول ظهور للتحديث في الجولة.',minutes:2,stress:10,consequence:'سجلت المحاكاة دقيقتين إضافيتين مرتبطتين بالعمل من دون مهمة جديدة ذات سعر مستقل.'},
- revision:{key:'revision',icon:'↺',kind:'طلب تعديل بعد التسليم',title:'وصل الآن طلب تعديل من العميل',cause:'ظهر إشعار جديد في No Boss: العميل يطلب تغيير بعض المصطلحات في ترجمة سبق أن سلمتها وفق نسخة محدثة من دليل المشروع. هذا هو أول ظهور لهذا الطلب في الجولة.',minutes:4,stress:7,consequence:'احتاج تنفيذ التعديل إلى 4 دقائق إضافية مرتبطة بالعمل لم يسجل لها مقابل مستقل.'},
- connection:{key:'connection',icon:'⌁',kind:'تعطل تقني بعد التنفيذ',title:'تعطلت مزامنة نتائج المهمة مع الخادم',cause:'بعد إنهاء مهمة التصنيف وأثناء مزامنة النتائج المسلمة، انقطع الاتصال بالخادم. استغرقت استعادة الاتصال والتحقق من اكتمال المزامنة دقيقتين. هذا هو أول ظهور لهذا الانقطاع في الجولة.',minutes:2,stress:9,consequence:'سجلت المحاكاة دقيقتين إضافيتين مرتبطتين بالعمل بسبب استعادة الاتصال والتحقق من التسليم.'}
+ wellbeing:{icon:'🧠',kind:'وقت تعافٍ صحي ونفسي مرتبط بالعمل',title:'ظهرت آثار التعرض للمحتوى الذي راجعته',cause:'بعد إنهاء دفعة المراجعة، احتجت إلى 3 دقائق بعيدًا عن المنصة قبل متابعة الوردية بسبب أثر المحتوى المزعج الذي ظهر في المهمة المنجزة. هذا هو أول ظهور لهذا الأثر في الجولة.',minutes:3,stress:18,consequence:'سجلت المحاكاة 3 دقائق تحديدًا كوقت تعافٍ مرتبط بالعمل بلا مقابل مستقل، وليس كوقت تنفيذ مهمة جديدة.'},
+ timeout:{icon:'⏱',kind:'تحديث تعليمات بعد التسليم',title:'وصل تحديث يستلزم إعادة التحقق من عينة مسلمة',cause:'بعد تسليم مهمة التقييم، ظهر تحديث جديد لإرشادات المشروع وطلبت No Boss إعادة التحقق من جزء من الإجابات التي أرسلتها. احتجت إلى دقيقتين لهذه المراجعة الإضافية. هذا هو أول ظهور للتحديث في الجولة.',minutes:2,stress:10,consequence:'سجلت المحاكاة دقيقتين إضافيتين مرتبطتين بالعمل من دون مهمة جديدة ذات سعر مستقل.'},
+ revision:{icon:'↺',kind:'طلب تعديل بعد التسليم',title:'وصل الآن طلب تعديل من العميل',cause:'ظهر إشعار جديد في No Boss: العميل يطلب تغيير بعض المصطلحات في ترجمة سبق أن سلمتها وفق نسخة محدثة من دليل المشروع. هذا هو أول ظهور لهذا الطلب في الجولة.',minutes:4,stress:7,consequence:'احتاج تنفيذ التعديل إلى 4 دقائق إضافية مرتبطة بالعمل لم يسجل لها مقابل مستقل.'},
+ connection:{icon:'⌁',kind:'تعطل تقني بعد التنفيذ',title:'تعطلت مزامنة نتائج المهمة مع الخادم',cause:'بعد إنهاء مهمة التصنيف وأثناء مزامنة النتائج المسلمة، انقطع الاتصال بالخادم. استغرقت استعادة الاتصال والتحقق من اكتمال المزامنة دقيقتين. هذا هو أول ظهور لهذا الانقطاع في الجولة.',minutes:2,stress:9,consequence:'سجلت المحاكاة دقيقتين إضافيتين مرتبطتين بالعمل بسبب استعادة الاتصال والتحقق من التسليم.'}
 };
 
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
@@ -10,7 +10,7 @@ const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 export function riskProfile(type){return profiles[type]||profiles.connection}
 
 export function riskTransition(scenario,state){
- if(state.riskApplied)return {event:state.riskEvent,changes:null,isNew:false};
+ if(state.riskEvent)return {event:state.riskEvent,changes:null,isNew:false};
  const event=riskProfile(scenario.riskType),time=Number(state.time||0),extraWorkTime=Number(state.extraWorkTime||0),stress=Number(state.stress||0);
- return {event,isNew:true,changes:{riskEvent:event,riskApplied:true,time:time+event.minutes,extraWorkTime:extraWorkTime+event.minutes,stress:clamp(stress+event.stress,0,100),status:'حدث موقف إضافي مرتبط بالعمل'}};
+ return {event,isNew:true,changes:{riskEvent:event,time:time+event.minutes,extraWorkTime:extraWorkTime+event.minutes,stress:clamp(stress+event.stress,0,100),status:'حدث موقف إضافي مرتبط بالعمل'}};
 }
