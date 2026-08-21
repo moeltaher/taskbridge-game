@@ -27,7 +27,7 @@ export function consumeCheckpointTo(expectedPage){const item=state.checkpoints.a
 export function addEvidence(id){return commit({evidence:[id]})}
 export function addLog(title,text){return commit({log:{title,text}})}
 export function recalcAcceptance(){return commit({recalculateAcceptance:true})}
-export function timeBreakdown(s=state){const taskTime=Number(s.paidTime||0),extraWorkTime=Number(s.extraWorkTime||0),breakTime=Number(s.breakTime||0),outsideTaskTime=extraWorkTime+breakTime,totalTime=Number(s.time||0);return {taskTime,extraWorkTime,breakTime,outsideTaskTime,totalTime,outsidePct:Math.round(outsideTaskTime/Math.max(1,totalTime)*100)}}
+export function timeBreakdown(s=state){return {taskTime:Number(s.paidTime||0),extraWorkTime:Number(s.extraWorkTime||0),breakTime:Number(s.breakTime||0),totalTime:Number(s.time||0)}}
 export function wellbeingLabel(v){return v>=70?'عبء مرتفع':v>=40?'عبء متوسط':'عبء منخفض'}
 export function stageForPage(page){return routeStageForPage(page)}
 export const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));export const money=v=>'$'+Number(v||0).toFixed(2);
