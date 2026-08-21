@@ -5,7 +5,7 @@ export function evidenceFor(id,scenario,state){
  if(id==='priceSetting'){
   evidence.text=scenario.priceMechanism;
   evidence.validKinds=['ctrl','dep'];
-  evidence.preferredKind=scenario.type==='translation'?'dep':'ctrl';
+  evidence.preferredKind='ctrl';
  }
  if(id==='allocation'){
   evidence.text=scenario.allocationMechanism;
