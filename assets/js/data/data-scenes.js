@@ -27,9 +27,8 @@ export const dataSizeOptions=[
 ];
 
 export const dataSceneDescriptions=dataScenes.map(scene=>scene.description);
-
 export function dataTargetForScene(index){const scene=dataScenes[index];return scene?{x:scene.x/WIDTH,y:TOP/HEIGHT,w:scene.width/WIDTH,h:(BOTTOM-TOP)/HEIGHT}:null}
 export function semanticTargetForScene(index){const scene=dataScenes[index];return scene?.semantic?{...scene.semantic}:null}
 export function semanticDataBox(regionId,sizeId){const region=dataRegionOptions.find(item=>item.id===regionId),size=dataSizeOptions.find(item=>item.id===sizeId);if(!region||!size)return null;return {x:region.x,y:TOP/HEIGHT,w:size.w,h:(BOTTOM-TOP)/HEIGHT,regionId,sizeId,source:'semantic'}}
-export function semanticDataCredit(index,answer){const target=semanticTargetForScene(index);if(!target||answer?.source!=='semantic')return null;const region=answer.regionId===target.regionId,size=answer.sizeId===target.sizeId;return region&&size?1:region||size?.5:0}
+export function semanticDataCredit(index,answer){const target=semanticTargetForScene(index);if(!target||answer?.source!=='semantic')return null;const region=answer.regionId===target.regionId,size=answer.sizeId===target.sizeId;if(region&&size)return 1;if(region||size)return .5;return 0}
 export function roadSceneSVG(index){const scene=dataScenes[index]||dataScenes[index%dataScenes.length]||dataScenes[0],rear=scene.x+45,front=scene.x+scene.width-47,cabinRight=scene.x+scene.width-70;return `<svg viewBox="0 0 ${WIDTH} ${HEIGHT}" aria-hidden="true"><rect width="${WIDTH}" height="${HEIGHT}" fill="#dcecf7"/><rect y="160" width="${WIDTH}" height="140" fill="#44566a"/><path d="M0 235h${WIDTH}" stroke="#f4dc69" stroke-width="7" stroke-dasharray="46 28"/>${scene.shadow?`<ellipse cx="${scene.x+scene.width/2}" cy="235" rx="${scene.width*.62}" ry="18" fill="#203040" opacity=".18"/>`:''}<circle cx="${rear}" cy="220" r="24" fill="#23384b"/><circle cx="${front}" cy="220" r="24" fill="#23384b"/><path d="M${scene.x} 208L${scene.x+42} ${TOP}H${cabinRight}L${scene.x+scene.width} 208Z" fill="${scene.color}" opacity="${scene.opacity}"/></svg>`}
