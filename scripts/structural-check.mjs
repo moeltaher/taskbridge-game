@@ -1,0 +1,72 @@
+import assert from 'node:assert/strict';
+import {readFileSync,existsSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import {dirname,resolve} from 'node:path';
+
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const read=path=>readFileSync(resolve(root,path),'utf8');
+const routeFiles=['index.html','scenario/index.html','onboarding/index.html','work/index.html','management/index.html','risk/index.html','dispute/index.html','payment/index.html','access/index.html','investigation/index.html','power/index.html','conclusion/index.html','result/index.html','rights/index.html'];
+for(const file of routeFiles){
+ assert.ok(existsSync(resolve(root,file)),`missing ${file}`);
+ const source=read(file);
+ assert.ok(source.includes('bootstrap.js'),`missing bootstrap in ${file}`);
+ assert.ok(source.includes('No Boss v3.0.2'),`old or missing version title in ${file}`);
+ assert.ok(!source.includes('TaskBridge v2.0.0'),`legacy title remains in ${file}`);
+}
+const required=['assets/js/data/scenarios.js','assets/js/core/config.js','assets/js/core/state.js','assets/js/core/storage.js','assets/js/core/routes.js','assets/js/core/ui.js','assets/js/core/bootstrap.js','assets/js/core/power-scoring.js','assets/js/domain/payment.js','assets/js/domain/access.js','ARCHITECTURE.md','assets/images/no-boss-logo.svg','scripts/check.mjs','scripts/domain-check.mjs','DEPLOY_GITHUB_AR.txt','.github/workflows/check.yml'];
+for(const file of required)assert.ok(existsSync(resolve(root,file)),`missing ${file}`);
+
+const config=read('assets/js/core/config.js');
+const routes=read('assets/js/core/routes.js');
+const state=read('assets/js/core/state.js');
+const storage=read('assets/js/core/storage.js');
+const bootstrap=read('assets/js/core/bootstrap.js');
+const ui=read('assets/js/core/ui.js');
+const home=read('assets/js/pages/home.js');
+const power=read('assets/js/pages/power.js');
+const conclusion=read('assets/js/pages/conclusion.js');
+const work=read('assets/js/pages/work.js');
+const dispute=read('assets/js/pages/dispute.js');
+const investigation=read('assets/js/pages/investigation.js');
+const rights=read('assets/js/pages/rights.js');
+const result=read('assets/js/pages/result.js');
+const payment=read('assets/js/pages/payment.js');
+const access=read('assets/js/pages/access.js');
+const deploy=read('DEPLOY_GITHUB_AR.txt');
+const workflow=read('.github/workflows/check.yml');
+
+assert.ok(config.includes("APP_VERSION='3.0.2'")&&config.includes('SCORING_VERSION=6'));
+assert.ok(routes.includes("scenario:{slug:'scenario',stage:0")&&routes.includes('stageDefault:true'));
+assert.ok(routes.includes("result:{slug:'result',stage:11"));
+assert.ok(routes.includes('isPublicPage')&&routes.includes('isResearcherPage')&&routes.includes('pageForStage'));
+assert.ok(state.includes("import {APP_VERSION,TIME_MODEL_VERSION} from './config.js'"));
+assert.ok(state.includes('routePageForStage')&&state.includes('routeStageForPage')&&state.includes('isPublicPage'));
+assert.ok(storage.includes("import {APP_VERSION,RESULT_VERSION,SCORING_VERSION} from './config.js'"));
+assert.ok(bootstrap.includes('isPublicPage(page)')&&bootstrap.includes('pageForStage(currentStage)'));
+assert.ok(bootstrap.includes('beforeunload')&&bootstrap.includes('persistenceStatus'));
+assert.ok(state.includes('hadPowerEdited')&&state.includes('next.powerTouched=[]'));
+assert.ok(state.includes('storageRevision')&&state.includes('revisionCounter')&&state.includes('resumePage'));
+assert.ok(ui.includes("page==='rights'?consumeCheckpointTo('result'):undoCheckpoint()"));
+assert.ok(ui.includes('isResearcherPage(page)'));
+assert.ok(ui.includes('aria-label="رجوع"')&&ui.includes('aria-label="بدء من جديد"'));
+assert.ok(ui.includes('role="progressbar"')&&ui.includes('aria-valuenow="${pct}"'));
+assert.ok(ui.includes('persistenceBanner')&&ui.includes("p.status==='session'"));
+assert.ok(home.includes('resumePage')&&home.includes('outcomeLabel')&&home.includes('stateStorageMode'));
+assert.ok(home.includes('<caption')&&home.includes('scope="col"')&&home.includes('scope="row"'));
+assert.ok(rights.includes('consumeCheckpointTo')&&!rights.includes('undoCheckpointTo'));
+assert.ok(rights.includes('summaryHTML')&&rights.includes('updateSummary'));
+assert.ok(power.includes('powerDraft')&&power.includes('rawValuesFor')&&power.includes('delete draft[axis]'));
+assert.ok(power.includes('powerEdited')&&power.includes('Number.isInteger')&&power.includes('render(root).then'));
+assert.ok(conclusion.includes('powerComplete')&&conclusion.includes('powerEdited')&&conclusion.includes('label for="analysis"'));
+assert.ok(work.includes('taskHTML(sc,s.workAnswers)')&&work.includes('ResizeObserver'));
+assert.ok(dispute.includes("patch({stage:6,status:'قيد التسوية'})"));
+assert.ok(investigation.includes('role="tabpanel"')&&investigation.includes('aria-controls')&&investigation.includes('data-v="${v}"'));
+assert.ok(storage.includes('writePersistent')&&storage.includes('stateStorageMode')&&storage.includes('newestCurrentState'));
+assert.ok(storage.includes('function local(){try')&&storage.includes('function session(){try'));
+assert.ok(payment.includes("from '../domain/payment.js'"));
+assert.ok(access.includes("from '../domain/access.js'"));
+assert.ok(result.includes('const ok=archiveResult')&&result.includes('تعذر حفظ النتيجة'));
+assert.ok(deploy.includes('محتويات المشروع كاملة')&&deploy.includes('مجلد assets/ كاملًا')&&!deploy.includes('خلف الشاشة'));
+assert.ok(workflow.includes('node scripts/structural-check.mjs')&&workflow.includes('node scripts/check.mjs')&&workflow.includes('node scripts/domain-check.mjs')&&workflow.includes('node --check'));
+
+console.log('No Boss structural guards passed');
