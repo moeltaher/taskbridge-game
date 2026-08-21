@@ -11,7 +11,7 @@ export const relationshipQuestions=[
  {id:'termination',title:'من يملك صلاحية الحساب العام والوصول إلى سوق المهام؟',resultTitle:'الطرف الذي يملك الحساب العام والوصول للسوق',options:authorityOptions}
 ];
 export function questionsForState(state){
- if(state?.contractDeclineEnding)return relationshipQuestions.filter(q=>['parties','termination'].includes(q.id));
+ if(state?.contractDeclineEnding)return relationshipQuestions.filter(q=>q.id==='termination');
  if(state?.noWorkEnding)return relationshipQuestions.filter(q=>['parties','price','allocation','termination'].includes(q.id));
  return relationshipQuestions;
 }
