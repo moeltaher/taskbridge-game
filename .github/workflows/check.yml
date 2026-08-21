@@ -25,6 +25,8 @@ jobs:
         run: npm run check:regression
       - name: Domain rule checks
         run: npm run check:domain
+      - name: Semantic invariant checks
+        run: npm run check:semantic
       - name: JavaScript syntax checks
         run: npm run check:syntax
       - name: Install browser-test dependencies
