@@ -7,6 +7,7 @@ import {relationshipQuestions,acceptedQuestionReferences} from '../assets/js/dom
 import {powerMapComplete,scoreAnalysis} from '../assets/js/domain/analysis.js';
 import {acceptanceRate,intersectionOverUnion,scoreWork,firstTaskOutcome} from '../assets/js/domain/work.js';
 import {computeManagedAccess,buildSecondOffer,secondOfferDecision,completeSecondTask,monitorDecision} from '../assets/js/domain/management.js';
+import {APPEAL_TIME_MINUTES,APPEAL_STRESS,disputeSeverityFromScore,disputeConsequences,applyDisputeOutcome,appealCostChanges,publishedTranslationText} from '../assets/js/domain/dispute.js';
 
 const close=(actual,expected,epsilon=1e-12)=>assert.ok(Math.abs(actual-expected)<epsilon,`${actual} != ${expected}`);
 
@@ -55,5 +56,15 @@ assert.equal(rejectedDecision.offerDecisions,2);assert.equal(rejectedDecision.ac
 const secondCompletion=completeSecondTask({secondOffer:{pay:3.85,duration:18,clientValue:8,premium:true},offerDecisionResult:{accepted:true,beforeAccess:80},access:80,stress:30,grossWorker:2.1,clientPaid:5.8,time:12,paidTime:12,jobsDone:1});
 assert.equal(secondCompletion.changes.access,85);assert.equal(secondCompletion.changes.stress,42);assert.equal(secondCompletion.changes.paidTime,30);
 const breakDecision=monitorDecision({stress:42},true);assert.equal(breakDecision.stressAfter,32);assert.equal(breakDecision.breakDelta,1);
+
+assert.equal(APPEAL_TIME_MINUTES,2);assert.equal(APPEAL_STRESS,4);
+assert.equal(disputeSeverityFromScore(85),0);assert.equal(disputeSeverityFromScore(60),1);assert.equal(disputeSeverityFromScore(59),2);
+const limited=disputeConsequences({grossWorker:4},1,false);close(limited.hold,.4);assert.equal(limited.penalty,4);
+const appealedMajor=disputeConsequences({grossWorker:10},2,true);close(appealedMajor.hold,.9);assert.equal(appealedMajor.penalty,6);
+const disputeOutcome=applyDisputeOutcome({qualityBeforeDispute:80,accessBeforeDispute:70,grossWorker:4,disputeSeverity:1,appealed:false,appealCost:null});
+assert.equal(disputeOutcome.changes.quality,76);assert.equal(disputeOutcome.changes.access,66);close(disputeOutcome.changes.hold,.4);
+const appealChanges=appealCostChanges({time:10,extraWorkTime:1,stress:98});
+assert.equal(appealChanges.time,12);assert.equal(appealChanges.extraWorkTime,3);assert.equal(appealChanges.stress,100);
+assert.equal(publishedTranslationText({a:'صياغة A',b:'صياغة B',published:'B'}),'صياغة B');
 
 console.log('No Boss domain checks passed');
