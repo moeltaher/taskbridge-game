@@ -1,11 +1,9 @@
 import assert from 'node:assert/strict';
-import {APP_VERSION,RESULT_VERSION,SCORING_VERSION,TIME_MODEL_VERSION} from '../assets/js/core/config.js';
+import {APP_VERSION,RESULT_VERSION} from '../assets/js/core/config.js';
 import {powerAxisCredit,leaders,topGroup} from '../assets/js/core/power-scoring.js';
 
 assert.equal(APP_VERSION,'3.0.2');
 assert.equal(RESULT_VERSION,'No Boss v3.0.2');
-assert.equal(SCORING_VERSION,6);
-assert.equal(TIME_MODEL_VERSION,2);
 
 globalThis.location={pathname:'/taskbridge-game/work/index.html'};
 const {projectBase,pageFromPath,href,pageForStage,stageForPage,isPublicPage,isResearcherPage}=await import('../assets/js/core/routes.js');
@@ -37,15 +35,13 @@ const localStorageObject={getItem:key=>localStore.has(key)?localStore.get(key):n
 const sessionStorageObject={getItem:key=>sessionStore.has(key)?sessionStore.get(key):null,setItem:(key,value)=>sessionStore.set(key,String(value)),removeItem:key=>sessionStore.delete(key)};
 globalThis.localStorage=localStorageObject;
 globalThis.sessionStorage=sessionStorageObject;
-localStore.set('no_boss_v3_state',JSON.stringify({version:APP_VERSION,storageRevision:1,scenarioKey:'data',stage:9,currentPage:'power',powerTouched:['price','allocation']}));
+
 const stateModule=await import('../assets/js/core/state.js');
 const {getState,setState,commit,consumeCheckpointTo,pageForStage:statePageForStage,resumePage,enterPage,undoCheckpoint,freshState}=stateModule;
-assert.deepEqual(freshState().evidence,[],'a fresh run must not contain onboarding evidence before acceptance');
-assert.deepEqual(getState().powerTouched,[],'pre-powerEdited sessions must re-approve power axes');
-assert.deepEqual(getState().powerEdited,[],'pre-powerEdited sessions must start with no edited axes');
+assert.deepEqual(getState(),freshState(),'empty storage must start from a fresh state');
 const draft={price:{worker:'10',platform:'50',client:'35',mediator:'5'}};
 setState({...getState(),powerDraft:draft,powerEdited:['price'],powerTouched:[]});
-assert.deepEqual(getState().powerDraft,draft,'power drafts must survive state migration and reload persistence');
+assert.deepEqual(getState().powerDraft,draft,'state writes must preserve the current power draft');
 const beforeCommitRevision=getState().storageRevision;
 commit({changes:{status:'اختبار دفعة واحدة'},evidence:['contract','ownTools'],log:{title:'اختبار',text:'عملية واحدة'},recalculateAcceptance:true});
 assert.equal(getState().storageRevision,beforeCommitRevision+1,'a batched commit must persist once');
@@ -53,10 +49,9 @@ assert.deepEqual(getState().evidence,['contract','ownTools']);
 assert.equal(getState().log.at(-1)?.title,'اختبار');
 setState({...getState(),selectedRights:['privacy'],currentPage:'rights',stage:11,checkpoints:[{page:'result',target:'rights',snapshot:{}}]});
 assert.equal(consumeCheckpointTo('result'),'result');
-assert.deepEqual(getState().selectedRights,['privacy'],'returning from Rights must not restore an older result snapshot');
+assert.deepEqual(getState().selectedRights,['privacy'],'returning from Rights must keep current result state');
 
 setState({...getState(),scenarioKey:'data',stage:1,currentPage:'scenario',checkpoints:[]});
-assert.equal(getState().currentPage,'scenario','runtime state migration must not skip Scenario before navigation');
 const beforeEnterRevision=getState().storageRevision;
 enterPage('onboarding');
 assert.equal(getState().storageRevision,beforeEnterRevision+1,'entering a new page must persist checkpoint and current page once');
@@ -67,45 +62,41 @@ enterPage('onboarding');
 assert.equal(getState().storageRevision,samePageRevision,'re-entering the current page must not create a storage write');
 assert.equal(undoCheckpoint(),'scenario','Back from Onboarding must return to Scenario');
 assert.equal(statePageForStage(1),'onboarding');
-assert.equal(resumePage({scenarioKey:'data',stage:1,currentPage:'scenario'}),'onboarding','resume must repair stale public-entry routes using stage');
-assert.equal(resumePage({scenarioKey:'data',stage:11,currentPage:'rights'}),'rights','resume must preserve Rights when it matches the current stage');
-assert.equal(resumePage({scenarioKey:'data',stage:5,currentPage:'work'}),'dispute','resume must repair a mismatched non-public route');
+assert.equal(resumePage({scenarioKey:'data',stage:1,currentPage:'scenario'}),'onboarding');
+assert.equal(resumePage({scenarioKey:'data',stage:11,currentPage:'rights'}),'rights');
+assert.equal(resumePage({scenarioKey:'data',stage:5,currentPage:'work'}),'dispute');
 
 const storage=await import('../assets/js/core/storage.js');
-localStore.set('no_boss_v3_results','{}');
-localStore.set('taskbridge_v2_results','null');
-assert.deepEqual(storage.savedResults(),[],'malformed but valid JSON result stores must not crash');
+localStore.set('no_boss_results','{}');
+assert.deepEqual(storage.savedResults(),[],'malformed result stores must not crash');
 
-localStore.set('no_boss_v3_state',JSON.stringify({version:APP_VERSION,storageRevision:4,storageWriterId:'local-a',scenarioKey:'ai',stage:2,currentPage:'work'}));
-sessionStore.set('no_boss_v3_state',JSON.stringify({version:APP_VERSION,storageRevision:5,storageWriterId:'session-a',scenarioKey:'data',stage:9,currentPage:'power'}));
+localStore.set('no_boss_state',JSON.stringify({storageRevision:4,storageWriterId:'local-a',scenarioKey:'ai',stage:2,currentPage:'work'}));
+sessionStore.set('no_boss_state',JSON.stringify({storageRevision:5,storageWriterId:'session-a',scenarioKey:'data',stage:9,currentPage:'power'}));
 assert.equal(storage.loadState().scenarioKey,'data','newer session state must beat stale persistent state');
-assert.equal(storage.stateStorageMode(),'session','storage mode must report the backend containing the newest current state');
+assert.equal(storage.stateStorageMode(),'session');
 assert.equal(storage.latestStateRevision(),5);
 
-localStore.set('no_boss_v3_state',JSON.stringify({version:APP_VERSION,storageRevision:8,storageWriterId:'other-tab',scenarioKey:'ai',stage:2,currentPage:'work'}));
-sessionStore.set('no_boss_v3_state',JSON.stringify({version:APP_VERSION,storageRevision:8,storageWriterId:'this-tab',scenarioKey:'data',stage:4,currentPage:'risk'}));
+localStore.set('no_boss_state',JSON.stringify({storageRevision:8,storageWriterId:'other-tab',scenarioKey:'ai',stage:2,currentPage:'work'}));
+sessionStore.set('no_boss_state',JSON.stringify({storageRevision:8,storageWriterId:'this-tab',scenarioKey:'data',stage:4,currentPage:'risk'}));
 assert.equal(storage.loadState().scenarioKey,'data','an equal-revision conflict must preserve this tab session copy');
 assert.equal(storage.stateStorageMode(),'session');
 setState({...getState(),scenarioKey:'data',stage:4,currentPage:'risk'});
 assert.ok(getState().storageRevision>8,'the next state write must advance beyond the highest shared revision');
 assert.ok(getState().storageWriterId,'state writes must record a tab writer id');
 
-localStore.set('no_boss_v3_state',JSON.stringify({version:'3.0.1',storageRevision:99,scenarioKey:'translation',stage:2,currentPage:'work'}));
-assert.equal(storage.loadState().scenarioKey,'data','an incompatible local state must not hide a valid current session state');
-
-localStore.set('no_boss_v3_state',JSON.stringify({version:APP_VERSION,storageRevision:getState().storageRevision,storageWriterId:'same-tab',scenarioKey:'ai',stage:2,currentPage:'work'}));
+localStore.set('no_boss_state',JSON.stringify({storageRevision:getState().storageRevision,storageWriterId:'same-tab',scenarioKey:'ai',stage:2,currentPage:'work'}));
 const originalLocalSet=localStorageObject.setItem;
 localStorageObject.setItem=()=>{throw new Error('quota')};
-const fallback=storage.saveState({version:APP_VERSION,storageRevision:getState().storageRevision+1,storageWriterId:'same-tab',scenarioKey:'data',stage:4,currentPage:'risk'});
+const fallback=storage.saveState({storageRevision:getState().storageRevision+1,storageWriterId:'same-tab',scenarioKey:'data',stage:4,currentPage:'risk'});
 assert.equal(fallback.status,'session','sessionStorage must back up state when localStorage fails');
 assert.equal(storage.loadState().currentPage,'risk','fallback reads must choose the newer session copy over stale local data');
-assert.equal(storage.archiveResult({runId:'x',version:RESULT_VERSION,scoringVersion:SCORING_VERSION}),false,'result archive must require persistent storage');
+assert.equal(storage.archiveResult({runId:'x'}),false,'result archive must require persistent storage');
 localStorageObject.setItem=originalLocalSet;
 
-const archived=storage.archiveResult({runId:'compact',version:RESULT_VERSION,scoringVersion:SCORING_VERSION,scenario:'data',scenarioName:'سامي',score:88,outcome:'warning',simMinutes:42,netEconomic:3.25,finalStress:51,breakTaken:true,createdAt:'2026-08-21T12:00:00.000Z',analysis:'لا حاجة للاحتفاظ بهذا النص',answers:{price:'المنصة'},power:{price:{worker:1,platform:99}}});
+const archived=storage.archiveResult({runId:'compact',scenario:'data',scenarioName:'سامي',score:88,outcome:'warning',simMinutes:42,netEconomic:3.25,finalStress:51,breakTaken:true,createdAt:'2026-08-21T12:00:00.000Z',analysis:'لا حاجة للاحتفاظ بهذا النص',answers:{price:'المنصة'},power:{price:{worker:1,platform:99}}});
 assert.equal(archived,true);
-const storedArchive=JSON.parse(localStore.get('no_boss_v3_results'));
-const compact=storedArchive.find(x=>x.runId==='compact');
+const storedArchive=JSON.parse(localStore.get('no_boss_results'));
+const compact=storedArchive.find(result=>result.runId==='compact');
 assert.ok(compact,'the compact result must be persisted');
 assert.equal(compact.analysis,undefined,'archived results must not retain free-text analysis');
 assert.equal(compact.answers,undefined,'archived results must not retain investigation answers');
@@ -114,7 +105,7 @@ assert.equal(compact.score,88);
 
 Object.defineProperty(globalThis,'localStorage',{configurable:true,get(){throw new Error('blocked')}});
 sessionStore.clear();
-const guarded=storage.saveState({version:APP_VERSION,storageRevision:getState().storageRevision+2,storageWriterId:'guarded',scenarioKey:'moderation',stage:3,currentPage:'management'});
+const guarded=storage.saveState({storageRevision:getState().storageRevision+2,storageWriterId:'guarded',scenarioKey:'moderation',stage:3,currentPage:'management'});
 assert.equal(guarded.status,'session','a SecurityError while accessing localStorage must still allow session fallback');
 assert.equal(storage.loadState().currentPage,'management');
 Object.defineProperty(globalThis,'localStorage',{configurable:true,writable:true,value:localStorageObject});

@@ -3,7 +3,7 @@ import {scenarios} from '../assets/js/data/scenarios.js';
 import {axes} from '../assets/js/data/parties.js';
 import {powerTargets} from '../assets/js/data/power-targets.js';
 import {buildPaymentSettlement,PAYMENT_PROCESSOR_RATE,PAYMENT_PROCESSOR_CAP} from '../assets/js/domain/payment.js';
-import {ACCESS_MODEL_VERSION,assessAccessDecision} from '../assets/js/domain/access.js';
+import {assessAccessDecision} from '../assets/js/domain/access.js';
 import {evidenceFor} from '../assets/js/domain/evidence.js';
 import {relationshipQuestions,acceptedQuestionReferences} from '../assets/js/domain/questions.js';
 import {powerMapComplete,scoreAnalysis} from '../assets/js/domain/analysis.js';
@@ -18,7 +18,6 @@ assert.equal(PAYMENT_PROCESSOR_CAP,.22);
 const payment=buildPaymentSettlement({costs:{internet:.55,electricity:.18,device:.42,transfer:.25}},{clientPaid:5.8,grossWorker:2.1,hold:.21});
 close(payment.clientPaid,5.8);close(payment.contracted,2.1);close(payment.platformService,3.7);close(payment.mediator,.063);close(payment.cashPayout,1.577);close(payment.operating,1.15);close(payment.net,.427);
 
-assert.equal(ACCESS_MODEL_VERSION,3);
 const baseScenario={outcomeStrictness:1};
 const warning=assessAccessDecision(baseScenario,{scenarioKey:'data',disputeSeverity:0,qualityBeforeDispute:90,accessBeforeDispute:70,rejections:0});
 assert.equal(warning.points,0);assert.equal(warning.outcome,'warning');

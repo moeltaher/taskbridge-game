@@ -1,6 +1,5 @@
 import {axes} from '../data/parties.js';
 import {powerTargets} from '../data/power-targets.js';
-import {SCORING_VERSION} from '../core/config.js';
 import {powerAxisCredit} from '../core/power-scoring.js';
 import {evidenceFor} from './evidence.js';
 import {acceptedQuestionReferences,acceptedQuestionAnswer,relationshipQuestions} from './questions.js';
@@ -21,5 +20,5 @@ export function scoreAnalysis(scenario,state){
  let powerRaw=0;
  for(const axis of axes)powerRaw+=powerAxisCredit(state.power[axis.id],targets[axis.id]);
  const powerScore=Math.round(powerRaw/axes.length*40);
- return {score:Math.min(100,qScore+sortScore+powerScore),qScore,sortScore,powerScore,questionCorrect,questionTotal,evidenceCorrect,evidenceTotal,powerAxesCompleted:axes.filter(axis=>(state.powerTouched||[]).includes(axis.id)&&(state.powerEdited||[]).includes(axis.id)).length,scoringVersion:SCORING_VERSION,powerMethod:'tie-aware-relative-ranking'};
+ return {score:Math.min(100,qScore+sortScore+powerScore),qScore,sortScore,powerScore,questionCorrect,questionTotal,evidenceCorrect,evidenceTotal,powerAxesCompleted:axes.filter(axis=>(state.powerTouched||[]).includes(axis.id)&&(state.powerEdited||[]).includes(axis.id)).length,powerMethod:'tie-aware-relative-ranking'};
 }

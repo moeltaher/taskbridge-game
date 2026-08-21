@@ -27,16 +27,16 @@ The router accepts clean GitHub Pages paths such as `/work/` and explicit docume
 
 Core modules own application infrastructure rather than simulation rules.
 
-- `config.js` — single source for application, result, scoring, and time-model versions.
-- `routes.js` — single route manifest for slugs, stages, progress, titles, public-entry status, researcher mode, and stage-default routes.
-- `state.js` — live state schema, migration, checkpoints, transaction-style state commits, logs, derived time buckets, and navigation-state operations.
-- `storage.js` — guarded `localStorage`/`sessionStorage` access, state selection, revision metadata, legacy migration, compact archived results, and result retrieval.
+- `config.js` — application name, current release number, and display label.
+- `routes.js` — route manifest for slugs, stages, progress, titles, public-entry status, researcher mode, and stage-default routes.
+- `state.js` — the current live-state schema, checkpoints, transaction-style state commits, logs, derived time buckets, and navigation-state operations.
+- `storage.js` — guarded `localStorage`/`sessionStorage` access, state selection by revision, compact archived results, and result retrieval.
 - `ui.js` — shared shell, progress, summary stats, and reusable presentation helpers.
 - `bootstrap.js` — route validation, safe resume/redirect behavior, shell loading, and page-controller loading.
 - `html.js` — shared HTML/attribute escaping helpers.
 - `power-scoring.js` — tie-aware relative power-map helpers.
 
-Route metadata is read directly from `routes.js`; `state.js` does not duplicate or re-export the route manifest.
+Route metadata is read directly from `routes.js`; state code does not duplicate the route manifest.
 
 ### `assets/js/domain/`
 
@@ -44,6 +44,7 @@ Domain modules contain simulation and analysis rules that do not depend on the D
 
 - `work.js` — acceptance-rate calculation, bounding-box IoU, task scoring, and first-task outcome.
 - `management.js` — managed-access calculation, second-offer generation/decision/completion, and monitoring-break outcome.
+- `risk.js` — the work-related risk event and its time/stress transition.
 - `dispute.js` — dispute severity, hold/penalty rules, appeal cost, final dispute outcome, and published translation reference selection.
 - `payment.js` — payment settlement and worker economic outcome.
 - `access.js` — final restriction/suspension decision and factor scoring.
@@ -51,26 +52,24 @@ Domain modules contain simulation and analysis rules that do not depend on the D
 - `questions.js` — relationship-question definitions and accepted reference answers.
 - `analysis.js` — power-map completion and final analytical score.
 
-New simulation rules should be added here rather than embedded in page rendering code.
+New simulation rules belong here rather than in page rendering code.
 
 ### `assets/js/data/`
 
-Data is split by concern rather than being kept in one large file:
+Data is split by concern:
 
-- `scenarios.js` — worker/scenario facts only.
+- `scenarios.js` — worker/scenario facts.
 - `parties.js` — party identifiers, Arabic labels, and the six power-map axes.
 - `power-targets.js` — reference power distributions used by analytical scoring and feedback.
 - `question-references.js` — accepted reference answers by scenario type.
 - `evidence-templates.js` — evidence titles, default descriptions, and accepted classifications.
 - `samples.js` — moderation, AI, and translation task samples.
 
-Consumers import data from the module that owns it. `scenarios.js` is not a compatibility re-export hub for the other data modules.
-
-These modules contain data only; they do not own browser persistence, navigation, rendering, or simulation side effects.
+Consumers import each dataset directly from the module that owns it. Data modules do not own browser persistence, navigation, rendering, or simulation side effects.
 
 ### `assets/js/pages/`
 
-Each page module owns one logical route. Page modules should primarily:
+Each page module owns one logical route. Page modules primarily:
 
 1. read current state and scenario data;
 2. render the route UI;
@@ -79,9 +78,7 @@ Each page module owns one logical route. Page modules should primarily:
 5. commit the resulting state transition;
 6. navigate to the next route.
 
-They should not duplicate scoring, settlement, access, dispute, or evidence rules already owned by `domain/`.
-
-Page `render()` functions are synchronous unless the route genuinely performs asynchronous work. `bootstrap.js` may still await a renderer so a future asynchronous route remains compatible without changing the loader contract.
+They do not duplicate scoring, settlement, access, dispute, or evidence rules already owned by `domain/`.
 
 ### `assets/css/`
 
@@ -94,45 +91,36 @@ Static reusable visual rules belong in CSS. Inline styles are reserved for genui
 
 ## State transactions
 
-`state.js` exposes `commit()` as the preferred write path for a user action that changes several state concerns together. A transaction can combine:
+`state.js` exposes `commit()` as the preferred write path for a user action that changes several state concerns together. A transaction can combine state-field changes, newly collected evidence, a timeline entry, and acceptance-rate recalculation. The operation persists once after all changes have been applied. `patch()` handles simple field changes and delegates to `commit()`.
 
-- state-field changes;
-- newly collected evidence;
-- one timeline/log entry;
-- acceptance-rate recalculation.
-
-The operation persists once after all changes have been applied. `patch()` is the simple single-concern convenience path and delegates to `commit()`. Obsolete evidence/log/acceptance wrappers were removed; callers that need those concerns use `commit()` explicitly.
-
-This avoids generating several storage revisions for one logical user action and reduces partially-applied transitions. Entering a route also records its checkpoint and current page with one persistence write, and re-entering the current page is a no-op.
+Moving into a route records its checkpoint and current page with one persistence write. Re-entering the current page is a no-op. Returning through the in-game Back control restores the checkpoint snapshot and removes decisions made after it.
 
 ## Storage and multi-tab behavior
 
-The current game state is stored under `no_boss_v3_state`; archived results use `no_boss_v3_results`.
+The live game state is stored under `no_boss_state`; archived comparison results use `no_boss_results`.
 
 Live-state writes target both `localStorage` and `sessionStorage`:
 
 - `localStorage` is the durable shared copy;
-- `sessionStorage` is a tab-scoped copy and fallback when durable storage is unavailable.
+- `sessionStorage` is the tab-scoped copy and fallback when durable storage is unavailable.
 
-Every saved state carries a monotonically increasing `storageRevision` and a tab-scoped `storageWriterId`. Before a new state is persisted, state code reads the latest shared revision and advances from the highest known value. When local and session copies have equal revisions but were written by different writers, the current tab's session copy wins rather than being silently replaced by another tab's equal-revision state.
+Every saved state carries a monotonically increasing `storageRevision` and a tab-scoped `storageWriterId`. Before a new state is persisted, state code reads the latest shared revision and advances from the highest known value. When local and session copies have equal revisions but were written by different writers, the current tab's session copy wins.
 
-All Web Storage access is guarded because privacy/browser policies can throw before a read or write begins. When only session storage works, the UI warns the participant and `beforeunload` requests confirmation where the browser permits it.
+All Web Storage access is guarded because browser privacy policies can throw before a read or write begins. When only session storage works, the UI warns the participant and `beforeunload` requests confirmation where the browser permits it.
 
-Archived comparison results are intentionally different: they require durable `localStorage` and store only the fields needed by the comparison UI. Free-text analysis, investigation answers, and full power-map values are not retained in the archive. A tab-only result is not reported as successfully archived.
+Archived results require durable `localStorage` and store only the fields needed by the comparison UI. Free-text analysis, investigation answers, and full power-map values are not retained in the archive. A tab-only result is not reported as successfully archived.
 
-Compatible current-version state stored under the former TaskBridge v2 key can be migrated into the current slot. Incompatible sessions remain separate.
+There is one active state schema and one active result schema. The application does not read, migrate, merge, display, or preserve data from other schemas or storage namespaces.
 
 ## Navigation and checkpoints
 
-Moving between route pages does not lose the session. The in-game Back control restores a state checkpoint rather than merely loading the previous URL, so later decisions are undone when the participant intentionally goes back.
+Moving between route pages does not lose the current session. Resume preserves a saved non-public route when it matches the current stage, including `/rights/`; stale or mismatched route-state combinations are repaired using the shared route manifest and saved stage.
 
-Back is disabled on landing and scenario-selection pages. Resume preserves the saved non-public route when it matches the current stage, including `/rights/`; stale or mismatched routes are repaired using the shared route manifest and saved stage.
+Back is disabled on landing and scenario-selection pages. Within the simulation it restores an explicit state checkpoint rather than merely loading browser history.
 
 ## Power-map scoring
 
 The power map starts at an equal 25/25/25/25 distribution for display only. A participant must edit each axis before it can be approved. Scoring compares the exact top-leader set plus a tie-aware top group, so a four-way tie does not receive leader credit merely because it contains the reference leader.
-
-Archived results include an internal scoring version. Results created by an older scoring method remain stored but are excluded from direct comparison with results created by the current scoring method.
 
 ## Generated route shells
 
@@ -146,21 +134,21 @@ CI runs the generator in `--check` mode so a route title, slug, or version canno
 
 ## Development and release checks
 
-Repository checks are exposed through `package.json` so local and CI commands stay aligned:
+Repository checks are exposed through `package.json`:
 
 ```bash
 npm run check
 ```
 
-That command runs, in order:
+That command runs:
 
 - `check:routes` — generated route shell drift;
-- `check:structural` — required files and architectural guardrails;
+- `check:structural` — required files and current architectural invariants;
 - `check:regression` — route/state/storage/navigation regression cases;
 - `check:domain` — pure simulation and scoring rules;
 - `check:syntax` — JavaScript syntax checks across `assets/js`, `scripts`, and `tests`.
 
-Browser coverage is separate because it requires Playwright and Chromium:
+Browser coverage uses Playwright and Chromium:
 
 ```bash
 npm install

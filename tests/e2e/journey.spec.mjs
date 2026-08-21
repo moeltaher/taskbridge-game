@@ -168,7 +168,7 @@ test('complete worker-to-researcher journey reaches result and rights',async({pa
   await expectRoute(page,'result');
   await expect(page.getByText('درجة التمرين التحليلي')).toBeVisible();
 
-  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('no_boss_v3_state')));
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('no_boss_state')));
   expect(saved.scenarioKey).toBe('moderation');
   expect(saved.stage).toBe(11);
   expect(saved.workScore).toBeGreaterThanOrEqual(0);
