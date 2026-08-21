@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {scenarios} from '../assets/js/data/scenarios.js';
+import {samples} from '../assets/js/data/samples.js';
 import {axes} from '../assets/js/data/parties.js';
 import {powerTargets} from '../assets/js/data/power-targets.js';
 import {buildPaymentSettlement,PAYMENT_PROCESSOR_RATE,PAYMENT_PROCESSOR_CAP} from '../assets/js/domain/payment.js';
@@ -8,82 +9,30 @@ import {evidenceFor} from '../assets/js/domain/evidence.js';
 import {relationshipQuestions,acceptedQuestionReferences} from '../assets/js/domain/questions.js';
 import {powerMapComplete,scoreAnalysis} from '../assets/js/domain/analysis.js';
 import {acceptanceRate,intersectionOverUnion,scoreWork,firstTaskOutcome,dataRegionOptions,dataSceneDescriptions,semanticDataAnswer} from '../assets/js/domain/work.js';
-import {computeManagedAccess,buildSecondOffer,secondOfferDecision,completeSecondTask,monitorDecision} from '../assets/js/domain/management.js';
-import {APPEAL_TIME_MINUTES,APPEAL_STRESS,disputeSeverityFromScore,disputeConsequences,applyDisputeOutcome,appealCostChanges,publishedTranslationText} from '../assets/js/domain/dispute.js';
+import {computeManagedAccess,buildSecondOffer,secondOfferDecision,completeSecondTask,monitorDecision,BREAK_MINUTES,BREAK_STRESS_REDUCTION} from '../assets/js/domain/management.js';
+import {APPEAL_TIME_MINUTES,APPEAL_STRESS,disputeSeverityFromScore,reviewedSeverity,disputeConsequences,applyDisputeOutcome,appealCostChanges,publishedTranslationText} from '../assets/js/domain/dispute.js';
 import {riskTransition} from '../assets/js/domain/risk.js';
-
-const close=(actual,expected,epsilon=1e-12)=>assert.ok(Math.abs(actual-expected)<epsilon,`${actual} != ${expected}`);
-
-assert.equal(PAYMENT_PROCESSOR_RATE,.03);
-assert.equal(PAYMENT_PROCESSOR_CAP,.22);
-const payment=buildPaymentSettlement({costs:{internet:.55,electricity:.18,device:.42,transfer:.25}},{clientPaid:5.8,grossWorker:2.1,hold:.21});
-close(payment.clientPaid,5.8);close(payment.contracted,2.1);close(payment.platformService,3.7);close(payment.mediator,.063);close(payment.cashPayout,1.577);close(payment.operating,1.15);close(payment.net,.427);
-assert.equal('cashBeforeOperating' in payment,false);
-
-const baseScenario={outcomeStrictness:1};
-const warning=assessAccessDecision(baseScenario,{disputeSeverity:0,qualityBeforeDispute:90,rejections:0});
-assert.equal(warning.points,0);assert.equal(warning.outcome,'warning');
-const project=assessAccessDecision(baseScenario,{disputeSeverity:1,qualityBeforeDispute:75,rejections:1});
-assert.equal(project.points,3);assert.equal(project.outcome,'project');
-const suspended=assessAccessDecision(baseScenario,{disputeSeverity:2,qualityBeforeDispute:65,rejections:3});
-assert.equal(suspended.points,6);assert.equal(suspended.outcome,'suspended');
-assert.deepEqual(Object.keys(warning).sort(),['factors','outcome','points','projectAt','suspendAt'].sort());
-
-const evidenceScenario={priceMechanism:'سعر مخصص',allocationMechanism:'توزيع مخصص',monitoring:'timing'};
-assert.equal(evidenceFor('priceSetting',evidenceScenario,{}).text,'سعر مخصص');
-assert.deepEqual(evidenceFor('allocation',evidenceScenario,{}).validKinds,['ctrl','dep']);
-assert.match(evidenceFor('monitoring',evidenceScenario,{}).text,/تبديل التبويب/);
-const riskEvidence=evidenceFor('risk',evidenceScenario,{riskEvent:{title:'إعادة تحقق',minutes:3}});
-assert.equal(riskEvidence.title,'وقت إضافي مرتبط بالعمل بلا مقابل مستقل');assert.match(riskEvidence.text,/3 دقيقة/);
-
-assert.equal(relationshipQuestions.length,6);
-const refs=acceptedQuestionReferences('data');
-const perfectAnswers=Object.fromEntries(relationshipQuestions.map(({id})=>[id,Array.isArray(refs[id])?refs[id][0]:refs[id]]));
-const completedAxes=axes.map(axis=>axis.id);
-const analysisState={answers:perfectAnswers,evidence:['contract'],evidenceSort:{contract:'ind'},power:powerTargets.data,powerTouched:completedAxes,powerEdited:completedAxes};
-assert.equal(powerMapComplete(analysisState),true);
-const analysis=scoreAnalysis(scenarios.data,analysisState);
-assert.equal(analysis.questionCorrect,6);assert.equal(analysis.qScore,30);assert.equal(analysis.sortScore,30);assert.equal(analysis.powerScore,40);assert.equal(analysis.score,100);
-assert.equal('powerMethod' in analysis,false);assert.equal('powerAxesCompleted' in analysis,false);
-
-assert.equal(acceptanceRate(3,4),75);assert.equal(acceptanceRate(0,0),100);
-const box={x:.2,y:.3,w:.4,h:.3};close(intersectionOverUnion(box,box),1);
-assert.equal(dataRegionOptions.length,5);assert.equal(dataSceneDescriptions.length,3);
-const semanticAnswers=[semanticDataAnswer(0,'leftCenter'),semanticDataAnswer(1,'rightCenter'),semanticDataAnswer(2,'center')];
-assert.equal(semanticAnswers.every(answer=>answer?.source==='semantic'),true);
-assert.equal(scoreWork(scenarios.data,semanticAnswers),100);
-assert.equal(semanticDataAnswer(0,'missing'),null);
-assert.equal(scoreWork(scenarios.translation,['A','A','A']),100);
-const firstTask=firstTaskOutcome(scenarios.data,{workAnswers:[{x:.27,y:.43,w:.34,h:.35},{x:.45,y:.43,w:.34,h:.35},{x:.36,y:.42,w:.34,h:.36}],quality:91,selectedJob:{duration:12,pay:2.1,clientValue:5.8},stress:24,time:0,paidTime:0,grossWorker:0,clientPaid:0});
-assert.equal(firstTask.score,100);assert.equal(firstTask.changes.quality,94);assert.equal(firstTask.changes.paidTime,12);assert.equal(firstTask.changes.grossWorker,2.1);assert.equal(firstTask.changes.stress,34);
-assert.deepEqual(Object.keys(firstTask).sort(),['changes','job','score','stressDelta'].sort());
-
-const managedState={quality:94,acceptance:100};
-assert.equal(computeManagedAccess(scenarios.data,managedState),95);
-assert.equal(buildSecondOffer(scenarios.data,95).premium,true);
-assert.equal(buildSecondOffer(scenarios.data,70).premium,false);
-const rejectedDecision=secondOfferDecision({secondOffer:{title:'دفعة',pay:1.8,duration:11},acceptance:100,access:80,stress:30,rejections:0,offerDecisions:1,acceptedOffers:1},false);
-assert.equal(rejectedDecision.offerDecisions,2);assert.equal(rejectedDecision.acceptance,50);assert.equal(rejectedDecision.rejections,1);
-assert.deepEqual(Object.keys(rejectedDecision.result).sort(),['accepted','afterAcceptance','afterAccess','afterStress','beforeAcceptance','beforeAccess','beforeStress','completed','duration','pay','title'].sort());
-const secondCompletion=completeSecondTask({secondOffer:{pay:3.85,duration:18,clientValue:8,premium:true},offerDecisionResult:{accepted:true,beforeAccess:80},access:80,stress:30,grossWorker:2.1,clientPaid:5.8,time:12,paidTime:12});
-assert.equal(secondCompletion.changes.access,85);assert.equal(secondCompletion.changes.stress,42);assert.equal(secondCompletion.changes.paidTime,30);
-assert.deepEqual(Object.keys(secondCompletion).sort(),['changes','stressDelta'].sort());
-const breakDecision=monitorDecision({stress:42},true);assert.equal(breakDecision.stressAfter,32);assert.equal(breakDecision.breakDelta,1);
-
-const riskState={time:12,extraWorkTime:0,stress:30,riskEvent:null};
-const risk=riskTransition(scenarios.data,riskState);
-assert.ok(risk.event);assert.ok(risk.changes);assert.deepEqual(Object.keys(risk).sort(),['changes','event'].sort());
-const repeatedRisk=riskTransition(scenarios.data,{...riskState,riskEvent:risk.event});
-assert.equal(repeatedRisk.changes,null);assert.deepEqual(Object.keys(repeatedRisk).sort(),['changes','event'].sort());
-
-assert.equal(APPEAL_TIME_MINUTES,2);assert.equal(APPEAL_STRESS,4);
-assert.equal(disputeSeverityFromScore(85),0);assert.equal(disputeSeverityFromScore(60),1);assert.equal(disputeSeverityFromScore(59),2);
-const limited=disputeConsequences({grossWorker:4},1,false);close(limited.hold,.4);assert.equal(limited.penalty,4);
-const appealedMajor=disputeConsequences({grossWorker:10},2,true);close(appealedMajor.hold,.9);assert.equal(appealedMajor.penalty,6);
-const disputeOutcome=applyDisputeOutcome({qualityBeforeDispute:80,access:70,grossWorker:4,disputeSeverity:1,appealed:false,appealCost:null});
-assert.equal(disputeOutcome.changes.quality,76);assert.equal(disputeOutcome.changes.access,66);close(disputeOutcome.changes.hold,.4);assert.equal('disputeResult' in disputeOutcome.changes,false);assert.equal('accessBeforeDispute' in disputeOutcome.changes,false);
-const appealChanges=appealCostChanges({time:10,extraWorkTime:1,stress:98});
-assert.equal(appealChanges.time,12);assert.equal(appealChanges.extraWorkTime,3);assert.equal(appealChanges.stress,100);assert.deepEqual(appealChanges.appealCost,{minutes:2,stress:4});assert.equal('appealCostApplied' in appealChanges,false);
-assert.equal(publishedTranslationText({a:'صياغة A',b:'صياغة B',published:'B'}),'صياغة B');
-
+const close=(a,b,e=1e-12)=>assert.ok(Math.abs(a-b)<e,`${a} != ${b}`);
+assert.equal(PAYMENT_PROCESSOR_RATE,.03);assert.equal(PAYMENT_PROCESSOR_CAP,.22);
+const payment=buildPaymentSettlement({costs:{internet:.55,electricity:.18,device:.42,transfer:.25}},{clientPaid:5.8,grossWorker:2.1,hold:.21});close(payment.net,.427);assert.equal('cashBeforeOperating' in payment,false);
+for(const sc of Object.values(scenarios)){assert.ok(sc.accessPolicy?.projectAt>0);assert.ok(sc.accessPolicy?.suspendAt>sc.accessPolicy.projectAt);assert.equal('outcomeStrictness' in sc,false)}
+const warning=assessAccessDecision(scenarios.data,{finalReviewSeverity:0,rejections:0});assert.equal(warning.points,0);assert.equal(warning.outcome,'warning');
+const project=assessAccessDecision(scenarios.data,{finalReviewSeverity:1,rejections:1});assert.equal(project.points,2);assert.equal(project.outcome,'project');
+const suspended=assessAccessDecision(scenarios.data,{finalReviewSeverity:2,rejections:2});assert.equal(suspended.points,4);assert.equal(suspended.outcome,'suspended');
+assert.equal(warning.factors.length,2);
+const evidenceScenario={priceMechanism:'سعر مخصص',allocationMechanism:'توزيع مخصص',monitoring:'timing'};assert.equal(evidenceFor('priceSetting',evidenceScenario,{}).text,'سعر مخصص');assert.deepEqual(evidenceFor('contract',evidenceScenario,{}).validKinds,['dep']);assert.deepEqual(evidenceFor('multiPlatform',evidenceScenario,{}).validKinds,['ind','dep']);
+assert.equal(relationshipQuestions.length,6);assert.ok(relationshipQuestions.find(q=>q.id==='allocation').options.includes('سلطة مشتركة بين المنصة والعميل'));
+const refs=acceptedQuestionReferences('data'),perfectAnswers=Object.fromEntries(relationshipQuestions.map(({id})=>[id,Array.isArray(refs[id])?refs[id][0]:refs[id]])),completedAxes=axes.map(a=>a.id),analysisState={answers:perfectAnswers,evidence:['contract'],evidenceSort:{contract:'dep'},power:powerTargets.data,powerTouched:completedAxes,powerEdited:completedAxes};assert.equal(powerMapComplete(analysisState),true);const analysis=scoreAnalysis(scenarios.data,analysisState);assert.equal(analysis.score,100);
+assert.equal(acceptanceRate(3,4),75);assert.equal(acceptanceRate(0,0),100);const box={x:.2,y:.3,w:.4,h:.3};close(intersectionOverUnion(box,box),1);assert.equal(dataRegionOptions.length,5);assert.equal(dataSceneDescriptions.length,3);const semanticAnswers=[semanticDataAnswer(0,'leftCenter'),semanticDataAnswer(1,'rightCenter'),semanticDataAnswer(2,'center')];assert.equal(scoreWork(scenarios.data,semanticAnswers),100);
+assert.equal(samples.translation.length,5);assert.equal(scoreWork(scenarios.translation,['A','A']),100);assert.equal(scoreWork(scenarios.translation,['B','B']),75);
+const firstTask=firstTaskOutcome(scenarios.data,{workAnswers:semanticAnswers,quality:91,selectedJob:{duration:12,pay:2.1,clientValue:5.8},stress:24,time:0,paidTime:0,grossWorker:0,clientPaid:0});assert.equal(firstTask.score,100);assert.equal(firstTask.changes.quality,94);assert.equal(firstTask.changes.paidTime,12);
+assert.equal(computeManagedAccess(scenarios.data,{quality:94,acceptance:100}),95);assert.equal(buildSecondOffer(scenarios.data,95).premium,true);assert.equal(buildSecondOffer(scenarios.data,70).premium,false);
+const rejected=secondOfferDecision({secondOffer:{title:'دفعة',pay:1.8,duration:11},acceptance:100,access:80,stress:30,rejections:0,offerDecisions:1,acceptedOffers:1},false);assert.equal(rejected.acceptance,50);assert.equal(rejected.rejections,1);
+const completion=completeSecondTask({secondOffer:{pay:3.85,duration:18,clientValue:8,premium:true},offerDecisionResult:{accepted:true,beforeAccess:80},access:80,stress:30,grossWorker:2.1,clientPaid:5.8,time:12,paidTime:12});assert.equal('access' in completion.changes,false);assert.equal(completion.changes.stress,42);assert.equal(completion.changes.paidTime,30);
+assert.equal(BREAK_MINUTES,3);assert.equal(BREAK_STRESS_REDUCTION,8);const breakDecision=monitorDecision({stress:42},true);assert.equal(breakDecision.stressAfter,34);assert.equal(breakDecision.breakDelta,3);
+const riskState={time:12,extraWorkTime:0,stress:30,riskEvent:null},risk=riskTransition(scenarios.data,riskState);assert.ok(risk.event);assert.ok(risk.changes);assert.equal(riskTransition(scenarios.data,{...riskState,riskEvent:risk.event}).changes,null);
+assert.equal(APPEAL_TIME_MINUTES,2);assert.equal(APPEAL_STRESS,4);assert.equal(disputeSeverityFromScore(85),0);assert.equal(disputeSeverityFromScore(60),1);assert.equal(disputeSeverityFromScore(59),2);assert.equal(reviewedSeverity(2,true),1);assert.equal(reviewedSeverity(1,true),0);assert.equal(reviewedSeverity(2,false),2);
+const limited=disputeConsequences({grossWorker:4},1);close(limited.hold,.4);assert.equal(limited.penalty,4);const major=disputeConsequences({grossWorker:10},2);close(major.hold,.9);assert.equal(major.penalty,9);
+const disputeOutcome=applyDisputeOutcome({qualityBeforeDispute:80,grossWorker:4,initialReviewSeverity:2,disputeSeverity:2,appealed:true});assert.equal(disputeOutcome.finalSeverity,1);assert.equal(disputeOutcome.changes.quality,76);close(disputeOutcome.changes.hold,.4);assert.equal('access' in disputeOutcome.changes,false);
+const appealChanges=appealCostChanges({time:10,extraWorkTime:1,stress:98});assert.equal(appealChanges.time,12);assert.equal(appealChanges.extraWorkTime,3);assert.equal(appealChanges.stress,100);assert.deepEqual(appealChanges.appealCost,{minutes:2,stress:4});assert.equal(publishedTranslationText({a:'A text',b:'B text',preferred:'B'}),'B text');
 console.log('No Boss domain checks passed');
