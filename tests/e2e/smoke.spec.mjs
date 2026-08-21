@@ -24,7 +24,7 @@ test('scenario selection persists and onboarding reaches work',async({page})=>{
   await page.getByRole('button',{name:'أوافق وأدخل No Boss'}).click();
   await expect(page).toHaveURL(/\/work\/$/);
   await expect(page.getByText('ملخص وضعك حتى الآن')).toBeVisible();
-  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('no_boss_v3_state')));
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('no_boss_state')));
   expect(saved.scenarioKey).toBe('data');
   expect(saved.stage).toBe(2);
   expect(saved.evidence).toEqual(expect.arrayContaining(['contract','ownTools','multiPlatform']));
@@ -42,7 +42,7 @@ test('data task has an equivalent nonvisual annotation path',async({page})=>{
   await groups.nth(0).getByLabel('بين اليسار والمنتصف').check();
   await groups.nth(1).getByLabel('بين المنتصف واليمين').check();
   await groups.nth(2).getByLabel('حول منتصف الطريق').check();
-  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('no_boss_v3_state')));
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('no_boss_state')));
   expect(saved.workAnswers).toHaveLength(3);
   expect(saved.workAnswers.every(answer=>answer?.source==='semantic')).toBe(true);
   await page.getByRole('button',{name:'إرسال العمل للمراجعة'}).click();
