@@ -5,7 +5,7 @@ import {ACCESS_MODEL_VERSION,assessAccessDecision} from '../assets/js/domain/acc
 import {evidenceFor} from '../assets/js/domain/evidence.js';
 import {relationshipQuestions,acceptedQuestionReferences} from '../assets/js/domain/questions.js';
 import {powerMapComplete,scoreAnalysis} from '../assets/js/domain/analysis.js';
-import {acceptanceRate,intersectionOverUnion,scoreWork,firstTaskOutcome} from '../assets/js/domain/work.js';
+import {acceptanceRate,intersectionOverUnion,scoreWork,firstTaskOutcome,dataRegionOptions,dataSceneDescriptions,semanticDataAnswer} from '../assets/js/domain/work.js';
 import {computeManagedAccess,buildSecondOffer,secondOfferDecision,completeSecondTask,monitorDecision} from '../assets/js/domain/management.js';
 import {APPEAL_TIME_MINUTES,APPEAL_STRESS,disputeSeverityFromScore,disputeConsequences,applyDisputeOutcome,appealCostChanges,publishedTranslationText} from '../assets/js/domain/dispute.js';
 
@@ -43,6 +43,11 @@ assert.equal(analysis.questionCorrect,6);assert.equal(analysis.qScore,30);assert
 
 assert.equal(acceptanceRate(3,4),75);assert.equal(acceptanceRate(0,0),100);
 const box={x:.2,y:.3,w:.4,h:.3};close(intersectionOverUnion(box,box),1);
+assert.equal(dataRegionOptions.length,5);assert.equal(dataSceneDescriptions.length,3);
+const semanticAnswers=[semanticDataAnswer(0,'leftCenter'),semanticDataAnswer(1,'rightCenter'),semanticDataAnswer(2,'center')];
+assert.equal(semanticAnswers.every(answer=>answer?.source==='semantic'),true);
+assert.equal(scoreWork(scenarios.data,semanticAnswers),100);
+assert.equal(semanticDataAnswer(0,'missing'),null);
 assert.equal(scoreWork(scenarios.translation,['A','A','A']),100);
 const firstTask=firstTaskOutcome(scenarios.data,{workAnswers:[{x:.27,y:.43,w:.34,h:.35},{x:.45,y:.43,w:.34,h:.35},{x:.36,y:.42,w:.34,h:.36}],quality:91,selectedJob:{duration:12,pay:2.1,clientValue:5.8},stress:24,time:0,paidTime:0,grossWorker:0,clientPaid:0,jobsDone:0});
 assert.equal(firstTask.score,100);assert.equal(firstTask.quality,94);assert.equal(firstTask.changes.paidTime,12);assert.equal(firstTask.changes.grossWorker,2.1);assert.equal(firstTask.changes.stress,34);
