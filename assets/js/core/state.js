@@ -26,6 +26,5 @@ export function undoCheckpoint(){const item=state.checkpoints.pop();if(!item)ret
 export function consumeCheckpointTo(expectedPage){const item=state.checkpoints.at(-1);if(item?.page!==expectedPage)return null;state.checkpoints.pop();state.currentPage=expectedPage;state.stage=routeStageForPage(expectedPage);persist();return expectedPage}
 export function timeBreakdown(s=state){return {taskTime:Number(s.paidTime||0),extraWorkTime:Number(s.extraWorkTime||0),breakTime:Number(s.breakTime||0),totalTime:Number(s.time||0)}}
 export function wellbeingLabel(v){return v>=70?'عبء مرتفع':v>=40?'عبء متوسط':'عبء منخفض'}
-export function stageForPage(page){return routeStageForPage(page)}
 export const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 export const money=v=>'$'+Number(v||0).toFixed(2);
