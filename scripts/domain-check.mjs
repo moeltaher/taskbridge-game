@@ -5,6 +5,7 @@ import {ACCESS_MODEL_VERSION,assessAccessDecision} from '../assets/js/domain/acc
 import {evidenceFor} from '../assets/js/domain/evidence.js';
 import {relationshipQuestions,acceptedQuestionReferences} from '../assets/js/domain/questions.js';
 import {powerMapComplete,scoreAnalysis} from '../assets/js/domain/analysis.js';
+import {acceptanceRate,intersectionOverUnion,scoreWork,firstTaskOutcome} from '../assets/js/domain/work.js';
 
 const close=(actual,expected,epsilon=1e-12)=>assert.ok(Math.abs(actual-expected)<epsilon,`${actual} != ${expected}`);
 
@@ -54,5 +55,17 @@ assert.equal(analysis.qScore,30);
 assert.equal(analysis.sortScore,30);
 assert.equal(analysis.powerScore,40);
 assert.equal(analysis.score,100);
+
+assert.equal(acceptanceRate(3,4),75);
+assert.equal(acceptanceRate(0,0),100);
+const box={x:.2,y:.3,w:.4,h:.3};
+close(intersectionOverUnion(box,box),1);
+assert.equal(scoreWork(scenarios.translation,['A','A','A']),100);
+const firstTask=firstTaskOutcome(scenarios.data,{workAnswers:[{x:.27,y:.43,w:.34,h:.35},{x:.45,y:.43,w:.34,h:.35},{x:.36,y:.42,w:.34,h:.36}],quality:91,selectedJob:{duration:12,pay:2.1,clientValue:5.8},stress:24,time:0,paidTime:0,grossWorker:0,clientPaid:0,jobsDone:0});
+assert.equal(firstTask.score,100);
+assert.equal(firstTask.quality,94);
+assert.equal(firstTask.changes.paidTime,12);
+assert.equal(firstTask.changes.grossWorker,2.1);
+assert.equal(firstTask.changes.stress,34);
 
 console.log('No Boss domain checks passed');
