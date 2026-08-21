@@ -30,9 +30,22 @@
 - واجهات المراحل: `assets/js/pages/`
 - CSS: `assets/css/`
 
+ملفات HTML الخاصة بالمسارات مولدة من route manifest. بعد تغيير عنوان أو مسار أو إصدار، شغّل:
+
+```bash
+node scripts/generate-pages.mjs
+```
+
+ويمكن التحقق من عدم وجود اختلاف بين الملفات المولدة والـmanifest من دون تعديل الملفات عبر:
+
+```bash
+node scripts/generate-pages.mjs --check
+```
+
 ## التحقق قبل النشر
 
 ```bash
+node scripts/generate-pages.mjs --check
 node scripts/structural-check.mjs
 node scripts/check.mjs
 node scripts/domain-check.mjs
