@@ -26,6 +26,6 @@ export function riskTransition(scenario,state){
  const occurs=roll<threshold,affectedTask=profile.technicalIssue?(state.completedTasks||[]).at(-1):null;
  const event=occurs?{...profile,affectedTaskId:affectedTask?.id||null}:{...noEvent,affectedTaskId:null};
  const time=Number(state.time||0),extraWorkTime=Number(state.extraWorkTime||0),stress=Number(state.stress||0);
- const completedTasks=event.technicalIssue&&event.affectedTaskId?(state.completedTasks||[]).map(task=>task.id===event.affectedTaskId?{...task,technicalIssue:true}:task):(state.completedTasks||[]);
+ const completedTasks=event.technicalIssue&&event.affectedTaskId?(state.completedTasks||[]).map(task=>({...task,technicalIssue:task.id===event.affectedTaskId})):(state.completedTasks||[]);
  return {event:{...event,roll,threshold},changes:{riskEvent:{...event,roll,threshold},completedTasks,time:time+event.minutes,extraWorkTime:extraWorkTime+event.minutes,stress:clamp(stress+event.stress,0,100),status:event.occurred?'حدث موقف إضافي مرتبط بالعمل':'انتهت الوردية دون حدث إضافي'}};
 }
