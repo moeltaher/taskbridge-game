@@ -1,9 +1,10 @@
 import {test,expect} from '@playwright/test';
+import {APP_VERSION} from '../../assets/js/core/config.js';
 async function startData(page){await page.goto('/');await page.getByRole('button',{name:'ابدأ المحاكاة'}).click();await page.locator('article.scenario').filter({hasText:'سامر'}).getByRole('button',{name:'اختيار هذه الحالة'}).click()}
 async function enterDataWork(page){await startData(page);await page.getByRole('button',{name:'أوافق وأدخل No Boss'}).click();await expect(page).toHaveURL(/\/work\/$/)}
 const semanticChoice={0:['leftCenter','standard'],1:['rightCenter','standard'],2:['center','standard'],3:['left','short'],4:['right','short'],5:['center','wide']};
 
-test('landing page identifies v3.2.0 fictional simulation',async({page})=>{await page.goto('/');await expect(page).toHaveTitle(/No Boss v3\.2\.0/);await expect(page.getByText('عالم المحاكاة خيالي.')).toBeVisible()});
+test('landing page identifies the current fictional simulation version',async({page})=>{await page.goto('/');const versionPattern=APP_VERSION.replaceAll('.','\\.');await expect(page).toHaveTitle(new RegExp(`No Boss v${versionPattern}`));await expect(page.getByText('عالم المحاكاة خيالي.')).toBeVisible()});
 
 test('market exit before rejection remains a valid zero-work path',async({page})=>{await enterDataWork(page);await page.getByRole('button',{name:'إنهاء الوردية دون قبول عمل'}).click();await expect(page).toHaveURL(/\/access\/$/);const s=await page.evaluate(()=>JSON.parse(localStorage.getItem('no_boss_state')));expect(s.noWorkEnding).toBe(true);expect(s.rejections).toBe(0);expect(s.accountOutcome).toBe('active');expect(s.marketTime).toBeGreaterThan(0)});
 
