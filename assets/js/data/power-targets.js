@@ -1,2 +1,0 @@
-import {authorityModel,authorityDistribution} from './authority-model.js';
-export const powerTargets=Object.fromEntries(Object.entries(authorityModel).map(([type,axisRefs])=>[type,Object.fromEntries(Object.keys(axisRefs).map(axis=>[axis,authorityDistribution(type,axis)]))]));

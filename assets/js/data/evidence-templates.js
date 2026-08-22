@@ -1,7 +1,7 @@
 export const evidenceTemplates={
  contract:{title:'اتفاقية مقدم الخدمة',dimension:'contract',preferredKind:'dep',validKinds:['dep'],text:'العقد يصف العامل بأنه مستقل ويذكر حرية الوقت والعمل لجهات أخرى، لكن الوصف التعاقدي وحده لا يحسم طبيعة العلاقة العملية.'},
  contractGate:{title:'شرط الدخول إلى السوق',dimension:'access',preferredKind:'ctrl',validKinds:['ctrl'],text:'الاتفاقية موحدة، ورفضها يمنع دخول سوق المهام في هذه المحاكاة؛ لذلك تكشف الواقعة سلطة المنصة على بوابة الدخول إلى السوق حتى قبل بدء العمل.'},
- ownTools:{title:'أدوات العامل',dimension:'contract',preferredKind:'dep',validKinds:['ind','dep'],text:'استخدام العامل لأدواته قد يُقرأ كاستقلال تشغيلي، أو كتحملٍ للتكاليف والمخاطر؛ القراءة المختلطة أقوى لأنها تربط الأداة بمن يتحمل التكلفة.'},
+ ownTools:{title:'أدوات وتكاليف العامل',dimension:'burden',preferredKind:'dep',validKinds:['ind','dep'],text:'استخدام العامل لجهازه واتصاله قد يُقرأ كاستقلال تشغيلي، لكنه يعني أيضًا أنه يتحمل جانبًا من تكاليف المشاركة في السوق؛ القراءة المختلطة أقوى في هذه المحاكاة.'},
  multiPlatform:{title:'إمكانية العمل لجهات أخرى',dimension:'contract',preferredKind:'ind',validKinds:['ind','dep'],text:'إمكان العمل لجهات أخرى يدعم الاستقلال نظريًا، لكن دلالته تضعف إذا كان الاعتماد الاقتصادي الفعلي مرتفعًا.'},
  decline:{title:'إمكانية رفض المهمة',dimension:'access',preferredKind:'dep',validKinds:['ind','dep'],text:'إمكان الرفض يدعم قراءة الاستقلال، لكن أثر الرفض على سجل الأداء والوصول يجعل القراءة المختلطة أقوى في هذه المحاكاة.'},
  priceSetting:{title:'آلية تحديد المقابل',dimension:'price',preferredKind:'ctrl',validKinds:['ctrl','dep'],text:'من يحدد السعر أو يحوله إلى مقابل للعامل يمارس شكلًا من سلطة التسعير؛ يمكن قبول القراءة المختلطة عندما تكون السلطة موزعة.'},
@@ -11,8 +11,9 @@ export const evidenceTemplates={
  clientQuality:{title:'معيار جودة المشروع',dimension:'quality',preferredKind:'ctrl',validKinds:['ctrl','dep'],text:'تحديد العميل لمعيار الجودة يؤثر في كيفية تنفيذ العمل وقبول المخرجات، ويمكن أن يعكس سلطة على شروط الأداء أو علاقة مشروع تحتاج سياقًا.'},
  appeal:{title:'نظام الاعتراض',dimension:'access',preferredKind:'dep',validKinds:['ctrl','dep'],text:'No Boss تدير مسار الاعتراض. وجود قناة مراجعة مهم، لكن كلفتها الإجرائية وسلطة المنصة على النتيجة يجعلان القراءة المختلطة أقوى.'},
  accessDecision:{title:'قرار الوصول النهائي',dimension:'access',preferredKind:'ctrl',validKinds:['ctrl'],text:'No Boss تجمع العوامل المعلنة وتصدر قرار الوصول النهائي إلى السوق أو المشروع؛ هذا دليل مباشر على سلطة المنصة على بوابة العمل.'},
- risk:{title:'حادث أضاف وقتًا مرتبطًا بالعمل',dimension:'risk',preferredKind:'dep',validKinds:['dep'],text:'وقع حدث فعلي أضاف وقتًا أو عبئًا مرتبطًا بالعمل من دون إنشاء مهمة جديدة ذات مقابل مستقل.'},
- payment:{title:'كشف الدفع',dimension:'risk',preferredKind:'dep',validKinds:['dep'],text:'المقابل الذي يصل إلى العامل يختلف عن فاتورة العميل، كما يتحمل العامل رسومًا وتكاليف تشغيل في المحاكاة.'},
+ risk:{title:'حادث أضاف وقتًا مرتبطًا بالعمل',dimension:'burden',preferredKind:'dep',validKinds:['dep'],text:'وقع حدث فعلي أضاف وقتًا أو عبئًا مرتبطًا بالعمل من دون إنشاء مهمة جديدة ذات مقابل مستقل.'},
+ marketBurden:{title:'وقت وتكلفة دخول سوق المهام',dimension:'burden',preferredKind:'dep',validKinds:['dep'],text:'حتى دون قبول مهمة، تحمل العامل وقت البحث وتكاليف تشغيل مرتبطة بالمشاركة في سوق المنصة.'},
+ payment:{title:'كشف التسوية المالية',dimension:'settlement',preferredKind:null,validKinds:[],scoreable:false,text:'يكشف مسار التسوية من فاتورة العميل إلى المقابل المتفق عليه للعامل ثم رسوم الدفع والتحويل والمبلغ المحول. هذه معلومة مالية منفصلة عن تصنيف سلطة العمل ولا تدخل درجة تصنيف الأدلة.'},
  suspension:{title:'تعليق الوصول',dimension:'access',preferredKind:'ctrl',validKinds:['ctrl'],text:'No Boss هي الجهة التي تدير الحساب العام والوصول إلى سوق المهام في المحاكاة.'},
  clientRemoval:{title:'سلطة العميل داخل المشروع',dimension:'allocation',preferredKind:'ctrl',validKinds:['ctrl','dep'],text:'قد يحدد العميل الأهلية أو يختار من قائمة مؤهلين أو يطلب استبعادًا من مشروعه؛ هذا دليل سلطة داخل المشروع، مع اختلاف مداها عن سلطة الحساب العام.'}
 };

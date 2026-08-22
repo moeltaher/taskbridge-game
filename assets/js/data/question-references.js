@@ -1,4 +1,0 @@
-import {authorityLeaders} from './authority-model.js';
-const label={worker:'العامل',platform:'المنصة',client:'العميل'};
-function authorityAnswers(type,axis){const leaders=authorityLeaders(type,axis);if(leaders.length===2&&leaders.includes('platform')&&leaders.includes('client'))return ['سلطة مشتركة بين المنصة والعميل'];return leaders.map(p=>label[p])}
-export const questionRef=Object.fromEntries(['data','moderation','ai','translation'].map(type=>[type,{price:authorityAnswers(type,'price'),allocation:authorityAnswers(type,'allocation'),monitoring:authorityAnswers(type,'monitoring'),quality:authorityAnswers(type,'quality'),risk:authorityAnswers(type,'risk'),termination:authorityAnswers(type,'termination')}]))
