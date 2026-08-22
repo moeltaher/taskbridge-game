@@ -1,12 +1,16 @@
-import {authorityLeaders} from './authority-model.js';
+import {authorityLeaders,significantAuthorities} from './authority-model.js';
 
-const label={worker:'العامل',platform:'المنصة',client:'العميل',mediator:'الوسيط'};
-function leaderAnswers(type,axis){return authorityLeaders(type,axis).map(p=>label[p])}
+const label={worker:'العامل',platform:'المنصة',client:'العميل'};
+function authorityAnswers(type,axis){
+ const significant=significantAuthorities(type,axis,{within:15});
+ if(significant.length===2&&significant.includes('platform')&&significant.includes('client'))return ['سلطة مشتركة بين المنصة والعميل'];
+ return authorityLeaders(type,axis).map(p=>label[p]);
+}
 export const questionRef=Object.fromEntries(['data','moderation','ai','translation'].map(type=>[type,{
- price:leaderAnswers(type,'price'),
- allocation:leaderAnswers(type,'allocation'),
- monitoring:leaderAnswers(type,'monitoring'),
- quality:leaderAnswers(type,'quality'),
- risk:leaderAnswers(type,'risk'),
- termination:leaderAnswers(type,'termination')
+ price:authorityAnswers(type,'price'),
+ allocation:authorityAnswers(type,'allocation'),
+ monitoring:authorityAnswers(type,'monitoring'),
+ quality:authorityAnswers(type,'quality'),
+ risk:authorityAnswers(type,'risk'),
+ termination:authorityAnswers(type,'termination')
 }]));

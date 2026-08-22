@@ -13,7 +13,7 @@ export function analysisAxes(state){
  return axes;
 }
 export function evidenceDimensions(state){if(state?.contractDeclineEnding)return CONTRACT_DECLINE_DIMENSIONS;return state?.noWorkEnding?NO_WORK_EVIDENCE_DIMENSIONS:WORK_EVIDENCE_DIMENSIONS}
-export function powerMapComplete(state){return analysisAxes(state).every(axis=>(state.powerTouched||[]).includes(axis.id)&&(state.powerEdited||[]).includes(axis.id))}
+export function powerMapComplete(state){return analysisAxes(state).every(axis=>(state.powerTouched||[]).includes(axis.id))}
 function evidenceCredit(evidence,selected){if(selected===evidence.preferredKind)return 1;if((evidence.validKinds||[]).includes(selected))return .5;return 0}
 export function scoreAnalysis(scenario,state){
  const references=acceptedQuestionReferences(scenario.type),questions=scoredQuestionsForState(state);
