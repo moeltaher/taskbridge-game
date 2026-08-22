@@ -6,6 +6,7 @@ export const questionRef=Object.fromEntries(['data','moderation','ai','translati
  price:leaderAnswers(type,'price'),
  allocation:leaderAnswers(type,'allocation'),
  monitoring:leaderAnswers(type,'monitoring'),
+ quality:leaderAnswers(type,'quality'),
  risk:leaderAnswers(type,'risk'),
  termination:leaderAnswers(type,'termination')
 }]));

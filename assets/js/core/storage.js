@@ -15,7 +15,7 @@ function stateCandidate(store,mode){const value=readFrom(store,STATE_KEY);return
 function compareStateCandidates(a,b){if(a.revision!==b.revision)return b.revision-a.revision;if(a.writer&&b.writer&&a.writer!==b.writer){if(a.mode==='session')return -1;if(b.mode==='session')return 1}return a.mode==='persistent'?-1:b.mode==='persistent'?1:0}
 function stateCandidates(){return [stateCandidate(local(),'persistent'),stateCandidate(session(),'session')].filter(Boolean)}
 function newestState(){const candidates=stateCandidates();candidates.sort(compareStateCandidates);return candidates[0]||null}
-function compactResult(value){return {runId:value?.runId,scenarioName:value?.scenarioName,score:value?.score,outcome:value?.outcome,simMinutes:value?.simMinutes,netEconomic:value?.netEconomic,finalStress:value?.finalStress,breakTaken:value?.breakTaken}}
+function compactResult(value){return {runId:value?.runId,scenarioName:value?.scenarioName,score:value?.score,outcome:value?.outcome,simMinutes:value?.simMinutes,netEconomic:value?.netEconomic,finalStress:value?.finalStress,breakTaken:value?.breakTaken,appVersion:value?.appVersion||'legacy',scoreModelVersion:value?.scoreModelVersion||'legacy'}}
 
 export function saveState(state){return write(STATE_KEY,state)}
 export function loadState(){return newestState()?.value||null}
