@@ -1,4 +1,4 @@
-# No Boss v3.2.0 Architecture
+# No Boss v3.3.0 Architecture
 
 No Boss is a static multi-page training simulation for GitHub Pages. It has no backend, API, database, or application framework.
 
@@ -10,6 +10,8 @@ The simulation has two chapters:
 2. **Researcher analysis** — review only the facts that actually occurred, classify evidence, answer relationship questions, map control and burden, write a conclusion, compare with the training reference, and connect the run to rights questions.
 
 A contract refusal is a valid short branch: the participant may analyze the platform's gatekeeping power without fabricating tasks, monitoring, payment, or quality review.
+
+Country and city names provide narrative and socio-economic context only. The simulation does not implement national labor law or infer legal status from the named jurisdiction.
 
 ## Model boundaries
 
@@ -33,9 +35,9 @@ The result page shows those rationales rather than presenting an unexplained ans
 
 ### Data-task geometry
 
-`data-scenes.js` owns both the rendered road-scene geometry and `dataTargetForScene()`. The visual bounding-box target can therefore not drift independently from the SVG the participant sees.
+`data-scenes.js` owns both the rendered road-scene geometry and `dataTargetForScene()`. The visual bounding-box target cannot drift independently from the SVG the participant sees.
 
-The nonvisual route does not receive hidden target dimensions. It asks for both horizontal location and approximate size, and `semanticDataAnswer()` converts those participant choices into the same scoring space used by the visual route.
+The nonvisual route receives an accessible geometric description of the same scene and asks for horizontal start region and approximate width. The description does not repeat the answer-option labels verbatim. `semanticDataAnswer()` converts those choices into the same scoring space used by the visual route.
 
 ### Translation reference
 
@@ -43,21 +45,35 @@ The translation scenario exposes its client style guide before scoring. Preferre
 
 ## State and storage
 
-`STATE_SCHEMA_VERSION=3` adds, among other fields:
+`STATE_SCHEMA_VERSION=4` treats a live simulation session as versioned application state. A stored live state is compatible only when all three match the current runtime:
 
-- `contractDeclineEnding`
-- `riskSeed`
-- `conclusionDualEvidence`
+- `schemaVersion`;
+- `appVersion`;
+- `scoreModelVersion`.
 
-Old stored states are normalized against `freshState()` and old incompatible checkpoints are discarded. Storage still reconciles local/session candidates by monotonic revision before writes.
+An incompatible live state is deleted as a unit rather than partially normalized. This prevents derived fields such as payment, access decisions, review outcomes, and result scores from surviving across incompatible application semantics.
 
-Archived results include `appVersion` and `scoreModelVersion`. Historical runs are compared only within the same scenario and score model.
+Every persisted live state also records:
+
+- `storageRevision`;
+- `storageUpdatedAt`;
+- `storageWriterId`.
+
+When local and session candidates compete, they are ordered deterministically by revision, timestamp, then writer ID. Tabs synchronize against that ordering before committed writes.
+
+High-frequency editing uses transient in-memory state. Power sliders and conclusion text do not serialize the full session on every pointer movement or keystroke; they flush on change/blur, navigation, explicit completion, page hide, or unload.
+
+The current model intentionally removes obsolete live-state fields that no longer have consumers, including `powerDraft` and `reviewTaskScore`.
+
+Archived results are separate from the live session and include `appVersion` and `scoreModelVersion`. Historical runs are compared only within the same scenario and score model. The archive is stored locally in the browser and can be deleted in full from the home page.
 
 ## Risk model
 
 Risk occurrence is reproducible per run. The deterministic roll is derived from a stable `riskSeed` created when the scenario starts plus scenario identity. Unrelated later choices such as taking a break, rejecting an offer, or obtaining a different task score do not silently alter whether an independent connection failure or revision request occurs.
 
 A no-event result never creates incident evidence. Structural risk remains discussable through costs, workload, monitoring, and context, but an incident is evidence only when `occurred === true`.
+
+The moderation wellbeing event has an additional eligibility condition: at least one completed sample must actually contain or be reviewably classifiable as harassment/abuse or a threat. The simulation therefore does not claim harmful-content exposure that was absent from the completed sample set.
 
 ## Access model
 
@@ -67,12 +83,7 @@ For `noWorkEnding`, rejection history may produce a warning, but it can never pr
 
 ## Appeals and remedy
 
-An appeal requires a stated ground and changes the final review only when the ground matches a reviewable issue. If a successful appeal occurs after the disputed task was already used in an earlier opportunity-ranking event, the interface explicitly distinguishes:
-
-- correcting the later review decision; and
-- restoring an earlier lost opportunity.
-
-The simulation does not silently pretend that successful late review automatically repairs every prior effect.
+An appeal requires a stated ground and changes the final review only when the ground matches a reviewable issue. If a successful appeal occurs after the disputed task was already used in an earlier opportunity-ranking event, the interface explicitly distinguishes correcting the later review decision from restoring an earlier lost opportunity.
 
 ## Evidence and analysis
 
@@ -92,13 +103,17 @@ The written conclusion itself is not automatically graded. Evidence may be marke
 
 A no-work run records zero task income and can show a zero hourly income over the search/decision time rather than treating the economic outcome as nonexistent.
 
-Scenario operating costs currently use `costModel: 'fixedShiftEstimate'`. The interface states that these are fixed training estimates, not minute-by-minute consumption calculations.
+Scenario operating costs use `costModel: 'fixedShiftEstimate'`. The interface states that these are fixed training estimates, not minute-by-minute consumption calculations.
 
 ## Accessibility and browser verification
 
-The visual annotation surface no longer claims `role="application"` because it does not implement a full keyboard drawing interface. An equivalent semantic form remains keyboard and screen-reader accessible.
+The visual annotation surface does not claim `role="application"` because it does not implement a full keyboard drawing interface. An equivalent semantic form remains keyboard and screen-reader accessible.
 
-Playwright runs desktop and mobile projects for Chromium and WebKit. `@axe-core/playwright` checks WCAG A/AA rules on key pages and the data task.
+Playwright runs desktop and mobile projects for Chromium and WebKit. `@axe-core/playwright` checks WCAG A/AA rules across the complete worker/researcher route journey: onboarding, work, management, risk, dispute, payment, access, investigation, power, conclusion, result, and rights, in addition to home/scenario and the data-task semantic controls.
+
+## Route and legacy cleanup policy
+
+HTML route shells are generated from `assets/js/core/routes.js`. The current repository should contain one runtime page module and one route shell for each manifest route, rather than parallel historical page implementations. Historical behavior belongs in Git history and the changelog, not in duplicate runtime pages or dead state fields.
 
 ## Verification layers
 
