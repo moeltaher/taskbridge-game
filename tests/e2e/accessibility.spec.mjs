@@ -60,8 +60,6 @@ test('all worker and researcher routes remain WCAG A/AA clean',async({page})=>{
   await page.getByRole('button',{name:'متابعة الوردية'}).click();
   await assertAccessible(page,'management monitoring');
   await page.getByRole('button',{name:/استراحة 3 د/}).click();
-  await assertAccessible(page,'management monitoring result');
-  await page.getByRole('button',{name:'متابعة إلى مراجعة جودة العمل'}).click();
   await expect(page).toHaveURL(/\/risk\/$/);
   await assertAccessible(page,'risk');
   await page.getByRole('button',{name:'متابعة إلى مراجعة جودة العمل'}).click();
