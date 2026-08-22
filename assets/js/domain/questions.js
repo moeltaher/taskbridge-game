@@ -1,16 +1,22 @@
-import {questionRef} from '../data/question-references.js';
+import {authorityLeaders} from '../data/authority-model.js';
 const authorityOptions=['المنصة','العميل','سلطة مشتركة بين المنصة والعميل','العامل'];
-export const relationshipQuestions=[
- {id:'parties',title:'من الأطراف التي تؤثر مباشرة في شروط العمل وإدارته؟',resultTitle:'أطراف علاقة العمل المباشرة',options:['العامل + المنصة + العميل','العامل + المنصة + العميل + وسيط الدفع','العامل + العميل فقط','العامل + المنصة فقط'],orientation:true},
- {id:'price',title:'أين يتركز الوزن المؤثر في تحديد السعر الذي يراه العامل؟',resultTitle:'مركز الثقل في تحديد المقابل',options:authorityOptions,orientation:true},
- {id:'allocation',title:'أين يتركز الوزن المؤثر في توزيع فرص العمل؟',resultTitle:'مركز الثقل في توزيع العمل',options:authorityOptions,orientation:true},
- {id:'monitoring',title:'أين يتركز الوزن المؤثر في جمع مؤشرات الأداء واستخدامها؟',resultTitle:'مركز الثقل في المراقبة',options:authorityOptions,orientation:true},
- {id:'quality',title:'أين يتركز الوزن المؤثر في تحديد معيار جودة المشروع وقبول المخرجات؟',resultTitle:'مركز الثقل في معيار الجودة',options:authorityOptions,orientation:true},
- {id:'risk',title:'من تحمل الجزء الأكبر من تكاليف الأدوات والوقت الإضافي المرتبط بالعمل؟',resultTitle:'الطرف الذي تحمل الجزء الأكبر من التكاليف والوقت الإضافي',options:['العامل','المنصة','العميل','سلطة مشتركة بين المنصة والعميل'],orientation:true},
- {id:'termination',title:'أين يتركز الوزن المؤثر في التحكم بالحساب العام والوصول إلى سوق المهام؟',resultTitle:'مركز الثقل في الوصول للسوق',options:authorityOptions,orientation:true},
- {id:'settlement',title:'من ينفذ التسوية المالية ومن يستطيع التأثير في المبلغ المحول بعد إنجاز العمل؟',resultTitle:'سلطة التسوية المالية',options:['المنصة ووسيط الدفع بأدوار مختلفة','وسيط الدفع وحده','العميل وحده','العامل'],orientation:true}
-];
-export function questionsForState(state){if(state?.contractDeclineEnding)return relationshipQuestions.filter(q=>q.id==='termination');if(state?.noWorkEnding)return relationshipQuestions.filter(q=>['parties','price','allocation','termination'].includes(q.id));return relationshipQuestions}
-export function scoredQuestionsForState(){return []}
-export function acceptedQuestionReferences(scenarioType){return {parties:['العامل + المنصة + العميل'],...questionRef[scenarioType],settlement:['المنصة ووسيط الدفع بأدوار مختلفة']}}
-export function acceptedQuestionAnswer(reference,answer){const values=Array.isArray(reference)?reference:[reference];return values.includes(answer)}
+const partyLabel={worker:'العامل',platform:'المنصة',client:'العميل'};
+function priceReference(type){
+ const leaders=authorityLeaders(type,'price');
+ if(leaders.length===2&&leaders.includes('platform')&&leaders.includes('client'))return ['سلطة مشتركة بين المنصة والعميل'];
+ return leaders.map(p=>partyLabel[p]);
+}
+function priceQuestion(type){return {id:'priceMechanism',title:'بحسب هذه الحالة، أين يتركز القرار المباشر بشأن السعر الذي يراه العامل؟',resultTitle:'التمييز بين تمويل المشروع وتحديد سعر العامل',options:authorityOptions,reference:priceReference(type)}}
+const burdenVsControl={id:'burdenVsControl',title:'إذا تحمل العامل الجزء الأكبر من التكاليف والوقت غير المدفوع، فما القراءة الأدق؟',resultTitle:'العبء ليس سلطة',options:['عبء أكبر على العامل، وليس بالضرورة سلطة أكبر','سلطة أكبر للعامل تلقائيًا','استقلال كامل للعامل','لا علاقة لذلك بتحليل العمل'],reference:['عبء أكبر على العامل، وليس بالضرورة سلطة أكبر']};
+const projectVsAccount={id:'projectVsAccount',title:'إذا استطاع العميل اختيار عامل أو استبعاده داخل مشروع، فماذا يعني ذلك؟',resultTitle:'سلطة المشروع مقابل سلطة الحساب',options:['سلطة داخل المشروع لا تساوي إدارة الحساب العام','إدارة كاملة للحساب العام','عدم وجود أي سلطة للعميل','أن وسيط الدفع يدير المشروع'],reference:['سلطة داخل المشروع لا تساوي إدارة الحساب العام']};
+const rankingVsFinal={id:'rankingVsFinal',title:'إعادة ترتيب فرص العمل بعد المهمة الأولى والقرار النهائي للوصول في نهاية الوردية هما:',resultTitle:'الترتيب المرحلي مقابل قرار الوصول النهائي',options:['قراران مختلفان يستخدم كل منهما وقائع معلنة في مرحلة مختلفة','القرار نفسه مكرر مرتين','قراران يتخذهما العميل وحده','قراران لا يؤثران في فرص العمل'],reference:['قراران مختلفان يستخدم كل منهما وقائع معلنة في مرحلة مختلفة']};
+const settlement={id:'settlement',title:'من ينفذ التسوية المالية، وكيف ترتبط بسلطة إدارة العمل؟',resultTitle:'التسوية المالية منفصلة عن سلطة العمل',options:['المنصة ووسيط الدفع بأدوار مالية مختلفة، ولا يجعل الدفع وسيطَ الدفع مديرًا للعمل','وسيط الدفع وحده يدير العمل لأنه يمرر الأموال','العميل وحده ينفذ كل التسوية ويدير الحساب','العامل يحدد الرسوم بعد انتهاء المهمة'],reference:['المنصة ووسيط الدفع بأدوار مالية مختلفة، ولا يجعل الدفع وسيطَ الدفع مديرًا للعمل']};
+const contractGate={id:'contractGate',title:'رفض الشروط الموحدة منع دخول السوق. ما الدلالة الأقرب لهذه الواقعة؟',resultTitle:'بوابة الدخول التعاقدية',options:['للمنصة سلطة على بوابة الدخول حتى مع وجود حق الرفض','رفض الشروط يثبت أن العامل يملك سلطة مساوية للمنصة','لا توجد دلالة لأن العمل لم يبدأ','هذا القرار يخص العميل وحده'],reference:['للمنصة سلطة على بوابة الدخول حتى مع وجود حق الرفض']};
+export function questionsForState(state){
+ const type=state?.scenarioKey||'data';
+ if(state?.contractDeclineEnding)return [contractGate];
+ const common=[burdenVsControl,priceQuestion(type),projectVsAccount];
+ if(state?.noWorkEnding)return common;
+ return [...common,rankingVsFinal,settlement];
+}
+export function acceptedQuestionAnswer(question,answer){return (question?.reference||[]).includes(answer)}

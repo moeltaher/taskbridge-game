@@ -1,7 +1,8 @@
 import {evidenceTemplates} from '../data/evidence-templates.js';
 
 export function evidenceFor(id,scenario,state){
- const evidence={...(evidenceTemplates[id]||{title:id,dimension:'other',preferredKind:'dep',validKinds:['dep'],text:''})};
+ const evidence={...(evidenceTemplates[id]||{title:id,dimension:'other',preferredKind:'dep',validKinds:['dep'],scoreable:true,text:''})};
+ if(evidence.scoreable===undefined)evidence.scoreable=true;
  if(id==='priceSetting'){
   evidence.text=scenario.priceMechanism;
   evidence.validKinds=['ctrl','dep'];
@@ -21,6 +22,14 @@ export function evidenceFor(id,scenario,state){
   evidence.text=event?.occurred===true?`${event.title}: أضاف الحدث ${event.minutes} دقيقة مرتبطة بالعمل من دون مهمة جديدة ذات سعر مستقل.`:'لم يقع حادث في هذه الجولة؛ لا ينبغي استخدام هذا العنصر كدليل على واقعة لم تحدث.';
   evidence.validKinds=['dep'];
   evidence.preferredKind='dep';
+ }
+ if(id==='marketBurden'){
+  const operating=Number(state.payment?.operating||0);
+  evidence.text=`قضيت ${Number(state.marketTime||0)} دقيقة في تصفح العروض واتخاذ القرار، وتحملت تكاليف تشغيل مقدرة ${operating.toFixed(2)} دولار حتى مع عدم قبول مهمة.`;
+ }
+ if(id==='payment'&&state.payment){
+  const p=state.payment;
+  evidence.text=`دفع العميل ${Number(p.clientPaid||0).toFixed(2)} دولار، وكان المقابل المتفق عليه للعامل ${Number(p.contracted||0).toFixed(2)} دولار، ثم نُفذت رسوم وحجوزات وتحويل قبل وصول ${Number(p.cashPayout||0).toFixed(2)} دولار. هذه المعلومة لا تدخل درجة سلطة العمل.`;
  }
  return evidence;
 }

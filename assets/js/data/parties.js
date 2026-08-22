@@ -1,6 +1,5 @@
 export const partyNames={worker:'العامل',platform:'المنصة',client:'العميل',mediator:'وسيط الدفع'};
 export const parties=['worker','platform','client'];
-export const ecosystemParties=['worker','platform','client','mediator'];
 export const axes=[
  {id:'price',title:'تحديد السعر/المقابل',metricType:'control'},
  {id:'allocation',title:'توزيع فرص العمل',metricType:'control'},
