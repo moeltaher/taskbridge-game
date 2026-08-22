@@ -23,6 +23,7 @@ export function loadState(){return newestState()?.value||null}
 export function latestStateSnapshot(){return newestState()?.value||null}
 export function stateStorageMode(){return newestState()?.mode||'none'}
 export function clearState(){return remove(STATE_KEY)}
+export function pruneStateCandidates(keep){let removed=0;for(const store of [local(),session()].filter(Boolean)){const value=readFrom(store,STATE_KEY);if(value!==null&&!keep(value)){try{store.removeItem(STATE_KEY);removed++}catch(e){console.warn('No Boss: تعذر حذف حالة غير متوافقة',e)}}}return removed}
 export function hasState(){return !!loadState()?.scenarioKey}
 export function archiveResult(value){if(!value?.runId)return false;const next=compactResult(value),results=asArray(readFrom(local(),RESULTS_KEY,[])).map(compactResult),index=results.findIndex(result=>result.runId===next.runId);if(index>=0)results[index]=next;else results.push(next);return writePersistent(RESULTS_KEY,results.slice(-30))}
 export function savedResults(){return asArray(readFrom(local(),RESULTS_KEY,[])).map(compactResult).filter(result=>result.runId&&result.scenarioName).slice(-30)}
