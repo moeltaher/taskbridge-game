@@ -1,11 +1,12 @@
 import {APP_VERSION} from './config.js';
 import {pageFromPath,href,pageForStage,stageForPage,isPublicPage,pageTitle} from './routes.js';
-import {getState,enterPage,persistenceStatus} from './state.js';
+import {getState,enterPage,persistenceStatus,flushState} from './state.js';
 import {shell,bindShell} from './ui.js';
 
 const page=document.body.dataset.page||pageFromPath();
 document.title=`${pageTitle(page)} | No Boss v${APP_VERSION}`;
-addEventListener('beforeunload',event=>{if(['failed','session'].includes(persistenceStatus().status)){event.preventDefault();event.returnValue=''}});
+addEventListener('pagehide',()=>flushState());
+addEventListener('beforeunload',event=>{flushState();if(['failed','session'].includes(persistenceStatus().status)){event.preventDefault();event.returnValue=''}});
 let state=getState();
 const requestedStage=stageForPage(page),currentStage=Number(state.stage||0),currentRoute=pageForStage(currentStage);
 if(!isPublicPage(page)&&!state.scenarioKey){location.replace(href('home'))}
