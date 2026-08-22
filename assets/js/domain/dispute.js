@@ -4,7 +4,7 @@ export const APPEAL_TIME_MINUTES=2;
 export const APPEAL_STRESS=4;
 export const appealGrounds={guideline:'تفسير الإرشادات أو غموض المعيار',context:'سياق العينة أو معناها',technical:'مشكلة تقنية أو عرض غير دقيق'};
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
-export function disputeSeverityFromScore(score){return score>=85?0:score>=60?1:2}
+export function reviewSeverityFromScore(score){return score>=85?0:score>=60?1:2}
 export function reviewedSeverity(initialSeverity,appealAccepted=true){return appealAccepted&&initialSeverity>0?initialSeverity-1:initialSeverity}
 export function selectReviewTask(state){const tasks=state.completedTasks||[];if(!tasks.length)return null;return [...tasks].sort((a,b)=>a.score-b.score||String(b.id).localeCompare(String(a.id)))[0]}
 function groundMatches(scenario,ground,{reviewableErrors=0,hardErrors=0,technicalIssues=0}={}){if(!ground)return false;if(scenario.type==='data'){if(ground==='technical')return technicalIssues>0;if(ground==='guideline')return reviewableErrors>0&&hardErrors<=1;return false}if(ground==='technical')return false;if(scenario.type==='moderation')return reviewableErrors>0&&hardErrors<=1&&(ground==='context'||ground==='guideline');if(scenario.type==='ai')return reviewableErrors>0&&hardErrors<=1&&ground==='guideline';if(scenario.type==='translation')return reviewableErrors>0&&hardErrors<=1&&(ground==='guideline'||ground==='context');return false}
