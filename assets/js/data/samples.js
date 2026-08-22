@@ -20,7 +20,7 @@ export const samples={
   {q:'مستخدم يسأل هل فتح رابط مختصر خطر في ذاته. أي إجابة أدق؟',a:'الرابط المختصر يخفي الوجهة، لذلك افحص المصدر والوجهة إن أمكن؛ القصر وحده لا يثبت أن الرابط ضار.',b:'كل الروابط المختصرة خطرة ويجب عدم فتح أي منها.',preferred:'A',acceptable:['A'],reviewable:[]}
  ],
  translation:[
-  {src:'Complete your checkout to place the order.',a:'أكمل عملية الشراء لتأكيد الطلب.',b:'أتم الدفع لتأكيد طلبك.',preferred:'A',acceptable:['A','B'],reviewable:[]},
+  {src:'Complete your checkout to place the order.',a:'أكمل عملية الشراء لتأكيد الطلب.',b:'أتم الدفع لتأكيد طلبك.',preferred:'A',acceptable:['A'],reviewable:[]},
   {src:'Your items are saved for later.',a:'تم حفظ العناصر لوقت لاحق.',b:'احتفظنا بالعناصر لتتمكن من الرجوع إليها لاحقًا.',preferred:'A',acceptable:['A','B'],reviewable:[]},
   {src:'Free returns within 14 days.',a:'إرجاع مجاني خلال 14 يومًا.',b:'يمكنك إعادة المنتج مجانًا خلال 14 يومًا.',preferred:'B',acceptable:['A','B'],reviewable:[]},
   {src:'Your payment could not be processed.',a:'تعذر معالجة عملية الدفع.',b:'لم نتمكن من إتمام الدفع.',preferred:'A',acceptable:['A','B'],reviewable:[]},

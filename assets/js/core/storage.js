@@ -1,6 +1,5 @@
 const STATE_KEY='no_boss_state';
 const RESULTS_KEY='no_boss_results';
-
 function local(){try{return globalThis.localStorage||null}catch{return null}}
 function session(){try{return globalThis.sessionStorage||null}catch{return null}}
 function readFrom(store,key,fallback=null){if(!store)return fallback;try{const raw=store.getItem(key);return raw===null?fallback:JSON.parse(raw)}catch{return fallback}}
@@ -15,8 +14,7 @@ function stateCandidate(store,mode){const value=readFrom(store,STATE_KEY);return
 function compareStateCandidates(a,b){if(a.revision!==b.revision)return b.revision-a.revision;if(a.writer&&b.writer&&a.writer!==b.writer){if(a.mode==='session')return -1;if(b.mode==='session')return 1}return a.mode==='persistent'?-1:b.mode==='persistent'?1:0}
 function stateCandidates(){return [stateCandidate(local(),'persistent'),stateCandidate(session(),'session')].filter(Boolean)}
 function newestState(){const candidates=stateCandidates();candidates.sort(compareStateCandidates);return candidates[0]||null}
-function compactResult(value){return {runId:value?.runId,scenarioName:value?.scenarioName,runPath:value?.runPath||'legacy',score:value?.score,outcome:value?.outcome,simMinutes:value?.simMinutes,netEconomic:value?.netEconomic,finalStress:value?.finalStress,breakTaken:value?.breakTaken,appVersion:value?.appVersion||'legacy',scoreModelVersion:value?.scoreModelVersion||'legacy'}}
-
+function compactResult(value){return {runId:value?.runId,scenarioKey:value?.scenarioKey,scenarioName:value?.scenarioName,runPath:value?.runPath||'legacy',score:value?.score,outcome:value?.outcome,simMinutes:value?.simMinutes,netEconomic:value?.netEconomic,finalStress:value?.finalStress,breakTaken:value?.breakTaken??null,appVersion:value?.appVersion||'legacy',scoreModelVersion:value?.scoreModelVersion||'legacy',economyModelVersion:value?.economyModelVersion||'legacy'}}
 export function saveState(state){return write(STATE_KEY,state)}
 export function loadState(){return newestState()?.value||null}
 export function latestStateRevision(){const revisions=stateCandidates().map(candidate=>candidate.revision);return revisions.length?Math.max(...revisions):0}

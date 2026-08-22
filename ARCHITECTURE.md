@@ -1,55 +1,74 @@
-# No Boss v3.3.0 Architecture
+# No Boss v3.4.0 Architecture
 
 No Boss is a static multi-page training simulation for GitHub Pages. It has no backend, API, database, or application framework.
 
 ## Experience model
 
-The simulation has two chapters: a worker experience that produces facts, then a researcher analysis that may use only facts that actually occurred. Valid endings are `full-work`, `no-work`, and `contract-decline`; these paths are deliberately not treated as comparable scoring populations in the archive.
+The simulation has two chapters: a worker experience that produces facts, then a researcher analysis that may use only facts that actually occurred. Valid endings are `full-work`, `no-work`, and `contract-decline`.
+
+Stage-changing decisions are reversible. Before a commit changes `stage`, state saves a checkpoint of the pre-decision snapshot. Entering the destination page does not create a duplicate snapshot. Back therefore restores the actual prior decision state instead of merely changing the URL/stage.
 
 ## Actors and authority
 
-The ecosystem contains worker, platform, client, and payment mediator. The authority map contains only worker, platform, and client because the mediator's modeled role is payment execution rather than control over work conditions.
+The ecosystem contains worker, platform, client, and payment mediator. Work-authority analysis contains worker, platform, and client. Payment mediation is analyzed separately in the full-work diagnostic questions.
 
-`assets/js/data/authority-model.js` is the single numeric authority reference. `power-targets.js` derives map targets from it. `question-references.js` derives accepted question answers from the same model and uses `significantAuthorities()` to represent shared platform/client authority when both fall within the configured significance band.
+`assets/js/data/authority-model.js` stores a rank reference for every work axis: `primary` and `secondary` actors. It does not contain hand-authored hidden percentages. `authorityDistribution()` derives normalized 100-point weights from the rank solely to interoperate with the participant's drawing UI and rank-scoring functions.
 
-The risk axis is a burden axis, not a control axis. A high worker value on risk means the worker bears more cost/risk; it does not mean greater authority.
+`SCORE_MODEL_VERSION=4`. Relationship questions are diagnostic and unscored. The analysis score is:
 
-The 100-point sliders are a relative sketch. Scoring compares the primary authority and strongest group; no hidden exact percentage is required. The obsolete full-distribution proximity score was removed in v3.3.
+- 40 points: evidence classification by analytical dimension.
+- 60 points: relative authority/burden map.
 
-## Work tasks and visible criteria
+The risk axis remains a burden axis, not a control axis.
 
-`assets/js/data/task-guides.js` provides criteria shared by first and second tasks. Moderation categories are defined before scoring, data annotation explains visual bounding-box rules and the equivalent nonvisual alternative, AI evaluation names its comparison criteria, and translation combines a generic criterion with each scenario's visible client style guide.
+## Task UI
 
-The data visual and semantic routes share the same scoring space. A participant uses one route per sample; the semantic route replaces a drawn answer rather than adding a second required task.
+`assets/js/core/task-ui.js` is the shared renderer/controller for first and second tasks. It owns choice buttons, `aria-pressed`, data drawing, the nonvisual semantic alternative, and task/style guides. Page modules supply state fields and completion behavior rather than maintaining duplicate task implementations.
+
+The data visual and semantic routes share the same scoring space. A participant uses one route per sample.
 
 ## State and migration
 
-`STATE_SCHEMA_VERSION=4`. `normalizeState()` whitelists fields that exist in `freshState()` rather than spreading arbitrary historical keys into the current state. Legacy four-party power distributions are migrated to the current three-party authority map and renormalized.
+`STATE_SCHEMA_VERSION=5`. `normalizeState()` whitelists fields present in `freshState()`, and live `commit/patch` calls also ignore unknown keys.
 
-Removed legacy fields include `marketExit`, `powerDraft`, `powerEdited`, `qualityAfterFirstTask`, `reviewTaskScore`, and `realFinishedAt`.
+Legacy fields no longer in the model include:
 
-## Economics
+`marketExit`, `powerDraft`, `powerEdited`, `qualityAfterFirstTask`, `reviewTaskScore`, `realFinishedAt`, `initialStress`, `firstTaskStress`, `secondTaskScore`, `disputeSeverity`, `disputedTaskPay`.
 
-Operating cost equals the scenario's fixed estimates for internet, electricity, and device use once the participant enters the task market. A `no-work` run therefore may have zero task income and a negative net economic result. Transfer and processor fees require an actual payout and remain zero when no task was accepted. A `contract-decline` run does not enter the market and does not incur those operating costs.
+Legacy four-party power distributions are migrated to the current three-party work-authority map and normalized.
 
-Archived results store `runPath`, `appVersion`, and `scoreModelVersion`. Comparisons and stars are calculated only inside the same scenario, run path, and score model.
+## Worker decisions
 
-## Appeals
+Rejecting an offer and ending a shift are distinct actions. This distinction exists both in the first market and after the first task. Ending the shift after the second offer appears does not increment rejections, offer decisions, or change acceptance.
 
-Non-data scenarios use sample-level acceptable/reviewable answers. Data appeals use the actual stored box/semantic answer and its overlap-equivalent credit. A borderline annotation may support a guideline appeal; a technical appeal requires a recorded technical issue and cannot be inferred from a low aggregate task score.
+Monitoring details are deliberately disclosed after task execution in the simulation, and the UI states that the delayed disclosure is intentional so it can be analyzed as an opacity issue rather than mistaken for missing instructions.
 
-## Contract history
+## Risks and appeals
 
-Rejecting standardized terms is an event. If the participant reconsiders, the prior rejection evidence and log remain; a reconsideration event is appended. This preserves a coherent event history rather than retroactively deleting an action that occurred.
+Risk events may only assert facts supported by the completed work. The moderation wellbeing event requires completed samples that actually contained harassment or threats. The data connection event records a technical display/synchronization issue; a technical appeal succeeds only when such an issue was recorded.
+
+Non-data appeals still depend on sample-level acceptable/reviewable answers. Data guideline appeals depend on actual annotation credit.
+
+## Economics and archive
+
+Operating cost remains the fixed shift estimate after entering the market. Transfer/processor fees require a payout.
+
+`ECONOMY_MODEL_VERSION=2`. Archived comparisons are grouped by stable scenario identity, run path, score model, and economy model. Contract-decline runs store `null` for shift duration, final stress, access outcome, and break choice where those concepts did not occur.
 
 ## Conclusion
 
-The written conclusion is not automatically graded. The gate requires a minimally substantive text and supporting evidence, but no longer forces a counter-evidence item merely because several pieces of evidence exist. Evidence may be support, complication, or dual-role when the facts justify that classification.
+Conclusion requirements follow the run path:
+
+- `contract-decline`: contract gate and bargaining/access implications; one supporting evidence item is sufficient.
+- `no-work`: market participation, search time, costs, pricing/allocation/access; one supporting item is sufficient.
+- `full-work`: broader authority and burden conclusion; normally two supporting items.
+
+Counter/dual evidence remains optional and fact-dependent.
 
 ## Routes and stale-page cleanup
 
-`assets/js/core/routes.js` is the route source of truth. `scripts/generate-pages.mjs --check` verifies every generated shell and also scans for generated-looking top-level route shells that are no longer in the manifest. Generation removes such orphan shells safely. Current route HTML files are deployment shells and are not duplicate game logic.
+`assets/js/core/routes.js` is the route source of truth. Current route HTML files are deployment shells required by GitHub Pages, not legacy application copies. `scripts/generate-pages.mjs --check` verifies expected shells and detects generated-looking orphan route directories; generation removes those orphans.
 
 ## Verification
 
-`npm run check` runs route, structural, regression, domain, semantic-invariant, and syntax checks. The semantic layer is intentionally limited to cross-module guarantees to avoid duplicating domain assertions. `npm run test:e2e` runs browser journeys and accessibility checks, including second-task pressed state.
+`npm run check` runs route, structural, regression, domain, semantic-invariant, and syntax checks. `npm run test:e2e` runs Chromium/WebKit desktop/mobile journeys and accessibility checks, including reversible transitions, clean shift ending, no-work access, and keyboard navigation of researcher tabs.
