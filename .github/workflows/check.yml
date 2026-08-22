@@ -2,10 +2,16 @@ name: No Boss checks
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 permissions:
   contents: read
+
+concurrency:
+  group: no-boss-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   regression:
