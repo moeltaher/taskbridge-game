@@ -7,4 +7,4 @@ export const authorityModel={
 const parties=['worker','platform','client'];
 export function authorityReference(type,axis){return authorityModel[type]?.[axis]||{primary:[],secondary:[]}}
 export function authorityLeaders(type,axis){return [...authorityReference(type,axis).primary]}
-export function authorityDistribution(type,axis){const ref=authorityReference(type,axis),weights=Object.fromEntries(parties.map(p=>[p,ref.primary.includes(p)?3:ref.secondary.includes(p)?2:1])),total=Object.values(weights).reduce((a,b)=>a+b,0),out={},used=0;parties.forEach((p,i)=>{if(i===parties.length-1)out[p]=100-used;else{out[p]=Math.round(weights[p]/total*100);used+=out[p]}});return out}
+export function authorityDistribution(type,axis){const ref=authorityReference(type,axis),weights=Object.fromEntries(parties.map(p=>[p,ref.primary.includes(p)?3:ref.secondary.includes(p)?2:1])),total=Object.values(weights).reduce((a,b)=>a+b,0),out={};let used=0;parties.forEach((p,i)=>{if(i===parties.length-1)out[p]=100-used;else{out[p]=Math.round(weights[p]/total*100);used+=out[p]}});return out}
