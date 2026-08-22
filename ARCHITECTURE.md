@@ -45,13 +45,14 @@ The translation scenario exposes its client style guide before scoring. Preferre
 
 ## State and storage
 
-`STATE_SCHEMA_VERSION=4` treats a live simulation session as versioned application state. A stored live state is compatible only when all three match the current runtime:
+`STATE_SCHEMA_VERSION=4` treats a live simulation session as versioned application state. Live-state compatibility is determined by:
 
-- `schemaVersion`;
-- `appVersion`;
-- `scoreModelVersion`.
+- `schemaVersion`, which represents the structure and runtime semantics of the saved session; and
+- `scoreModelVersion`, which prevents a saved analytical result from crossing incompatible scoring semantics.
 
-An incompatible live state is deleted as a unit rather than partially normalized. This prevents derived fields such as payment, access decisions, review outcomes, and result scores from surviving across incompatible application semantics.
+`appVersion` is still stored on live state for provenance and diagnostics, but a patch/release-number change alone does not destroy an otherwise compatible session.
+
+Before loading or synchronizing state, incompatible localStorage/sessionStorage candidates are pruned **individually**. A stale candidate in one storage area therefore cannot force deletion of a compatible candidate in the other. Incompatible state is never partially merged into a current run, preventing old payment, access, review, or result fields from leaking into current semantics.
 
 Every persisted live state also records:
 
