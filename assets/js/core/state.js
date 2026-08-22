@@ -11,6 +11,7 @@ function persist(){
  lastPersistence=saveState(state);
  if(lastPersistence.status==='session'&&!warnedSession){warnedSession=true;globalThis.alert?.('تعذر الحفظ الدائم، لكن تقدم الجولة محفوظ مؤقتًا داخل هذا التبويب. لا تغلق التبويب إذا أردت الاحتفاظ بالتقدم.')}
  if(lastPersistence.status==='failed'&&!warnedPersistence){warnedPersistence=true;globalThis.alert?.('تعذر حفظ تقدم الجولة في هذا المتصفح. لا تغلق الصفحة أو تنتقل منها قبل السماح بالتخزين؛ قد تضيع التغييرات غير المحفوظة.')}
+ if(typeof globalThis.dispatchEvent==='function'&&typeof globalThis.Event==='function')globalThis.dispatchEvent(new Event('no-boss-state-change'));
  return lastPersistence;
 }
 function knownKeys(){return new Set(Object.keys(freshState()))}
