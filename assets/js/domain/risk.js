@@ -1,5 +1,7 @@
+import {samples} from '../data/samples.js';
+
 const profiles={
- wellbeing:{occurred:true,icon:'🧠',kind:'وقت تعافٍ صحي ونفسي مرتبط بالعمل',title:'ظهرت آثار التعرض للمحتوى الذي راجعته',cause:'بعد إنهاء دفعة المراجعة، احتجت إلى 3 دقائق بعيدًا عن المنصة قبل متابعة الوردية بسبب أثر المحتوى المزعج الذي ظهر في المهمة المنجزة.',minutes:3,stress:18,consequence:'سجلت المحاكاة 3 دقائق تحديدًا كوقت تعافٍ مرتبط بالعمل بلا مقابل مستقل، وليس كوقت تنفيذ مهمة جديدة.'},
+ wellbeing:{occurred:true,icon:'🧠',kind:'وقت تعافٍ صحي ونفسي مرتبط بالعمل',title:'ظهرت آثار التعرض للمحتوى الذي راجعته',cause:'بعد إنهاء دفعة تضمنت عينة إساءة أو تهديد، احتجت إلى 3 دقائق بعيدًا عن المنصة قبل متابعة الوردية بسبب أثر المحتوى المزعج الذي ظهر فعلًا في المهمة المنجزة.',minutes:3,stress:18,consequence:'سجلت المحاكاة 3 دقائق تحديدًا كوقت تعافٍ مرتبط بالعمل بلا مقابل مستقل، وليس كوقت تنفيذ مهمة جديدة.'},
  timeout:{occurred:true,icon:'⏱',kind:'تحديث تعليمات بعد التسليم',title:'وصل تحديث يستلزم إعادة التحقق من عينة مسلمة',cause:'بعد تسليم مهمة التقييم، ظهر تحديث جديد لإرشادات المشروع وطلبت No Boss إعادة التحقق من جزء من الإجابات التي أرسلتها. احتجت إلى دقيقتين لهذه المراجعة الإضافية.',minutes:2,stress:10,consequence:'سجلت المحاكاة دقيقتين إضافيتين مرتبطتين بالعمل من دون مهمة جديدة ذات سعر مستقل.'},
  revision:{occurred:true,icon:'↺',kind:'طلب تعديل بعد التسليم',title:'وصل الآن طلب تعديل من العميل',cause:'ظهر إشعار جديد في No Boss: العميل يطلب تغيير بعض المصطلحات في ترجمة سبق أن سلمتها وفق نسخة محدثة من دليل المشروع.',minutes:4,stress:7,consequence:'احتاج تنفيذ التعديل إلى 4 دقائق إضافية مرتبطة بالعمل لم يسجل لها مقابل مستقل.'},
  connection:{occurred:true,icon:'⌁',kind:'تعطل تقني بعد التنفيذ',title:'تعطلت مزامنة نتائج المهمة مع الخادم',cause:'بعد إنهاء مهمة التصنيف وأثناء مزامنة النتائج المسلمة، انقطع الاتصال بالخادم. استغرقت استعادة الاتصال والتحقق من اكتمال المزامنة دقيقتين.',minutes:2,stress:9,consequence:'سجلت المحاكاة دقيقتين إضافيتين مرتبطتين بالعمل بسبب استعادة الاتصال والتحقق من التسليم.'}
@@ -9,8 +11,9 @@ const probability={wellbeing:85,connection:65,timeout:60,revision:55};
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 function riskProfile(type){return profiles[type]||profiles.connection}
 function deterministicRoll(scenario,state){const stableSeed=Number(state.riskSeed??state.realStartedAt??1)||1,seed=`${scenario.type}|${scenario.riskType}|${stableSeed}`;let hash=0;for(let i=0;i<seed.length;i++)hash=(hash*31+seed.charCodeAt(i))>>>0;return hash%100}
+function moderationExposure(state){return (state.completedTasks||[]).some(task=>(task.sampleIndexes||[]).some(index=>{const sample=samples.moderation?.[index];return sample?.preferred==='تهديد'||sample?.preferred==='مضايقة/إساءة'||(sample?.reviewable||[]).some(value=>value==='تهديد'||value==='مضايقة/إساءة')}))}
 export function riskTransition(scenario,state){
  if(state.riskEvent)return {event:state.riskEvent,changes:null};
- const profile=riskProfile(scenario.riskType),threshold=probability[scenario.riskType]??65,roll=deterministicRoll(scenario,state),event=roll<threshold?profile:noEvent,time=Number(state.time||0),extraWorkTime=Number(state.extraWorkTime||0),stress=Number(state.stress||0);
- return {event:{...event,roll,threshold},changes:{riskEvent:{...event,roll,threshold},time:time+event.minutes,extraWorkTime:extraWorkTime+event.minutes,stress:clamp(stress+event.stress,0,100),status:event.occurred?'حدث موقف إضافي مرتبط بالعمل':'انتهت الوردية دون حدث إضافي'}};
+ const profile=riskProfile(scenario.riskType),threshold=probability[scenario.riskType]??65,roll=deterministicRoll(scenario,state),eligible=scenario.riskType!=='wellbeing'||moderationExposure(state),event=eligible&&roll<threshold?profile:noEvent,time=Number(state.time||0),extraWorkTime=Number(state.extraWorkTime||0),stress=Number(state.stress||0);
+ return {event:{...event,roll,threshold,eligible},changes:{riskEvent:{...event,roll,threshold,eligible},time:time+event.minutes,extraWorkTime:extraWorkTime+event.minutes,stress:clamp(stress+event.stress,0,100),status:event.occurred?'حدث موقف إضافي مرتبط بالعمل':'انتهت الوردية دون حدث إضافي'}};
 }

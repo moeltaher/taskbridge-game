@@ -4,26 +4,26 @@ const TOP=144;
 const BOTTOM=244;
 
 export const dataScenes=[
- {color:'#e65f4e',x:170,width:217,opacity:1,semantic:{regionId:'leftCenter',sizeId:'standard'},description:'مشهد طريق أفقي بمركبة رئيسية متوسطة العرض تبدأ بين اليسار والمنتصف وتمتد نحو منتصف الصورة.'},
- {color:'#e59a3b',x:290,width:217,opacity:1,semantic:{regionId:'rightCenter',sizeId:'standard'},description:'مشهد طريق أفقي بمركبة رئيسية متوسطة العرض تبدأ بين المنتصف واليمين وتمتد نحو الجهة اليمنى.'},
- {color:'#6d7f90',x:235,width:217,opacity:.55,semantic:{regionId:'center',sizeId:'standard'},description:'مشهد طريق أفقي بمركبة رئيسية باهتة نسبيًا ومتوسطة العرض تتمركز حول منتصف الصورة.'},
- {color:'#8a64c7',x:120,width:205,opacity:1,shadow:true,semantic:{regionId:'left',sizeId:'short'},description:'مشهد طريق أفقي بمركبة رئيسية أقصر قليلًا في الجهة اليسرى، مع ظل يمتد خارج جسم المركبة ولا يدخل في الإطار.'},
- {color:'#3c9d83',x:330,width:198,opacity:1,semantic:{regionId:'right',sizeId:'short'},description:'مشهد طريق أفقي بمركبة رئيسية قصيرة نسبيًا في الجزء الأيمن من الطريق.'},
- {color:'#cc6f91',x:215,width:235,opacity:1,semantic:{regionId:'center',sizeId:'wide'},description:'مشهد طريق أفقي بمركبة رئيسية عريضة نسبيًا حول منتصف الطريق.'}
+ {color:'#e65f4e',x:170,width:217,opacity:1,semantic:{regionId:'leftCenter',sizeId:'standard'},description:'الحافة اليسرى لجسم المركبة تقع قرب 27% من عرض المشهد، والحافة اليمنى قرب 60%. تجاهل الطريق والظل عند تقدير الإطار.'},
+ {color:'#e59a3b',x:290,width:217,opacity:1,semantic:{regionId:'rightCenter',sizeId:'standard'},description:'الحافة اليسرى لجسم المركبة تقع قرب 45% من عرض المشهد، والحافة اليمنى قرب 79%. تجاهل الطريق عند تقدير الإطار.'},
+ {color:'#6d7f90',x:235,width:217,opacity:.55,semantic:{regionId:'center',sizeId:'standard'},description:'المركبة باهتة نسبيًا؛ يبدأ جسمها قرب 37% من عرض المشهد وينتهي قرب 71%. انخفاض التباين لا يغير حدود الجسم.'},
+ {color:'#8a64c7',x:120,width:205,opacity:1,shadow:true,semantic:{regionId:'left',sizeId:'short'},description:'يبدأ جسم المركبة قرب 19% من عرض المشهد وينتهي قرب 51%. يوجد ظل يمتد خارج الجسم ولا يدخل في الإطار.'},
+ {color:'#3c9d83',x:330,width:198,opacity:1,semantic:{regionId:'right',sizeId:'short'},description:'يبدأ جسم المركبة قرب 52% من عرض المشهد وينتهي قرب 83%. المطلوب تقدير حدود المركبة نفسها لا مساحة الطريق المحيطة.'},
+ {color:'#cc6f91',x:215,width:235,opacity:1,semantic:{regionId:'center',sizeId:'wide'},description:'يبدأ جسم المركبة قرب 34% من عرض المشهد وينتهي قرب 70%. المركبة أوسع من معظم أمثلة التدريب الأخرى.'}
 ];
 
 export const dataRegionOptions=[
- {id:'left',label:'الجزء الأيسر من الطريق',x:.188},
- {id:'leftCenter',label:'بين اليسار والمنتصف',x:.266},
- {id:'center',label:'حول منتصف الطريق',x:.35},
- {id:'rightCenter',label:'بين المنتصف واليمين',x:.453},
- {id:'right',label:'الجزء الأيمن من الطريق',x:.516}
+ {id:'left',label:'بداية قرب الخُمس الأول',x:.188},
+ {id:'leftCenter',label:'بداية قرب الربع الأول',x:.266},
+ {id:'center',label:'بداية قرب الثلث',x:.35},
+ {id:'rightCenter',label:'بداية بعد 40% تقريبًا',x:.453},
+ {id:'right',label:'بداية بعد نصف المشهد',x:.516}
 ];
 
 export const dataSizeOptions=[
- {id:'short',label:'مركبة قصيرة نسبيًا',w:.31},
- {id:'standard',label:'مركبة متوسطة العرض',w:.34},
- {id:'wide',label:'مركبة عريضة نسبيًا',w:.37}
+ {id:'short',label:'يمتد لنحو ثلث العرض أو أقل',w:.31},
+ {id:'standard',label:'يمتد لنحو ثلث العرض',w:.34},
+ {id:'wide',label:'يمتد لأكثر من ثلث العرض قليلًا',w:.37}
 ];
 
 export const dataSceneDescriptions=dataScenes.map(scene=>scene.description);
