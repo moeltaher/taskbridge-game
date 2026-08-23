@@ -1,30 +1,34 @@
 # Changelog
 
-## Current release — v3.6.0
+## Current release — v3.7.0
 
 ### Learning and causal integrity
-- Raised `SCORE_MODEL_VERSION` to 6 and added an explicit burden classification for burden-dimension evidence.
-- Unified premium-offer preview and execution so pay, duration, stress, and sample count describe the same offer.
-- Reworked quality-review presentation to summarize the whole reviewed task and list every actual difference using readable answer text.
-- Made the tie-break rule explicit: among equally low-scoring tasks, the most recently completed task is reviewed.
-- Limited accepted-appeal language to what the model actually changes: review severity, not the underlying task score or prior ranking decisions.
-- Replaced the no-work project question with a question that avoids attributing a client exclusion that did not occur.
-- Clarified delayed wellbeing events as distinct from a voluntary pre-review break.
+- Raised `SCORE_MODEL_VERSION` to 7 and removed default authority-map anchoring: power/burden axes now start unanswered and require explicit confirmation.
+- Added a historical offer-decision baseline per scenario so a single current-round decision cannot manufacture a 0% or 100% acceptance rate.
+- Made the two consequences of rejection explicit: the aggregate acceptance rate can affect the next ranking, while the rejection count remains a separate final-access factor.
+- Bound appeal grounds to the specific reviewable answer that supports them; generic grounds no longer succeed merely because some reviewable error exists.
+- Added immediate explanatory feedback to diagnostic questions before the player builds the authority map.
+- Added structured conclusion claims that must be consistent with the player's own confirmed authority/burden map without scoring the free-text conclusion.
+- Disclosed training risk-event probabilities and clarified that they are simulation parameters, not empirical sector estimates.
+- Clarified fixed participation-cost semantics and that a quality-review hold remains held at the end-of-round snapshot rather than being assumed permanently forfeited.
 
-### State and interaction correctness
-- Raised `STATE_SCHEMA_VERSION` to 7 and added `termsDeclinedBefore` for rejected-then-accepted contract histories.
-- Choosing another case after declining terms now resets the abandoned run instead of carrying a stale scenario into selection.
-- Filing a second review now creates an explicit undo checkpoint.
-- Starting the semantic nonvisual data method clears a previously saved visual box immediately.
-- Centralized shell/status/metric refreshes on `no-boss-state-change`; removed manual `refreshStats()` calls.
-- Clarified that equal power-map values mean equal rank.
+### State and cleanup
+- Raised `STATE_SCHEMA_VERSION` to 8.
+- Replaced the obsolete `powerTouched` state field with `powerConfirmed` and removed legacy `powerTouched` acceptance from current state.
+- Added `baselineAcceptedOffers`, `baselineOfferDecisions`, `conclusionAuthority`, and `conclusionBurden`.
+- Schema migration clears unconfirmed old authority-map values rather than treating legacy defaults as a current analytical answer.
+- Regenerated all live GitHub Pages route shells for v3.7.0. No obsolete route page exists in the route manifest.
+- Previously removed files `power-targets.js` and `question-references.js` remain prohibited by structural checks.
 
-### Accessibility, responsive layout, and cleanup
-- Fixed settlement-flow arrow direction for the vertical layout at the same breakpoint that stacks the cards.
-- Expanded Axe coverage through management, risk, dispute, payment, access, investigation, power, conclusion, result, and rights.
-- Added browser regressions for shell synchronization, contract-reset behavior, appeal undo, and visual-to-semantic answer replacement.
-- Deleted the unused scenario `costModel` field and the obsolete manual `refreshStats()` interface.
-- Regenerated every current GitHub Pages route shell for v3.6.0; no obsolete route page exists in the manifest.
+### Verification
+- Expanded domain checks for offer-history stability, evidence-specific appeal grounds, diagnostic feedback, risk probability, and explicit authority-map confirmation.
+- Updated Chromium/WebKit journeys and accessibility coverage for the new confirmation and conclusion steps.
+
+## Previous release — v3.6.0
+
+- Raised `SCORE_MODEL_VERSION` to 6 and added explicit burden evidence classification.
+- Unified premium-offer preview and execution, corrected appeal causality, exposed whole-task review differences, added appeal undo, fixed state/shell synchronization, and expanded accessibility coverage.
+- Deleted unused `costModel` and `refreshStats()` scaffolding while retaining live generated route shells and intentional legacy-storage compatibility.
 
 ## Previous release — v3.5.0
 
