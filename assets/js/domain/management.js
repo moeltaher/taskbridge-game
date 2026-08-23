@@ -2,10 +2,12 @@ import {acceptanceRate,scoreWork,qualityAfterTask,taskRecord,nextSampleIndexes} 
 export const BREAK_MINUTES=3;
 export const BREAK_STRESS_REDUCTION=8;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+export function baselineAcceptanceRate(state){return acceptanceRate(Number(state.baselineAcceptedOffers||0),Number(state.baselineOfferDecisions||0))}
 export function computeManagedAccess(scenario,state){
  const score=Number(state.completedTasks?.[0]?.score??state.workScore??85);
  const performanceDelta=Math.round((score-85)*.4);
- const acceptanceDelta=Math.round((Number(state.acceptance??100)-100)*.12);
+ const baseline=baselineAcceptanceRate(state);
+ const acceptanceDelta=Math.round((Number(state.acceptance??baseline)-baseline)*.12);
  return clamp(Number(scenario.initial.access)+performanceDelta+acceptanceDelta,35,95);
 }
 export function premiumSampleCount(scenario){return scenario.type==='data'?3:5}
