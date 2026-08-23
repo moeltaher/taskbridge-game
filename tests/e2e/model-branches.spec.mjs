@@ -53,3 +53,16 @@ test('market-time assumption is disclosed and progresses 4 then 2 minutes',async
  state=await page.evaluate(()=>JSON.parse(localStorage.getItem('no_boss_state')));
  expect(state.marketTime).toBe(6);
 });
+
+test('second-offer decision adds two minutes even when ending the shift',async({page})=>{
+ await enterWork(page,'سامر');
+ await forceRanking(page,100);
+ await page.getByRole('button',{name:'رؤية العرض الناتج عن هذا التحديث'}).click();
+ await expect(page.getByText(/دقيقتين إلى وقت السوق\/المقارنة/)).toBeVisible();
+ const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('no_boss_state')));
+ await page.getByRole('button',{name:'أنهي الوردية الآن'}).click();
+ const after=await page.evaluate(()=>JSON.parse(localStorage.getItem('no_boss_state')));
+ expect(after.marketTime).toBe(before.marketTime+2);
+ expect(after.time).toBe(before.time+2);
+ expect(after.rejections).toBe(before.rejections);
+});
