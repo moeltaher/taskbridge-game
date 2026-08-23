@@ -35,22 +35,25 @@ function refreshBackControl(page){
  button.title=backText;
  if(label)label.textContent=backText;
 }
+function refreshShellState(){
+ const s=getState(),sc=scenarios[s.scenarioKey];
+ const compact=document.querySelector('.compact-stats');if(compact)compact.outerHTML=compactStatsHTML();
+ const details=document.getElementById('summaryDetails');if(details)details.innerHTML=statsHTML();
+ const status=document.getElementById('sideStatus');if(status)status.textContent=s.status||'غير نشط';
+ const role=document.getElementById('sideRole');if(role)role.textContent=sc?.role||'';
+}
 export function shell(page){
  const s=getState(),sc=scenarios[s.scenarioKey],[pct,label,chapter]=progress[page]||[0,'','worker'],showState=!!sc&&page!=='scenario',base=href('home'),researcher=isResearcherPage(page);
  const {canBack,backText}=backControlState(page),chapterLabel=chapter==='researcher'?'الفصل الثاني · تحليل الوردية':'الفصل الأول · وردية العامل';
- return `<header class="topbar"><div class="topbar-inner"><button class="brand-home" id="homeBtn" aria-label="العودة إلى الصفحة الرئيسية"><img class="logo" src="${base}assets/images/no-boss-logo.svg" alt="شعار No Boss"><div><div class="brand">No Boss</div><div class="subbrand">v${APP_VERSION} · محاكاة اقتصاد المنصات</div></div></button><div class="top-actions"><button class="top-action" id="backBtn" aria-label="${escapeAttribute(backText)}" title="${escapeAttribute(backText)}" ${canBack?'':'disabled'}>↩ <span>${escapeHTML(backText)}</span></button><button class="top-action" id="restartBtn" aria-label="بدء من جديد">↻ <span>بدء من جديد</span></button><div class="phase">${label}</div></div></div></header>${persistenceBanner(s,page)}${page==='home'?'<main class="main" id="pageRoot"></main>':`<div class="progress-shell"><div class="progress-meta"><span>${chapterLabel} · ${pct}%</span><span>${label}</span></div><div class="progress" role="progressbar" aria-label="تقدم ${chapterLabel}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div></div>${showState?`<section class="shift-summary ${researcher?'research-summary':''}"><div class="shift-summary-head"><b>${researcher?'ملخص القضية':'ملخص وضعك حتى الآن'}</b><button class="summary-toggle" id="summaryToggle" type="button" aria-expanded="false">التفاصيل</button></div>${compactStatsHTML()}<div class="stats summary-details" id="summaryDetails">${statsHTML()}</div></section>`:''}<div class="page-shell"><aside class="sidebar"><div class="side-brand">${researcher?'لوحة الباحث':'لوحة العامل'}</div><div class="side-mini">${showState?`الحالة الحالية<b>${escapeHTML(s.status)}</b><span>${escapeHTML(sc.role)}</span>`:'ابدأ أو اختر حالة جديدة'}</div></aside><main class="main" id="pageRoot"></main></div>`}`;
+ return `<header class="topbar"><div class="topbar-inner"><button class="brand-home" id="homeBtn" aria-label="العودة إلى الصفحة الرئيسية"><img class="logo" src="${base}assets/images/no-boss-logo.svg" alt="شعار No Boss"><div><div class="brand">No Boss</div><div class="subbrand">v${APP_VERSION} · محاكاة اقتصاد المنصات</div></div></button><div class="top-actions"><button class="top-action" id="backBtn" aria-label="${escapeAttribute(backText)}" title="${escapeAttribute(backText)}" ${canBack?'':'disabled'}>↩ <span>${escapeHTML(backText)}</span></button><button class="top-action" id="restartBtn" aria-label="بدء من جديد">↻ <span>بدء من جديد</span></button><div class="phase">${label}</div></div></div></header>${persistenceBanner(s,page)}${page==='home'?'<main class="main" id="pageRoot"></main>':`<div class="progress-shell"><div class="progress-meta"><span>${chapterLabel} · ${pct}%</span><span>${label}</span></div><div class="progress" role="progressbar" aria-label="تقدم ${chapterLabel}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div></div>${showState?`<section class="shift-summary ${researcher?'research-summary':''}"><div class="shift-summary-head"><b>${researcher?'ملخص القضية':'ملخص وضعك حتى الآن'}</b><button class="summary-toggle" id="summaryToggle" type="button" aria-expanded="false">التفاصيل</button></div>${compactStatsHTML()}<div class="stats summary-details" id="summaryDetails">${statsHTML()}</div></section>`:''}<div class="page-shell"><aside class="sidebar"><div class="side-brand">${researcher?'لوحة الباحث':'لوحة العامل'}</div><div class="side-mini">${showState?`الحالة الحالية<b id="sideStatus">${escapeHTML(s.status)}</b><span id="sideRole">${escapeHTML(sc.role)}</span>`:'ابدأ أو اختر حالة جديدة'}</div></aside><main class="main" id="pageRoot"></main></div>`}`;
 }
 export function bindShell(page){
  document.getElementById('homeBtn').onclick=()=>{const s=getState();if(s.scenarioKey&&!confirm('العودة إلى الصفحة الرئيسية؟ سيبقى تقدم الجولة محفوظًا.'))return;location.href=href('home')};
  document.getElementById('restartBtn').onclick=()=>{if(getState().scenarioKey&&!confirm('بدء محاكاة جديدة؟ سيُحذف تقدم الجولة الحالية.'))return;reset();location.href=href('home')};
  document.getElementById('backBtn').onclick=()=>{const p=page==='rights'?consumeCheckpointTo('result'):undoCheckpoint();if(p)location.href=href(p)};
  document.getElementById('summaryToggle')?.addEventListener('click',event=>{const details=document.getElementById('summaryDetails'),open=details.classList.toggle('open');event.currentTarget.setAttribute('aria-expanded',String(open));event.currentTarget.textContent=open?'إخفاء التفاصيل':'التفاصيل'});
- globalThis.addEventListener('no-boss-state-change',()=>refreshBackControl(page));
- refreshBackControl(page);
-}
-export function refreshStats(){
- const el=document.querySelector('.stats');if(el)el.innerHTML=statsHTML();
- const compact=document.querySelector('.compact-stats');if(compact)compact.outerHTML=compactStatsHTML();
+ globalThis.addEventListener('no-boss-state-change',()=>{refreshBackControl(page);refreshShellState()});
+ refreshBackControl(page);refreshShellState();
 }
 export function avatar(sc){return `<img class="avatar-img" src="../assets/images/characters/${characterImages[sc.type]}" alt="رسم كرتوني للشخصية ${escapeAttribute(sc.name)}">`}
 export function timelineHTML(log){return `<div class="timeline">${log.map(item=>`<div class="tl"><small>${escapeHTML(item.time)}</small><b>${escapeHTML(item.title)}</b><div class="muted small">${escapeHTML(item.text)}</div></div>`).join('')}</div>`}
