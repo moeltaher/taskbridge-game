@@ -1,8 +1,9 @@
 import {axes,parties} from '../data/parties.js';
+import {scenarios} from '../data/scenarios.js';
 import {pageForStage as routePageForStage,stageForPage as routeStageForPage,isPublicPage} from './routes.js';
 import {saveState,loadState,clearState,stateStorageMode,latestStateRevision,latestStateSnapshot} from './storage.js';
 
-export const STATE_SCHEMA_VERSION=8;
+export const STATE_SCHEMA_VERSION=9;
 const writerId=globalThis.crypto?.randomUUID?.()||`tab-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 let lastPersistence={ok:true,status:'persistent',persistent:true,session:false},warnedPersistence=false,warnedSession=false,revisionCounter=0;
 function persist(){
@@ -18,21 +19,30 @@ function knownKeys(){return new Set(Object.keys(freshState()))}
 function applyChanges(changes){const allowed=knownKeys(),entries=Object.entries(changes||{}).filter(([key])=>allowed.has(key));if(!entries.length)return false;Object.assign(state,Object.fromEntries(entries));return true}
 function appendLog({title,text}){const h=9+Math.floor(state.time/60),m=String(state.time%60).padStart(2,'0');state.log.push({time:`${String(h).padStart(2,'0')}:${m}`,title,text})}
 function emptyPower(){const power={};axes.forEach(axis=>power[axis.id]={worker:0,platform:0,client:0});return power}
+function acceptanceRate(accepted,decisions){return decisions?Math.round(Number(accepted||0)/Number(decisions)*100):100}
 export function freshState(){
  return {schemaVersion:STATE_SCHEMA_VERSION,storageRevision:0,storageWriterId:null,stage:0,scenarioKey:null,status:'غير نشط',grossWorker:0,clientPaid:0,time:0,paidTime:0,marketTime:0,extraWorkTime:0,breakTime:0,quality:92,initialQuality:92,acceptance:100,acceptedOffers:0,offerDecisions:0,baselineAcceptedOffers:0,baselineOfferDecisions:0,access:72,stress:22,rejections:0,rejectedJobs:[],termsDecision:null,termsDeclinedBefore:false,contractDeclineEnding:false,selectedJob:null,noWorkEnding:false,workAnswers:[],workScore:0,workStep:'market',sampleSequence:[],sampleCursor:0,currentTaskSampleIndexes:[],completedTasks:[],reviewTaskId:null,secondOffer:null,secondTaskAnswers:[],managementStep:'ranking',rankingBeforeAccess:null,opportunityRankingDecision:null,offerDecisionResult:null,monitorDecision:null,riskSeed:null,riskEvent:null,appealed:null,appealGround:null,appealCost:null,appealReview:null,initialReviewSeverity:0,finalReviewSeverity:0,hold:0,disputeFinalized:false,qualityBeforeDispute:null,payment:null,accountOutcome:null,accessDecision:null,evidence:[],log:[],evidenceSort:{},answers:{},investigationStep:'case',power:emptyPower(),powerConfirmed:[],powerAxisIndex:0,analysisText:'',conclusionAuthority:null,conclusionBurden:null,conclusionEvidence:[],conclusionCounterEvidence:[],conclusionDualEvidence:[],selectedRights:[],resultData:null,realStartedAt:null,currentPage:'home',checkpoints:[]};
 }
 const ARRAY_FIELDS=['rejectedJobs','workAnswers','sampleSequence','currentTaskSampleIndexes','completedTasks','secondTaskAnswers','evidence','log','powerConfirmed','conclusionEvidence','conclusionCounterEvidence','conclusionDualEvidence','selectedRights','checkpoints'];
 function migratedPower(prior,fallback){const values={};let total=0;for(const party of parties){const n=Math.max(0,Number(prior?.[party]??fallback[party]??0));values[party]=n;total+=n}if(total<=0)return {...fallback};let used=0;for(let i=0;i<parties.length;i++){const party=parties[i];if(i===parties.length-1)values[party]=100-used;else{values[party]=Math.max(0,Math.round(values[party]/total*100));used+=values[party]}}return values}
+function migratePayment(payment){if(!payment||typeof payment!=='object')return payment;const hold=Number(payment.hold||0),availableNet=Number(payment.availableNet??payment.net??0);return {...payment,heldBalance:Number(payment.heldBalance??hold),availableNet,economicPosition:Number(payment.economicPosition??availableNet+hold),net:availableNet}}
+function migrateLegacyOfferHistory(normalized,value){const sc=scenarios[normalized.scenarioKey];if(!sc?.offerHistory||Number(value.baselineOfferDecisions||0)>0)return;const priorAccepted=Number(sc.offerHistory.accepted||0),priorDecisions=Number(sc.offerHistory.decisions||0),roundAccepted=Math.max(0,Number(value.acceptedOffers||0)),roundDecisions=Math.max(0,Number(value.offerDecisions||0));normalized.baselineAcceptedOffers=priorAccepted;normalized.baselineOfferDecisions=priorDecisions;normalized.acceptedOffers=priorAccepted+roundAccepted;normalized.offerDecisions=priorDecisions+roundDecisions;normalized.acceptance=acceptanceRate(normalized.acceptedOffers,normalized.offerDecisions)}
 export function normalizeState(value){
  const base=freshState();if(!value||typeof value!=='object'||Array.isArray(value))return base;
- const legacy=Number(value.schemaVersion||0)!==STATE_SCHEMA_VERSION,normalized={...base};
+ const oldSchema=Number(value.schemaVersion||0),legacy=oldSchema!==STATE_SCHEMA_VERSION,normalized={...base};
  for(const key of Object.keys(base)){if(Object.prototype.hasOwnProperty.call(value,key))normalized[key]=value[key]}
  normalized.schemaVersion=STATE_SCHEMA_VERSION;
  for(const key of ARRAY_FIELDS)normalized[key]=Array.isArray(value[key])?value[key]:base[key];
  normalized.evidenceSort=value.evidenceSort&&typeof value.evidenceSort==='object'?value.evidenceSort:{};
  normalized.answers=value.answers&&typeof value.answers==='object'?value.answers:{};
  normalized.power={...base.power};for(const axis of axes)normalized.power[axis.id]=migratedPower(value.power?.[axis.id],base.power[axis.id]);
- if(legacy){normalized.checkpoints=[];normalized.power=emptyPower();normalized.powerConfirmed=[];normalized.conclusionAuthority=null;normalized.conclusionBurden=null}
+ normalized.payment=migratePayment(normalized.payment);
+ normalized.completedTasks=(normalized.completedTasks||[]).map(task=>({...task,technicalIssueSampleIndexes:Array.isArray(task?.technicalIssueSampleIndexes)?task.technicalIssueSampleIndexes:[]}));
+ if(legacy){
+  migrateLegacyOfferHistory(normalized,value);
+  normalized.checkpoints=[];normalized.power=emptyPower();normalized.powerConfirmed=[];normalized.conclusionAuthority=null;normalized.conclusionBurden=null;normalized.conclusionEvidence=[];normalized.conclusionCounterEvidence=[];normalized.conclusionDualEvidence=[];normalized.selectedRights=[];normalized.resultData=null;
+  if(Number(normalized.stage)>=9){normalized.stage=9;normalized.currentPage='power';normalized.powerAxisIndex=0;normalized.status='مراجعة خريطة السلطة بعد تحديث نموذج التحليل'}
+ }
  return normalized;
 }
 function syncExternalState(){const latest=latestStateSnapshot();if(!latest)return false;const latestRevision=Number(latest.storageRevision)||0,currentRevision=Number(state.storageRevision)||0;if(latestRevision>currentRevision&&latest.storageWriterId&&latest.storageWriterId!==writerId){state=normalizeState(latest);revisionCounter=Math.max(revisionCounter,latestRevision);return true}return false}

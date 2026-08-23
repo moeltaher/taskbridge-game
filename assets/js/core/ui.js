@@ -5,55 +5,21 @@ import {scenarios} from '../data/scenarios.js';
 import {href,progress,isResearcherPage} from './routes.js';
 
 const characterImages={data:'samer.svg',moderation:'layan.svg',ai:'karim.svg',translation:'mariam.svg'};
-function compactStatsHTML(){
- const s=getState(),t=timeBreakdown(s);
- return `<div class="compact-stats"><span><b>${money(s.grossWorker)}</b> مستحقات</span><span><b>${t.totalTime} د</b> وردية</span><span><b>${s.quality}%</b> جودة</span><span><b>${s.stress}</b> عبء</span></div>`;
-}
+function compactStatsHTML(){const s=getState(),t=timeBreakdown(s);if(s.contractDeclineEnding)return `<div class="compact-stats"><span><b>لم تبدأ</b> وردية</span><span><b>${s.quality}%</b> جودة الحساب السابقة</span><span><b>${s.access}</b> وصول سابق</span></div>`;return `<div class="compact-stats"><span><b>${money(s.grossWorker)}</b> مستحقات</span><span><b>${t.totalTime} د</b> وردية</span><span><b>${s.quality}%</b> جودة</span><span><b>${s.stress}</b> عبء</span></div>`}
 function statsHTML(){
- const s=getState(),sc=scenarios[s.scenarioKey];
- if(!sc)return'';
- const t=timeBreakdown(s),access=s.access>=75?'مرتفع':s.access>=50?'متوسط':'منخفض',acceptance=s.offerDecisions?`${s.acceptance}%`:'لا سجل بعد';
- return `<div class="stat summary-stat"><small>مستحقات المهمات حتى الآن</small><b>${money(s.grossWorker)}</b><span class="stat-help">إجمالي المقابل للمهمات المكتملة قبل الحجز والرسوم والتكاليف.</span></div><div class="stat summary-stat"><small>وقت الوردية حتى الآن</small><b>${t.totalTime} دقيقة</b><span class="stat-help">${t.marketTime} د سوق/بحث · ${t.taskTime} د مهمات · ${t.extraWorkTime} د إضافي مرتبط بالعمل · ${t.breakTime} د استراحة.</span></div><div class="stat summary-stat"><small>أداء الحساب</small><b>الجودة ${s.quality}% · القبول ${acceptance}</b><span class="stat-help">معدل القبول يحسب قرارات العروض داخل هذه الجولة فقط.</span></div><div class="stat summary-stat"><small>الوصول وعبء الوردية</small><b>الوصول: ${access} · ${wellbeingLabel(s.stress)}</b><span class="stat-help">الوصول المرحلي لإتاحة المهام؛ العبء مؤشر محاكاة مستقل.</span></div>`;
+ const s=getState(),sc=scenarios[s.scenarioKey];if(!sc)return'';
+ if(s.contractDeclineEnding)return `<div class="stat summary-stat"><small>وضع الجولة</small><b>توقفت عند بوابة العقد</b><span class="stat-help">لم تبدأ مهمة أو وردية اقتصادية.</span></div><div class="stat summary-stat"><small>بيانات الحساب قبل الجولة</small><b>الجودة ${s.initialQuality}% · الوصول ${sc.initial.access}</b><span class="stat-help">قيم سياقية سابقة وليست نتيجة قرار داخل هذه الجولة.</span></div><div class="stat summary-stat"><small>الواقعة محل التحليل</small><b>رفض الشروط منع دخول السوق</b><span class="stat-help">يركز الفصل البحثي على بوابة الدخول التعاقدية.</span></div>`;
+ const t=timeBreakdown(s),access=s.access>=75?'مرتفع':s.access>=50?'متوسط':'منخفض',roundDecisions=Math.max(0,Number(s.offerDecisions)-Number(s.baselineOfferDecisions)),roundAccepted=Math.max(0,Number(s.acceptedOffers)-Number(s.baselineAcceptedOffers)),acceptance=s.offerDecisions?`${s.acceptance}%`:'لا سجل بعد';
+ return `<div class="stat summary-stat"><small>مستحقات المهمات حتى الآن</small><b>${money(s.grossWorker)}</b><span class="stat-help">إجمالي المقابل للمهمات المكتملة قبل الحجز والرسوم والتكاليف.</span></div><div class="stat summary-stat"><small>وقت الوردية حتى الآن</small><b>${t.totalTime} دقيقة</b><span class="stat-help">${t.marketTime} د سوق/بحث · ${t.taskTime} د مهمات · ${t.extraWorkTime} د إضافي مرتبط بالعمل · ${t.breakTime} د استراحة.</span></div><div class="stat summary-stat"><small>أداء الحساب</small><b>الجودة ${s.quality}% · القبول ${acceptance}</b><span class="stat-help">معدل القبول إجمالي: سجل سابق ${s.baselineAcceptedOffers}/${s.baselineOfferDecisions} + قرارات هذه الوردية ${roundAccepted}/${roundDecisions}.</span></div><div class="stat summary-stat"><small>الوصول وعبء الوردية</small><b>الوصول: ${access} · ${wellbeingLabel(s.stress)}</b><span class="stat-help">الوصول المرحلي لإتاحة المهام؛ العبء مؤشر محاكاة مستقل.</span></div>`;
 }
-function persistenceBanner(s,page){
- if(page==='home'||!s.scenarioKey)return'';
- const p=persistenceStatus();
- if(p.status==='session')return '<div class="notice" role="status"><b>الحفظ مؤقت داخل هذا التبويب.</b> تعذر التخزين الدائم؛ لا تغلق التبويب إذا أردت الاحتفاظ بالتقدم.</div>';
- if(p.status==='failed')return '<div class="notice bad" role="alert"><b>التقدم غير محفوظ.</b> قد تضيع التغييرات عند مغادرة الصفحة.</div>';
- return'';
-}
-function backControlState(page){
- const s=getState();
- return {canBack:!['home','scenario'].includes(page)&&!!s.checkpoints?.length,backText:page==='rights'?'العودة إلى النتيجة':currentBackLabel()};
-}
-function refreshBackControl(page){
- const button=document.getElementById('backBtn');
- if(!button)return;
- const {canBack,backText}=backControlState(page),label=button.querySelector('span');
- button.disabled=!canBack;
- button.setAttribute('aria-label',backText);
- button.title=backText;
- if(label)label.textContent=backText;
-}
-function refreshShellState(){
- const s=getState(),sc=scenarios[s.scenarioKey];
- const compact=document.querySelector('.compact-stats');if(compact)compact.outerHTML=compactStatsHTML();
- const details=document.getElementById('summaryDetails');if(details)details.innerHTML=statsHTML();
- const status=document.getElementById('sideStatus');if(status)status.textContent=s.status||'غير نشط';
- const role=document.getElementById('sideRole');if(role)role.textContent=sc?.role||'';
-}
+function persistenceBanner(s,page){if(page==='home'||!s.scenarioKey)return'';const p=persistenceStatus();if(p.status==='session')return '<div class="notice" role="status"><b>الحفظ مؤقت داخل هذا التبويب.</b> تعذر التخزين الدائم؛ لا تغلق التبويب إذا أردت الاحتفاظ بالتقدم.</div>';if(p.status==='failed')return '<div class="notice bad" role="alert"><b>التقدم غير محفوظ.</b> قد تضيع التغييرات عند مغادرة الصفحة.</div>';return''}
+function backControlState(page){const s=getState();return {canBack:!['home','scenario'].includes(page)&&!!s.checkpoints?.length,backText:page==='rights'?'العودة إلى النتيجة':currentBackLabel()}}
+function refreshBackControl(page){const button=document.getElementById('backBtn');if(!button)return;const {canBack,backText}=backControlState(page),label=button.querySelector('span');button.disabled=!canBack;button.setAttribute('aria-label',backText);button.title=backText;if(label)label.textContent=backText}
+function refreshShellState(){const s=getState(),sc=scenarios[s.scenarioKey];const compact=document.querySelector('.compact-stats');if(compact)compact.outerHTML=compactStatsHTML();const details=document.getElementById('summaryDetails');if(details)details.innerHTML=statsHTML();const status=document.getElementById('sideStatus');if(status)status.textContent=s.status||'غير نشط';const role=document.getElementById('sideRole');if(role)role.textContent=sc?.role||''}
 export function shell(page){
- const s=getState(),sc=scenarios[s.scenarioKey],[pct,label,chapter]=progress[page]||[0,'','worker'],showState=!!sc&&page!=='scenario',base=href('home'),researcher=isResearcherPage(page);
- const {canBack,backText}=backControlState(page),chapterLabel=chapter==='researcher'?'الفصل الثاني · تحليل الوردية':'الفصل الأول · وردية العامل';
+ const s=getState(),sc=scenarios[s.scenarioKey],[pct,label,chapter]=progress[page]||[0,'','worker'],showState=!!sc&&page!=='scenario',base=href('home'),researcher=isResearcherPage(page);const {canBack,backText}=backControlState(page),chapterLabel=chapter==='researcher'?'الفصل الثاني · تحليل الوردية':'الفصل الأول · وردية العامل';
  return `<header class="topbar"><div class="topbar-inner"><button class="brand-home" id="homeBtn" aria-label="العودة إلى الصفحة الرئيسية"><img class="logo" src="${base}assets/images/no-boss-logo.svg" alt="شعار No Boss"><div><div class="brand">No Boss</div><div class="subbrand">v${APP_VERSION} · محاكاة اقتصاد المنصات</div></div></button><div class="top-actions"><button class="top-action" id="backBtn" aria-label="${escapeAttribute(backText)}" title="${escapeAttribute(backText)}" ${canBack?'':'disabled'}>↩ <span>${escapeHTML(backText)}</span></button><button class="top-action" id="restartBtn" aria-label="بدء من جديد">↻ <span>بدء من جديد</span></button><div class="phase">${label}</div></div></div></header>${persistenceBanner(s,page)}${page==='home'?'<main class="main" id="pageRoot"></main>':`<div class="progress-shell"><div class="progress-meta"><span>${chapterLabel} · ${pct}%</span><span>${label}</span></div><div class="progress" role="progressbar" aria-label="تقدم ${chapterLabel}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div></div>${showState?`<section class="shift-summary ${researcher?'research-summary':''}"><div class="shift-summary-head"><b>${researcher?'ملخص القضية':'ملخص وضعك حتى الآن'}</b><button class="summary-toggle" id="summaryToggle" type="button" aria-expanded="false">التفاصيل</button></div>${compactStatsHTML()}<div class="stats summary-details" id="summaryDetails">${statsHTML()}</div></section>`:''}<div class="page-shell"><aside class="sidebar"><div class="side-brand">${researcher?'لوحة الباحث':'لوحة العامل'}</div><div class="side-mini">${showState?`الحالة الحالية<b id="sideStatus">${escapeHTML(s.status)}</b><span id="sideRole">${escapeHTML(sc.role)}</span>`:'ابدأ أو اختر حالة جديدة'}</div></aside><main class="main" id="pageRoot"></main></div>`}`;
 }
-export function bindShell(page){
- document.getElementById('homeBtn').onclick=()=>{const s=getState();if(s.scenarioKey&&!confirm('العودة إلى الصفحة الرئيسية؟ سيبقى تقدم الجولة محفوظًا.'))return;location.href=href('home')};
- document.getElementById('restartBtn').onclick=()=>{if(getState().scenarioKey&&!confirm('بدء محاكاة جديدة؟ سيُحذف تقدم الجولة الحالية.'))return;reset();location.href=href('home')};
- document.getElementById('backBtn').onclick=()=>{const p=page==='rights'?consumeCheckpointTo('result'):undoCheckpoint();if(p)location.href=href(p)};
- document.getElementById('summaryToggle')?.addEventListener('click',event=>{const details=document.getElementById('summaryDetails'),open=details.classList.toggle('open');event.currentTarget.setAttribute('aria-expanded',String(open));event.currentTarget.textContent=open?'إخفاء التفاصيل':'التفاصيل'});
- globalThis.addEventListener('no-boss-state-change',()=>{refreshBackControl(page);refreshShellState()});
- refreshBackControl(page);refreshShellState();
-}
+export function bindShell(page){document.getElementById('homeBtn').onclick=()=>{const s=getState();if(s.scenarioKey&&!confirm('العودة إلى الصفحة الرئيسية؟ سيبقى تقدم الجولة محفوظًا.'))return;location.href=href('home')};document.getElementById('restartBtn').onclick=()=>{if(getState().scenarioKey&&!confirm('بدء محاكاة جديدة؟ سيُحذف تقدم الجولة الحالية.'))return;reset();location.href=href('home')};document.getElementById('backBtn').onclick=()=>{const p=page==='rights'?consumeCheckpointTo('result'):undoCheckpoint();if(p)location.href=href(p)};document.getElementById('summaryToggle')?.addEventListener('click',event=>{const details=document.getElementById('summaryDetails'),open=details.classList.toggle('open');event.currentTarget.setAttribute('aria-expanded',String(open));event.currentTarget.textContent=open?'إخفاء التفاصيل':'التفاصيل'});globalThis.addEventListener('no-boss-state-change',()=>{refreshBackControl(page);refreshShellState()});refreshBackControl(page);refreshShellState()}
 export function avatar(sc){return `<img class="avatar-img" src="../assets/images/characters/${characterImages[sc.type]}" alt="رسم كرتوني للشخصية ${escapeAttribute(sc.name)}">`}
 export function timelineHTML(log){return `<div class="timeline">${log.map(item=>`<div class="tl"><small>${escapeHTML(item.time)}</small><b>${escapeHTML(item.title)}</b><div class="muted small">${escapeHTML(item.text)}</div></div>`).join('')}</div>`}
