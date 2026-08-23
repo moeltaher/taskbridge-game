@@ -7,7 +7,7 @@ export function computeManagedAccess(scenario,state){
  const score=Number(state.completedTasks?.[0]?.score??state.workScore??85);
  const performanceDelta=Math.round((score-85)*.4);
  const baseline=baselineAcceptanceRate(state);
- const acceptanceDelta=Math.round((Number(state.acceptance??baseline)-baseline)*.12);
+ const acceptanceDelta=Math.round((Number(state.acceptance??baseline)-baseline)*.3);
  return clamp(Number(scenario.initial.access)+performanceDelta+acceptanceDelta,35,95);
 }
 export function premiumSampleCount(scenario){return scenario.type==='data'?3:5}
