@@ -1,5 +1,5 @@
 import {axes} from '../data/parties.js';
-import {authorityReference} from '../data/authority-model.js';
+import {authorityReferenceForState} from '../data/authority-model.js';
 import {powerAxisCredit} from '../core/power-scoring.js';
 import {evidenceFor} from './evidence.js';
 
@@ -14,7 +14,7 @@ export function scoreAnalysis(scenario,state){
  const dimensions=new Map(evidenceDimensions(state).map(dimension=>[dimension,[]]));
  for(const id of state.evidence){const evidence=evidenceFor(id,scenario,state),credit=evidenceCredit(evidence,state.evidenceSort[id]);if(credit!==null&&dimensions.has(evidence.dimension))dimensions.get(evidence.dimension).push(credit)}
  const dimensionScores=[...dimensions.values()].map(values=>values.length?values.reduce((a,b)=>a+b,0)/values.length:0),evidenceCorrect=dimensionScores.reduce((a,b)=>a+b,0),evidenceTotal=dimensionScores.length,sortScore=evidenceTotal?Math.round(evidenceCorrect/evidenceTotal*40):40,activeAxes=analysisAxes(state);
- let powerRaw=0;for(const axis of activeAxes)powerRaw+=powerAxisCredit(state.power[axis.id],authorityReference(scenario.type,axis.id));
+ let powerRaw=0;for(const axis of activeAxes)powerRaw+=powerAxisCredit(state.power[axis.id],authorityReferenceForState(scenario.type,axis.id,state));
  const powerScore=activeAxes.length?Math.round(powerRaw/activeAxes.length*60):60;
  return {score:Math.min(100,sortScore+powerScore),sortScore,powerScore,evidenceCorrect,evidenceTotal};
 }
