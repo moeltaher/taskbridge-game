@@ -5,12 +5,13 @@ import {escapeHTML} from '../core/html.js';
 import {evidenceFor} from '../domain/evidence.js';
 import {powerMapComplete,scoreAnalysis,analysisAxes} from '../domain/analysis.js';
 const dimensionLabel={contract:'العقد',price:'السعر',allocation:'توزيع العمل',monitoring:'المراقبة',quality:'معيار الجودة',burden:'العبء والتكاليف',settlement:'التسوية المالية',access:'الوصول',other:'أدلة أخرى'};
+function classificationLabel(value){return value==='ctrl'?'سلطة':value==='ind'?'استقلال':value==='burden'?'تحمل عبء':'مختلط/سياق'}
 function groupedEvidence(state,scenario){
  const groups={};
  state.evidence.forEach(id=>{const e=evidenceFor(id,scenario,state),key=e.dimension||'other';(groups[key]??=[]).push({id,e})});
  return Object.entries(groups).map(([dimension,items])=>`<section class="evidence-group"><h3>${dimensionLabel[dimension]||dimension}</h3>${items.map(({id,e})=>{
   const role=state.conclusionDualEvidence?.includes(id)?'dual':state.conclusionEvidence.includes(id)?'support':state.conclusionCounterEvidence.includes(id)?'counter':'unused';
-  const classification=e.scoreable===false?'معلومة غير محسوبة':state.evidenceSort[id]==='ctrl'?'سلطة':state.evidenceSort[id]==='ind'?'استقلال':'مختلط/سياق';
+  const classification=e.scoreable===false?'معلومة غير محسوبة':classificationLabel(state.evidenceSort[id]);
   return `<div class="evidence-pick"><span><b>${escapeHTML(e.title)}</b><small>وضع العنصر: ${classification}</small></span><label class="small">دوره في استنتاجك <select data-evidence-role="${escapeHTML(id)}"><option value="unused" ${role==='unused'?'selected':''}>غير مستخدم</option><option value="support" ${role==='support'?'selected':''}>يدعم الاستنتاج</option><option value="counter" ${role==='counter'?'selected':''}>يحدّه أو يعقده</option><option value="dual" ${role==='dual'?'selected':''}>يدعمه ويعقده معًا</option></select></label></div><details class="evidence-detail"><summary>عرض تفاصيل العنصر</summary><p class="small">${escapeHTML(e.text)}</p></details>`;
  }).join('')}</section>`).join('');
 }
@@ -26,7 +27,7 @@ function conclusionBrief(state){
 }
 export function render(root){
  const state=getState(),scenario=scenarios[state.scenarioKey],brief=conclusionBrief(state),axesCount=analysisAxes(state).length;
- root.innerHTML=`<div class="panel"><div class="task-now"><span>🎯 مهمتك الآن</span><b>${brief.prompt}</b></div><div class="notice info"><b>كيف تستخدم الدرجة؟</b> الرقم النهائي يقيس التوافق مع المرجع التدريبي: <b>40 نقطة لتصنيف الأدلة و60 لخريطة السلطة والعبء</b>. الأسئلة التشخيصية ونصك نفسه لا يدخلان الدرجة، ومعلومات التسوية المالية المنفصلة لا تُجبر على تصنيف سلطة/استقلال.</div><label for="analysis"><b>استنتاجك التحليلي</b></label><textarea id="analysis" class="analysis-input" rows="6" placeholder="اربط استنتاجك بوقائع الجولة، ولا تفترض حدثًا لم يقع.">${escapeHTML(state.analysisText)}</textarea><h2>اربط الأدلة والمعلومات بالحجة</h2><p class="small muted">اختر على الأقل ${brief.minimum} ${brief.minimum===1?'عنصرًا داعمًا':'عنصرين داعمين'} بحسب مسار الجولة. ويمكن أن يكون أي عنصر آخر مقيدًا أو مزدوجًا إذا كانت هذه هي دلالته الفعلية؛ لا يلزم تحويل كل العناصر إلى دعم.</p>${groupedEvidence(state,scenario)}<div class="actions"><button class="btn" id="finish">إظهار النتيجة</button></div></div>`;
+ root.innerHTML=`<div class="panel"><div class="task-now"><span>🎯 مهمتك الآن</span><b>${brief.prompt}</b></div><div class="notice info"><b>كيف تستخدم الدرجة؟</b> الرقم النهائي يقيس التوافق مع المرجع التدريبي: <b>40 نقطة لتصنيف الأدلة و60 لخريطة السلطة والعبء</b>. تصنيف الأدلة يميز الآن صراحة بين أدلة السلطة والاستقلال والعبء والدلالة المختلطة. الأسئلة التشخيصية ونصك نفسه لا يدخلان الدرجة، ومعلومات التسوية المالية المنفصلة لا تُجبر على تصنيف سلطة/استقلال.</div><label for="analysis"><b>استنتاجك التحليلي</b></label><textarea id="analysis" class="analysis-input" rows="6" placeholder="اربط استنتاجك بوقائع الجولة، ولا تفترض حدثًا لم يقع.">${escapeHTML(state.analysisText)}</textarea><h2>اربط الأدلة والمعلومات بالحجة</h2><p class="small muted">اختر على الأقل ${brief.minimum} ${brief.minimum===1?'عنصرًا داعمًا':'عنصرين داعمين'} بحسب مسار الجولة. ويمكن أن يكون أي عنصر آخر مقيدًا أو مزدوجًا إذا كانت هذه هي دلالته الفعلية؛ لا يلزم تحويل كل العناصر إلى دعم.</p>${groupedEvidence(state,scenario)}<div class="actions"><button class="btn" id="finish">إظهار النتيجة</button></div></div>`;
  document.getElementById('analysis').oninput=e=>patch({analysisText:e.target.value});
  root.querySelectorAll('[data-evidence-role]').forEach(select=>select.onchange=()=>updateRoles(root));
  document.getElementById('finish').onclick=()=>{
