@@ -13,6 +13,8 @@ export function buildPaymentSettlement(sc,state){
  const transfer=hasPayout?Number(costs.transfer||0):0;
  const operating=operatingCost(sc);
  const cashPayout=Math.max(0,contracted-hold-mediator-transfer);
- const net=cashPayout-operating;
- return {clientPaid,contracted,platformService,mediator,transfer,hold,operating,cashPayout,net};
+ const availableNet=cashPayout-operating;
+ const heldBalance=hold;
+ const economicPosition=availableNet+heldBalance;
+ return {clientPaid,contracted,platformService,mediator,transfer,hold,heldBalance,operating,cashPayout,availableNet,economicPosition,net:availableNet};
 }
