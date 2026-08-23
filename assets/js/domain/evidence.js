@@ -3,6 +3,9 @@ import {evidenceTemplates} from '../data/evidence-templates.js';
 export function evidenceFor(id,scenario,state){
  const evidence={...(evidenceTemplates[id]||{title:id,dimension:'other',preferredKind:'dep',validKinds:['dep'],scoreable:true,text:''})};
  if(evidence.scoreable===undefined)evidence.scoreable=true;
+ if(id==='contractGate'&&state?.termsDeclinedBefore&&state?.termsDecision==='accepted'){
+  evidence.text='رفض العامل الشروط الموحدة أولًا فمنع من دخول سوق المهام، ثم لم يتمكن من الدخول إلا بعد العودة وقبول الشروط نفسها دون تفاوض فردي. الواقعة تاريخية وتوضح سلطة المنصة على بوابة الدخول.';
+ }
  if(id==='priceSetting'){
   evidence.text=scenario.priceMechanism;
   evidence.validKinds=['ctrl','dep'];
@@ -20,8 +23,8 @@ export function evidenceFor(id,scenario,state){
   const event=state.riskEvent;
   evidence.title='حادث أضاف وقتًا مرتبطًا بالعمل بلا مقابل مستقل';
   evidence.text=event?.occurred===true?`${event.title}: أضاف الحدث ${event.minutes} دقيقة مرتبطة بالعمل من دون مهمة جديدة ذات سعر مستقل.`:'لم يقع حادث في هذه الجولة؛ لا ينبغي استخدام هذا العنصر كدليل على واقعة لم تحدث.';
-  evidence.validKinds=['dep'];
-  evidence.preferredKind='dep';
+  evidence.validKinds=['burden'];
+  evidence.preferredKind='burden';
  }
  if(id==='marketBurden'){
   const operating=Number(state.payment?.operating||0);

@@ -15,14 +15,14 @@ function outcomeLabel(outcome){return outcome==='suspended'?'تعليق الحس
 function severityLabel(v){return Number(v)>=2?'اختلاف جوهري':Number(v)===1?'اختلاف محدود':'لا اختلاف مؤثر'}
 function names(list){return list.length?list.map(p=>partyNames[p]).join(' + '):'—'}
 function runPath(state){return state.contractDeclineEnding?'contract-decline':state.noWorkEnding?'no-work':'full-work'}
-function scoreBreakdown(r){return `<div class="grid-2"><div class="metric"><small>تصنيف الأدلة</small><b>${r.sortScore??0}/40</b></div><div class="metric"><small>خريطة السلطة والعبء</small><b>${r.powerScore??0}/60</b></div></div><p class="small muted">الأسئلة التشخيصية لا تدخل الدرجة في نموذج الدرجة 5. خريطة السلطة تُقارن مباشرة بمرجع رتبي (أساسي/ثانوي) من دون تحويل المرجع إلى نسب سرية وسيطة.</p>`}
+function scoreBreakdown(r){return `<div class="grid-2"><div class="metric"><small>تصنيف الأدلة</small><b>${r.sortScore??0}/40</b></div><div class="metric"><small>خريطة السلطة والعبء</small><b>${r.powerScore??0}/60</b></div></div><p class="small muted">الأسئلة التشخيصية لا تدخل الدرجة في نموذج الدرجة ${SCORE_MODEL_VERSION}. تصنيف الأدلة يميز صراحة أدلة العبء عن «المختلط»، وخريطة السلطة تُقارن مباشرة بمرجع رتبي (أساسي/ثانوي) من دون تحويل المرجع إلى نسب سرية وسيطة.</p>`}
 function questionRows(sc,s){
  return questionsForState(s).map(q=>{const answer=s.answers[q.id]||'لم تجب',accepted=q.reference||[],ok=acceptedQuestionAnswer(q,answer);return `<div class="card"><small>${q.resultTitle}</small><span class="pill">تشخيصي · غير محسوب</span><p><b>إجابتك:</b> ${escapeHTML(answer)}</p><p class="small"><b>المرجع التدريبي:</b> ${escapeHTML(accepted.join(' أو '))}</p><span class="pill">${ok?'ضمن المرجع':'مختلفة عن المرجع'}</span></div>`}).join('');
 }
 function powerRows(sc,s){
  return analysisAxes(s).map(axis=>{
   const power=s.power[axis.id],reference=authorityReference(sc.type,axis.id),burden=axis.metricType==='burden',participant=burden?'الأعلى تحمّلًا في تحليلك':'الأعلى سلطة في تحليلك',secondary=reference.secondary.length?` · المرجع الثانوي: ${names(reference.secondary)} · المستوى الثاني في تحليلك: ${names(secondTier(power))}`:'';
-  return `<div class="power-card"><h3>${axis.title}</h3><span class="pill">${burden?'توزيع عبء':'توزيع سلطة'}</span><div class="stacked power-summary-stack">${parties.map(p=>`<span class="seg ${p}" style="width:${power[p]}%"></span>`).join('')}</div><p class="small"><b>توزيعك النسبي:</b> ${parties.map(p=>`${partyNames[p]} ${power[p]}`).join(' · ')}</p><p class="small muted">${participant}: ${names(leaders(power))} · المرجع الأساسي: ${names(reference.primary)}${secondary}. الأرقام أداة رسم للمشارك فقط؛ التقييم يقارن الرتب مباشرة.</p><p class="small"><b>لماذا هذا هو المرجع؟</b> ${escapeHTML(authorityRationale(sc.type,axis.id))}</p></div>`;
+  return `<div class="power-card"><h3>${axis.title}</h3><span class="pill">${burden?'توزيع عبء':'توزيع سلطة'}</span><div class="stacked power-summary-stack">${parties.map(p=>`<span class="seg ${p}" style="width:${power[p]}%"></span>`).join('')}</div><p class="small"><b>توزيعك النسبي:</b> ${parties.map(p=>`${partyNames[p]} ${power[p]}`).join(' · ')}</p><p class="small muted">${participant}: ${names(leaders(power))} · المرجع الأساسي: ${names(reference.primary)}${secondary}. القيم المتساوية تعني رتبة متساوية؛ الأرقام أداة رسم للمشارك فقط، والتقييم يقارن الرتب مباشرة.</p><p class="small"><b>لماذا هذا هو المرجع؟</b> ${escapeHTML(authorityRationale(sc.type,axis.id))}</p></div>`;
  }).join('');
 }
 function taskRows(s){
@@ -42,7 +42,7 @@ function keyInsights(sc,s){
  else if(s.noWorkEnding)insights.push(`انتهت الوردية بلا دخل بعد ${s.marketTime||0} دقائق في سوق المهام، مع تكاليف تشغيل مقدرة ${money(s.payment?.operating||0)} وصافٍ ${money(s.payment?.net||0)}؛ لذلك دخل عبء المشاركة نفسه في الخريطة.`);
  else if(s.payment)insights.push(`صافي الوضع الاقتصادي للعامل بعد الرسوم والتكاليف هو ${money(s.payment.net)}، مقابل ${money(s.grossWorker)} كمقابل إجمالي للمهمات.`);
  const termination=s.power?.termination;if(termination)insights.push(`في تحليلك، ${s.contractDeclineEnding?'الطرف الأعلى في سلطة بوابة الدخول':'الطرف الأعلى سلطة في الوصول العام'} هو ${names(leaders(termination))}.`);
- if(s.appealed===true)insights.push(`المراجعة الثانية ${s.appealReview?.accepted?'غيّرت':'لم تغيّر'} نتيجة المهمة محل النزاع.${s.appealReview?.accepted?' تصحيح القرار لا يعيد تلقائيًا فرصة سابقة فاتت.':''}`);
+ if(s.appealed===true)insights.push(`المراجعة الثانية ${s.appealReview?.accepted?'خففت شدة قرار الجودة':'لم تغيّر قرار الجودة'} للمهمة محل النزاع.${s.appealReview?.accepted?' النموذج لا يعيد حساب درجة المهمة أو أي ترتيب سابق بعد ذلك.':''}`);
  if(sc.dependency>=65&&!s.contractDeclineEnding)insights.push(`تعتمد الشخصية على No Boss بنسبة ${sc.dependency}% في السرد التدريبي، لذلك لقرارات الوصول أهمية اقتصادية أكبر.`);
  return insights.slice(0,3);
 }

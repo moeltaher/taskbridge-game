@@ -1,7 +1,6 @@
 import {scenarios} from '../data/scenarios.js';
 import {getState,commit,money,timeBreakdown} from '../core/state.js';
 import {href} from '../core/routes.js';
-import {refreshStats} from '../core/ui.js';
 import {riskTransition} from '../domain/risk.js';
 function ensureRisk(scenario){
  const transition=riskTransition(scenario,getState());
@@ -10,7 +9,7 @@ function ensureRisk(scenario){
 }
 function previousDecisionHTML(state,risk){
  const d=state.monitorDecision;if(!d)return'';
- const suffix=risk.occurred?'الحدث الجديد مستقل سببيًا عن الاستراحة في هذه المحاكاة؛ الاستراحة تؤثر في العبء فقط.':'عدم وقوع حدث إضافي لا يعني أن الاستراحة ألغت الخطر؛ الاستراحة تؤثر في العبء فقط.';
+ const suffix=risk.occurred?'الحدث الجديد مستقل سببيًا عن الاستراحة في هذه المحاكاة؛ الاستراحة خفضت العبء في وقتها فقط.':'عدم وقوع حدث إضافي لا يعني أن الاستراحة ألغت الخطر؛ الاستراحة تؤثر في العبء فقط.';
  return d.tookBreak?`<div class="notice good"><b>قرارك السابق:</b> أخذت استراحة ${d.breakDelta||0} د وخفضت العبء من ${d.stressBefore} إلى ${d.stressAfter}. ${suffix}</div>`:`<div class="notice info"><b>قرارك السابق:</b> انتقلت إلى المراجعة دون استراحة. ${suffix}</div>`;
 }
 function affectedTaskLabel(state,risk){
@@ -21,6 +20,5 @@ function affectedTaskLabel(state,risk){
 export function render(root){
  const initial=getState(),scenario=scenarios[initial.scenarioKey],risk=ensureRisk(scenario),state=getState(),time=timeBreakdown(state);
  root.innerHTML=`<div class="panel"><div class="task-now outcome"><span>${risk.occurred?'⚡ حدث':'✓ نتيجة المخاطر'}</span><b>${risk.title}</b></div>${previousDecisionHTML(state,risk)}<div class="notice info"><b>${risk.occurred?'لماذا ظهر هذا الحدث؟':'ماذا يعني عدم وقوع حدث؟'}</b> ${risk.cause}</div>${affectedTaskLabel(state,risk)}${risk.occurred?`<div class="actor-flow"><div class="actor-card worker"><span class="actor-icon">👤</span><b>${scenario.name}</b><p>أنجز العمل ويتحمل أثر الحدث على وقته وعبء الوردية.</p></div><div class="actor-card client"><span class="actor-icon">🏢</span><b>${scenario.client}</b><p>المشروع أو التسليم الذي ارتبط به الحدث.</p></div><div class="actor-card platform"><span class="actor-icon">⬡</span><b>No Boss</b><p>تسجل الحدث ضمن مسار العمل ولا تنشئ له مهمة مستقلة بسعر جديد.</p></div></div>`:''}<div class="timeline"><div class="tl"><small>ما سبق</small><b>أنجزت عملًا في مشروع ${scenario.client}</b></div><div class="tl"><small>${risk.occurred?'الحدث الجديد':'هذه الجولة'}</small><b>${risk.title}</b><div class="muted small">${risk.cause}</div></div><div class="tl"><small>الأثر</small><b>${risk.minutes} د وقت إضافي مرتبط بالعمل · ${risk.stress} نقطة عبء إضافية</b><div class="muted small">${risk.consequence}</div></div></div><div class="grid-4"><div class="metric"><small>وقت المهمات</small><b>${time.taskTime} د</b></div><div class="metric"><small>وقت السوق/البحث</small><b>${time.marketTime} د</b></div><div class="metric"><small>وقت إضافي مرتبط بالعمل</small><b>${time.extraWorkTime} د</b></div><div class="metric"><small>إجمالي الوردية</small><b>${time.totalTime} د</b></div></div><div class="notice"><b>التمييز المهم:</b> الخطر جزء من بنية العمل، لكن وقوع الحادث ليس حتميًا. إذا وقع حدث إضافي يُحسب أثره الفعلي فقط؛ وإذا لم يقع فلا تضيف اللعبة ضررًا أو دليل حادث افتراضيًا.</div><div class="notice"><b>تكاليف التشغيل:</b> إنترنت ${money(scenario.costs.internet)} · كهرباء ${money(scenario.costs.electricity)} · جهاز ${money(scenario.costs.device)}.</div><div class="actions"><button class="btn" id="next">متابعة إلى مراجعة جودة العمل</button></div></div>`;
- refreshStats();
  document.getElementById('next').onclick=()=>{commit({changes:{stage:5,status:'مراجعة جودة العمل'},checkpointLabel:'العودة إلى نتيجة المخاطر'});location.href=href('dispute')};
 }

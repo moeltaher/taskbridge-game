@@ -5,7 +5,7 @@ import {dataRegionOptions,dataSizeOptions,dataSceneDescriptions,semanticDataAnsw
 function answerButton(i,value,content,answers,prefix){const selected=answers[i]===value;return `<button class="choice task-answer ${selected?'selected':''}" aria-pressed="${selected}" data-task-prefix="${prefix}" data-i="${i}" data-v="${value}">${content}</button>`}
 function semanticControls(i,sceneIndex,answer,prefix){
  const region=answer?.source==='semantic'?answer.regionId:'',size=answer?.source==='semantic'?answer.sizeId:'';
- return `<fieldset class="semantic-region"><legend>طريقة بديلة غير بصرية — استخدمها بدل الرسم</legend><p class="small">${dataSceneDescriptions[sceneIndex]}</p><p class="small muted">حدد موضع المركبة وعرضها التقريبي. اختيار القيم هنا يستبدل أي صندوق رسمته لهذه العينة؛ لا يلزم تنفيذ الطريقتين.</p><div class="semantic-options"><label><span>الموضع الأفقي</span><select data-semantic-region="${prefix}-${i}"><option value="">اختر الموضع</option>${dataRegionOptions.map(o=>`<option value="${o.id}" ${region===o.id?'selected':''}>${o.label}</option>`).join('')}</select></label><label><span>العرض التقريبي</span><select data-semantic-size="${prefix}-${i}"><option value="">اختر الحجم</option>${dataSizeOptions.map(o=>`<option value="${o.id}" ${size===o.id?'selected':''}>${o.label}</option>`).join('')}</select></label></div></fieldset>`;
+ return `<fieldset class="semantic-region"><legend>طريقة بديلة غير بصرية — استخدمها بدل الرسم</legend><p class="small">${dataSceneDescriptions[sceneIndex]}</p><p class="small muted">حدد موضع المركبة وعرضها التقريبي. بدء استخدام هذه الطريقة يلغي أي صندوق بصري محفوظ لهذه العينة؛ لا يلزم تنفيذ الطريقتين.</p><div class="semantic-options"><label><span>الموضع الأفقي</span><select data-semantic-region="${prefix}-${i}"><option value="">اختر الموضع</option>${dataRegionOptions.map(o=>`<option value="${o.id}" ${region===o.id?'selected':''}>${o.label}</option>`).join('')}</select></label><label><span>العرض التقريبي</span><select data-semantic-size="${prefix}-${i}"><option value="">اختر الحجم</option>${dataSizeOptions.map(o=>`<option value="${o.id}" ${size===o.id?'selected':''}>${o.label}</option>`).join('')}</select></label></div></fieldset>`;
 }
 export function taskGuideHTML(sc,second=false){
  const guide=taskGuideFor(sc.type),title=sc.styleGuide?.length?(second?'دليل أسلوب العميل ما زال ساريًا:':'دليل أسلوب العميل قبل التنفيذ:'):'';
@@ -46,7 +46,14 @@ export function bindTaskInputs(root,sc,{answerField,indexField='currentTaskSampl
   el.onpointermove=e=>{if(!start)return;const p=pos(e),x=Math.min(start.x,p.x),y=Math.min(start.y,p.y),w=Math.abs(p.x-start.x),h=Math.abs(p.y-start.y);Object.assign(box.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'})};
   el.onpointerup=e=>{if(!start)return;const p=pos(e),w=Math.abs(p.x-start.x)/p.rw,h=Math.abs(p.y-start.y)/p.rh,x=Math.min(start.x,p.x)/p.rw,y=Math.min(start.y,p.y)/p.rh,answers=[...(getState()[answerField]||[])];answers[i]=w*h>=.004?{x,y,w,h,source:'visual'}:null;patch({[answerField]:answers});start=null;if(w*h<.004){box.style.display='none';alert('الإطار صغير جدًا.')}else rerender()};
  });
+ const startSemantic=i=>{
+  const st=getState(),answers=[...(st[answerField]||[])];
+  if(answers[i]?.source!=='visual')return;
+  answers[i]=null;patch({[answerField]:answers});
+  const draw=root.querySelector(`[data-draw="${prefix}-${i}"] .drawbox`);if(draw)draw.style.display='none';
+ };
  const update=(i,kind)=>{
+  startSemantic(i);
   const region=root.querySelector(`[data-semantic-region="${prefix}-${i}"]`)?.value,size=root.querySelector(`[data-semantic-size="${prefix}-${i}"]`)?.value;
   if(!region||!size)return;
   const st=getState(),scene=st[indexField][i],answers=[...(st[answerField]||[])];

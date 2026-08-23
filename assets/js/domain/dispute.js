@@ -9,7 +9,8 @@ export function reviewedSeverity(initialSeverity,appealAccepted=true){return app
 export function selectReviewTask(state){
  const tasks=state.completedTasks||[];
  if(!tasks.length)return null;
- return [...tasks].sort((a,b)=>a.score-b.score||String(b.id).localeCompare(String(a.id)))[0];
+ const lowest=Math.min(...tasks.map(task=>Number(task.score)));
+ return tasks.filter(task=>Number(task.score)===lowest).at(-1)||null;
 }
 export function availableAppealGrounds(scenario,state,taskOverride=null){
  const task=taskOverride||(state.completedTasks||[]).find(t=>t.id===state.reviewTaskId)||selectReviewTask(state);
@@ -43,15 +44,9 @@ function dataReviewProfile(task){
  });
  return {reviewableErrors,hardErrors,technicalIssues:task.technicalIssue===true?1:0};
 }
-export function reviewAppeal(scenario,state){
- const task=(state.completedTasks||[]).find(t=>t.id===state.reviewTaskId)||selectReviewTask(state),initial=Number(state.initialReviewSeverity??0),ground=state.appealGround;
- if(!task||initial<=0)return {accepted:false,finalSeverity:0,reason:'لا توجد مراجعة سلبية تستدعي تخفيفًا.',reviewableErrors:0,hardErrors:0,ground};
- if(!ground)return {accepted:false,finalSeverity:initial,reason:'لم يُحدد سبب للاعتراض، لذلك لا توجد مسألة محددة لإعادة الفحص.',reviewableErrors:0,hardErrors:0,ground};
- if(!availableAppealGrounds(scenario,state,task)[ground])return {accepted:false,finalSeverity:initial,reason:'سبب الاعتراض المختار غير متاح لهذه المهمة وفق الوقائع المسجلة.',reviewableErrors:0,hardErrors:0,ground};
- if(scenario.type==='data'){
-  const profile=dataReviewProfile(task),accepted=groundMatches(scenario,ground,profile);
-  return {accepted,finalSeverity:reviewedSeverity(initial,accepted),...profile,ground,reason:accepted&&ground==='technical'?'المهمة محل المراجعة نفسها تحمل واقعة تقنية مسجلة مرتبطة بعرض/مزامنة الإجابة، لذلك أعيد فحصها وخُفض القرار درجة واحدة.':accepted?`وجدت المراجعة ${profile.reviewableErrors} انحرافًا حدّيًا يمكن مناقشته وفق قاعدة الترميز، وكان سبب الاعتراض (${appealGrounds[ground]}) مرتبطًا به؛ لذلك خُفض القرار درجة واحدة.`:`الانحرافات المسجلة لا تدعم سبب الاعتراض (${appealGrounds[ground]}) بما يكفي لتغيير القرار.`};
- }
+export function reviewProfile(scenario,task){
+ if(!task)return {reviewableErrors:0,hardErrors:0,technicalIssues:0};
+ if(scenario.type==='data')return dataReviewProfile(task);
  let reviewableErrors=0,hardErrors=0;
  task.answers.forEach((answer,i)=>{
   const sample=samples[scenario.type][task.sampleIndexes[i]];
@@ -59,8 +54,16 @@ export function reviewAppeal(scenario,state){
   if(sample?.reviewable?.includes(answer))reviewableErrors++;
   else hardErrors++;
  });
- const accepted=groundMatches(scenario,ground,{reviewableErrors,hardErrors});
- return {accepted,finalSeverity:reviewedSeverity(initial,accepted),reviewableErrors,hardErrors,technicalIssues:0,ground,reason:accepted?`وجدت المراجعة ${reviewableErrors} إجابة قابلة للدفاع، وكان سبب الاعتراض (${appealGrounds[ground]}) ذا صلة بنوع الخلاف؛ لذلك خُفضت شدة القرار درجة واحدة.`:`وجدت المراجعة ${reviewableErrors} إجابة قابلة للدفاع و${hardErrors} خطأ واضحًا، لكن سبب الاعتراض (${appealGrounds[ground]}) لم يكن كافيًا لتغيير النتيجة في هذه الحالة.`};
+ return {reviewableErrors,hardErrors,technicalIssues:0};
+}
+export function reviewAppeal(scenario,state){
+ const task=(state.completedTasks||[]).find(t=>t.id===state.reviewTaskId)||selectReviewTask(state),initial=Number(state.initialReviewSeverity??0),ground=state.appealGround;
+ if(!task||initial<=0)return {accepted:false,finalSeverity:0,reason:'لا توجد مراجعة سلبية تستدعي تخفيفًا.',reviewableErrors:0,hardErrors:0,ground};
+ if(!ground)return {accepted:false,finalSeverity:initial,reason:'لم يُحدد سبب للاعتراض، لذلك لا توجد مسألة محددة لإعادة الفحص.',reviewableErrors:0,hardErrors:0,ground};
+ if(!availableAppealGrounds(scenario,state,task)[ground])return {accepted:false,finalSeverity:initial,reason:'سبب الاعتراض المختار غير متاح لهذه المهمة وفق الوقائع المسجلة.',reviewableErrors:0,hardErrors:0,ground};
+ const profile=reviewProfile(scenario,task),accepted=groundMatches(scenario,ground,profile);
+ if(scenario.type==='data')return {accepted,finalSeverity:reviewedSeverity(initial,accepted),...profile,ground,reason:accepted&&ground==='technical'?'المهمة محل المراجعة نفسها تحمل واقعة تقنية مسجلة مرتبطة بعرض/مزامنة الإجابة، لذلك أعيد فحصها وخُفض القرار درجة واحدة.':accepted?`وجدت المراجعة ${profile.reviewableErrors} انحرافًا حدّيًا يمكن مناقشته وفق قاعدة الترميز، وكان سبب الاعتراض (${appealGrounds[ground]}) مرتبطًا به؛ لذلك خُفض القرار درجة واحدة.`:`الانحرافات المسجلة لا تدعم سبب الاعتراض (${appealGrounds[ground]}) بما يكفي لتغيير القرار.`};
+ return {accepted,finalSeverity:reviewedSeverity(initial,accepted),...profile,ground,reason:accepted?`وجدت المراجعة ${profile.reviewableErrors} إجابة قابلة للدفاع، وكان سبب الاعتراض (${appealGrounds[ground]}) ذا صلة بنوع الخلاف؛ لذلك خُفضت شدة القرار درجة واحدة.`:`وجدت المراجعة ${profile.reviewableErrors} إجابة قابلة للدفاع و${profile.hardErrors} خطأ واضحًا، لكن سبب الاعتراض (${appealGrounds[ground]}) لم يكن كافيًا لتغيير النتيجة في هذه الحالة.`};
 }
 export function disputeConsequences(state,severity){
  const task=(state.completedTasks||[]).find(t=>t.id===state.reviewTaskId),disputedPay=Number(task?.pay||0);

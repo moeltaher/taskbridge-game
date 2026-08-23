@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import {APP_VERSION,RESULT_VERSION,SCORE_MODEL_VERSION,ECONOMY_MODEL_VERSION} from '../assets/js/core/config.js';
 import {powerAxisCredit,leaders,secondTier} from '../assets/js/core/power-scoring.js';
-assert.equal(APP_VERSION,'3.5.0');
-assert.equal(RESULT_VERSION,'No Boss v3.5.0');
-assert.equal(SCORE_MODEL_VERSION,'5');
+assert.equal(APP_VERSION,'3.6.0');
+assert.equal(RESULT_VERSION,'No Boss v3.6.0');
+assert.equal(SCORE_MODEL_VERSION,'6');
 assert.equal(ECONOMY_MODEL_VERSION,'2');
 globalThis.location={pathname:'/taskbridge-game/work/index.html'};
 const {projectBase,pageFromPath,href,pageForStage,stageForPage,isPublicPage,isResearcherPage}=await import('../assets/js/core/routes.js');
@@ -19,11 +19,11 @@ globalThis.localStorage={getItem:k=>localStore.has(k)?localStore.get(k):null,set
 globalThis.sessionStorage={getItem:k=>sessionStore.has(k)?sessionStore.get(k):null,setItem:(k,v)=>sessionStore.set(k,String(v)),removeItem:k=>sessionStore.delete(k)};
 const stateModule=await import('../assets/js/core/state.js');
 const {getState,commit,freshState,normalizeState,STATE_SCHEMA_VERSION,currentBackLabel}=stateModule;
-assert.equal(STATE_SCHEMA_VERSION,6);assert.deepEqual(getState(),freshState());
-for(const key of ['completedTasks','sampleSequence','marketTime','reviewTaskId','conclusionDualEvidence','contractDeclineEnding','riskSeed','powerTouched'])assert.ok(key in getState());
+assert.equal(STATE_SCHEMA_VERSION,7);assert.deepEqual(getState(),freshState());
+for(const key of ['completedTasks','sampleSequence','marketTime','reviewTaskId','conclusionDualEvidence','contractDeclineEnding','termsDeclinedBefore','riskSeed','powerTouched'])assert.ok(key in getState());
 for(const removed of ['marketExit','powerDraft','powerEdited','qualityAfterFirstTask','reviewTaskScore','realFinishedAt','initialStress','firstTaskStress','secondTaskScore','disputeSeverity','disputedTaskPay'])assert.equal(removed in getState(),false,`legacy field ${removed} should be removed`);
-const migrated=normalizeState({schemaVersion:5,storageRevision:2,currentPage:'work',stage:2,scenarioKey:'data',checkpoints:[{page:'old'}],power:{price:{worker:8,platform:57,client:30,mediator:5}},marketExit:true,reviewTaskScore:77});
-assert.equal(migrated.schemaVersion,STATE_SCHEMA_VERSION);assert.equal(migrated.checkpoints.length,0);assert.equal('marketExit' in migrated,false);assert.equal('reviewTaskScore' in migrated,false);assert.equal('mediator' in migrated.power.price,false);
+const migrated=normalizeState({schemaVersion:6,storageRevision:2,currentPage:'work',stage:2,scenarioKey:'data',checkpoints:[{page:'old'}],power:{price:{worker:8,platform:57,client:30,mediator:5}},marketExit:true,reviewTaskScore:77});
+assert.equal(migrated.schemaVersion,STATE_SCHEMA_VERSION);assert.equal(migrated.checkpoints.length,0);assert.equal('marketExit' in migrated,false);assert.equal('reviewTaskScore' in migrated,false);assert.equal('mediator' in migrated.power.price,false);assert.equal(migrated.termsDeclinedBefore,false);
 commit({changes:{status:'اختبار'},checkpointLabel:'التراجع عن اختبار'});
 assert.equal(currentBackLabel(),'التراجع عن اختبار');
 commit({changes:{reviewTaskScore:99,unknownLegacy:true}});
@@ -33,5 +33,5 @@ localStore.set('no_boss_results','{}');assert.deepEqual(storage.savedResults(),[
 assert.equal(storage.archiveResult({scenarioName:'بلا معرف'}),false);
 assert.equal(storage.archiveResult({runId:'compact',scenarioKey:'data',scenarioName:'سامي',runPath:'no-work',score:88,netEconomic:-.4,breakTaken:null,appVersion:APP_VERSION,scoreModelVersion:SCORE_MODEL_VERSION,economyModelVersion:ECONOMY_MODEL_VERSION}),true);
 const compact=JSON.parse(localStore.get('no_boss_results')).find(r=>r.runId==='compact');
-assert.equal(compact.scoreModelVersion,'5');assert.equal(compact.economyModelVersion,'2');assert.equal(compact.breakTaken,null);
+assert.equal(compact.scoreModelVersion,'6');assert.equal(compact.economyModelVersion,'2');assert.equal(compact.breakTaken,null);
 console.log('No Boss regression checks passed');

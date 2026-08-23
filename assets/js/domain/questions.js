@@ -9,14 +9,14 @@ function priceReference(type){
 function priceQuestion(type){return {id:'priceMechanism',title:'بحسب هذه الحالة، أين يتركز القرار المباشر بشأن السعر الذي يراه العامل؟',resultTitle:'التمييز بين تمويل المشروع وتحديد سعر العامل',options:authorityOptions,reference:priceReference(type)}}
 const burdenVsControl={id:'burdenVsControl',title:'إذا تحمل العامل الجزء الأكبر من التكاليف والوقت غير المدفوع، فما القراءة الأدق؟',resultTitle:'العبء ليس سلطة',options:['عبء أكبر على العامل، وليس بالضرورة سلطة أكبر','سلطة أكبر للعامل تلقائيًا','استقلال كامل للعامل','لا علاقة لذلك بتحليل العمل'],reference:['عبء أكبر على العامل، وليس بالضرورة سلطة أكبر']};
 const projectVsAccount={id:'projectVsAccount',title:'إذا استطاع العميل اختيار عامل أو استبعاده داخل مشروع، فماذا يعني ذلك؟',resultTitle:'سلطة المشروع مقابل سلطة الحساب',options:['سلطة داخل المشروع لا تساوي إدارة الحساب العام','إدارة كاملة للحساب العام','عدم وجود أي سلطة للعميل','أن وسيط الدفع يدير المشروع'],reference:['سلطة داخل المشروع لا تساوي إدارة الحساب العام']};
+const noWorkBoundary={id:'noWorkBoundary',title:'لم تقبل مشروعًا في هذه الجولة. ما الذي يمكن استنتاجه عن سلطة العميل من هذه الجولة وحدها؟',resultTitle:'عدم اختلاق سلطة لم تُمارس',options:['لا أنسب للعميل قرار استبعاد فعليًا لم يحدث؛ أميز بين قواعد المشروع المعروضة وبين سلطة No Boss على السوق والحساب','أفترض أن العميل استبعد العامل من مشروع','أعتبر أن العميل أدار الحساب العام','أستنتج أن وسيط الدفع منع الوصول'],reference:['لا أنسب للعميل قرار استبعاد فعليًا لم يحدث؛ أميز بين قواعد المشروع المعروضة وبين سلطة No Boss على السوق والحساب']};
 const rankingVsFinal={id:'rankingVsFinal',title:'إعادة ترتيب فرص العمل بعد المهمة الأولى والقرار النهائي للوصول في نهاية الوردية هما:',resultTitle:'الترتيب المرحلي مقابل قرار الوصول النهائي',options:['قراران مختلفان يستخدم كل منهما وقائع معلنة في مرحلة مختلفة','القرار نفسه مكرر مرتين','قراران يتخذهما العميل وحده','قراران لا يؤثران في فرص العمل'],reference:['قراران مختلفان يستخدم كل منهما وقائع معلنة في مرحلة مختلفة']};
 const settlement={id:'settlement',title:'من ينفذ التسوية المالية، وكيف ترتبط بسلطة إدارة العمل؟',resultTitle:'التسوية المالية منفصلة عن سلطة العمل',options:['المنصة ووسيط الدفع بأدوار مالية مختلفة، ولا يجعل الدفع وسيطَ الدفع مديرًا للعمل','وسيط الدفع وحده يدير العمل لأنه يمرر الأموال','العميل وحده ينفذ كل التسوية ويدير الحساب','العامل يحدد الرسوم بعد انتهاء المهمة'],reference:['المنصة ووسيط الدفع بأدوار مالية مختلفة، ولا يجعل الدفع وسيطَ الدفع مديرًا للعمل']};
 const contractGate={id:'contractGate',title:'رفض الشروط الموحدة منع دخول السوق. ما الدلالة الأقرب لهذه الواقعة؟',resultTitle:'بوابة الدخول التعاقدية',options:['للمنصة سلطة على بوابة الدخول حتى مع وجود حق الرفض','رفض الشروط يثبت أن العامل يملك سلطة مساوية للمنصة','لا توجد دلالة لأن العمل لم يبدأ','هذا القرار يخص العميل وحده'],reference:['للمنصة سلطة على بوابة الدخول حتى مع وجود حق الرفض']};
 export function questionsForState(state){
  const type=state?.scenarioKey||'data';
  if(state?.contractDeclineEnding)return [contractGate];
- const common=[burdenVsControl,priceQuestion(type),projectVsAccount];
- if(state?.noWorkEnding)return common;
- return [...common,rankingVsFinal,settlement];
+ if(state?.noWorkEnding)return [burdenVsControl,priceQuestion(type),noWorkBoundary];
+ return [burdenVsControl,priceQuestion(type),projectVsAccount,rankingVsFinal,settlement];
 }
 export function acceptedQuestionAnswer(question,answer){return (question?.reference||[]).includes(answer)}
