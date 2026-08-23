@@ -8,17 +8,18 @@ export function computeManagedAccess(scenario,state){
  const acceptanceDelta=Math.round((Number(state.acceptance??100)-100)*.12);
  return clamp(Number(scenario.initial.access)+performanceDelta+acceptanceDelta,35,95);
 }
+export function premiumSampleCount(scenario){return scenario.type==='data'?3:5}
 export function buildSecondOffer(scenario,access){
  const premium=access>=scenario.accessPolicy.premiumAt;
  return premium?
-  {id:'second-premium',title:'دفعة مميزة إضافية',pay:3.85,duration:18,clientValue:Math.max(7.5,scenario.clientPay*1.2),premium:true,sampleCount:3,stress:scenario.jobStress.premium}:
+  {id:'second-premium',title:'دفعة مميزة إضافية',pay:3.85,duration:18,clientValue:Math.max(7.5,scenario.clientPay*1.2),premium:true,sampleCount:premiumSampleCount(scenario),stress:scenario.jobStress.premium}:
   {id:'second-standard',title:'دفعة إضافية',pay:1.8,duration:11,clientValue:Math.max(3.2,scenario.clientPay*.55),premium:false,sampleCount:2,stress:Math.max(4,Math.round((scenario.jobStress.micro+scenario.jobStress.core)/2))};
 }
 export function secondOfferDecision(state,accepted){
- const offer=state.secondOffer,before={acceptance:state.acceptance,access:state.access,stress:state.stress};
+ const offer=state.secondOffer,before={acceptance:state.acceptance,stress:state.stress};
  const offerDecisions=state.offerDecisions+1,acceptedOffers=state.acceptedOffers+(accepted?1:0),rejections=state.rejections+(accepted?0:1);
  const acceptance=acceptanceRate(acceptedOffers,offerDecisions);
- return {offerDecisions,acceptedOffers,rejections,acceptance,result:{accepted,completed:false,title:offer.title,pay:offer.pay,duration:offer.duration,beforeAcceptance:before.acceptance,afterAcceptance:acceptance,beforeAccess:before.access,afterAccess:before.access,beforeStress:before.stress,afterStress:before.stress}};
+ return {offerDecisions,acceptedOffers,rejections,acceptance,result:{accepted,completed:false,title:offer.title,pay:offer.pay,duration:offer.duration,beforeAcceptance:before.acceptance,afterAcceptance:acceptance,beforeStress:before.stress,afterStress:before.stress}};
 }
 export function prepareSecondTask(state){return nextSampleIndexes(state,state.secondOffer.sampleCount)}
 export function completeSecondTask(scenario,state){
