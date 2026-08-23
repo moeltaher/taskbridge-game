@@ -1,5 +1,21 @@
 # Changelog
 
+## v3.9.0
+
+- Replaced approximate appeal severity reduction with sample-scoped counterfactual task recalculation.
+- Canonicalized structured-conclusion tie keys so equivalent tied leaders cannot fail because of party ordering.
+- Clarified structural authority versus authority actually exercised on `no-work` paths.
+- Added two minutes of disclosed market-decision time to every second-offer decision, including ending the shift at that offer.
+- Made acceptance-ranking deltas use raw rates with symmetric rounding.
+- Added evidence-by-evidence learning feedback to the result page.
+- Separated interim opportunity ranking from the final access decision in the researcher shell.
+- Invalidated an archived result when a completed analysis is reopened for editing.
+- Removed the task-wide `technicalIssue` state alias; technical incidents remain sample-scoped.
+- Stopped writing the legacy `payment.net` alias while retaining migration from old saved states.
+- Added sample-data invariants for acceptable, preferred and reviewable answers.
+- Added a general orphan-JavaScript-module structural guard.
+- Raised state schema to 10, score model to 9, economy model to 4, and regenerated all live GitHub Pages route shells.
+
 ## v3.8.0
 
 - Anchored acceptance effects to each account's historical baseline rather than 100%.
