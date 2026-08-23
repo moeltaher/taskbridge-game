@@ -1,9 +1,9 @@
 import {axes,parties} from '../data/parties.js';
 import {scenarios} from '../data/scenarios.js';
 import {pageForStage as routePageForStage,stageForPage as routeStageForPage,isPublicPage} from './routes.js';
-import {saveState,loadState,clearState,stateStorageMode,latestStateRevision,latestStateSnapshot} from './storage.js';
+import {saveState,loadState,clearState,stateStorageMode,latestStateRevision,latestStateSnapshot,removeArchivedResult} from './storage.js';
 
-export const STATE_SCHEMA_VERSION=9;
+export const STATE_SCHEMA_VERSION=10;
 const writerId=globalThis.crypto?.randomUUID?.()||`tab-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 let lastPersistence={ok:true,status:'persistent',persistent:true,session:false},warnedPersistence=false,warnedSession=false,revisionCounter=0;
 function persist(){
@@ -25,7 +25,8 @@ export function freshState(){
 }
 const ARRAY_FIELDS=['rejectedJobs','workAnswers','sampleSequence','currentTaskSampleIndexes','completedTasks','secondTaskAnswers','evidence','log','powerConfirmed','conclusionEvidence','conclusionCounterEvidence','conclusionDualEvidence','selectedRights','checkpoints'];
 function migratedPower(prior,fallback){const values={};let total=0;for(const party of parties){const n=Math.max(0,Number(prior?.[party]??fallback[party]??0));values[party]=n;total+=n}if(total<=0)return {...fallback};let used=0;for(let i=0;i<parties.length;i++){const party=parties[i];if(i===parties.length-1)values[party]=100-used;else{values[party]=Math.max(0,Math.round(values[party]/total*100));used+=values[party]}}return values}
-function migratePayment(payment){if(!payment||typeof payment!=='object')return payment;const hold=Number(payment.hold||0),availableNet=Number(payment.availableNet??payment.net??0);return {...payment,heldBalance:Number(payment.heldBalance??hold),availableNet,economicPosition:Number(payment.economicPosition??availableNet+hold),net:availableNet}}
+function migratePayment(payment){if(!payment||typeof payment!=='object')return payment;const hold=Number(payment.hold||0),availableNet=Number(payment.availableNet??payment.net??0);const {net:legacyNet,...rest}=payment;return {...rest,heldBalance:Number(payment.heldBalance??hold),availableNet,economicPosition:Number(payment.economicPosition??availableNet+hold)}}
+function migrateTask(task){if(!task||typeof task!=='object')return task;const {technicalIssue:legacyTechnicalIssue,...rest}=task;return {...rest,technicalIssueSampleIndexes:Array.isArray(task.technicalIssueSampleIndexes)?task.technicalIssueSampleIndexes:[]}}
 function migrateLegacyOfferHistory(normalized,value){const sc=scenarios[normalized.scenarioKey];if(!sc?.offerHistory||Number(value.baselineOfferDecisions||0)>0)return;const priorAccepted=Number(sc.offerHistory.accepted||0),priorDecisions=Number(sc.offerHistory.decisions||0),roundAccepted=Math.max(0,Number(value.acceptedOffers||0)),roundDecisions=Math.max(0,Number(value.offerDecisions||0));normalized.baselineAcceptedOffers=priorAccepted;normalized.baselineOfferDecisions=priorDecisions;normalized.acceptedOffers=priorAccepted+roundAccepted;normalized.offerDecisions=priorDecisions+roundDecisions;normalized.acceptance=acceptanceRate(normalized.acceptedOffers,normalized.offerDecisions)}
 export function normalizeState(value){
  const base=freshState();if(!value||typeof value!=='object'||Array.isArray(value))return base;
@@ -37,7 +38,7 @@ export function normalizeState(value){
  normalized.answers=value.answers&&typeof value.answers==='object'?value.answers:{};
  normalized.power={...base.power};for(const axis of axes)normalized.power[axis.id]=migratedPower(value.power?.[axis.id],base.power[axis.id]);
  normalized.payment=migratePayment(normalized.payment);
- normalized.completedTasks=(normalized.completedTasks||[]).map(task=>({...task,technicalIssueSampleIndexes:Array.isArray(task?.technicalIssueSampleIndexes)?task.technicalIssueSampleIndexes:[]}));
+ normalized.completedTasks=(normalized.completedTasks||[]).map(migrateTask);
  if(legacy){
   migrateLegacyOfferHistory(normalized,value);
   normalized.checkpoints=[];normalized.power=emptyPower();normalized.powerConfirmed=[];normalized.conclusionAuthority=null;normalized.conclusionBurden=null;normalized.conclusionEvidence=[];normalized.conclusionCounterEvidence=[];normalized.conclusionDualEvidence=[];normalized.selectedRights=[];normalized.resultData=null;
@@ -58,7 +59,7 @@ export function patch(changes){return commit({changes})}
 export function reset(){state=freshState();clearState();warnedPersistence=false;warnedSession=false;revisionCounter=0;persist();return state}
 export function enterPage(page,{record=true}={}){syncExternalState();if(state.currentPage===page)return state;if(record&&state.checkpoints.at(-1)?.page!==state.currentPage)checkpoint({persistNow:false,label:'العودة إلى الصفحة السابقة'});state.currentPage=page;persist();return state}
 export function currentBackLabel(){return state.checkpoints.at(-1)?.label||'رجوع'}
-export function undoCheckpoint(){syncExternalState();const item=state.checkpoints.pop();if(!item)return null;const keep=state.checkpoints;state=normalizeState(structuredClone(item.snapshot));state.checkpoints=keep;state.currentPage=item.page;persist();return item.page}
+export function undoCheckpoint(){syncExternalState();const item=state.checkpoints.pop();if(!item)return null;const reopenCompletedResult=state.currentPage==='result'&&item.page==='conclusion',runId=state.realStartedAt;const keep=state.checkpoints;state=normalizeState(structuredClone(item.snapshot));state.checkpoints=keep;state.currentPage=item.page;if(reopenCompletedResult)removeArchivedResult(String(runId||''));persist();return item.page}
 export function consumeCheckpointTo(expectedPage){syncExternalState();const item=state.checkpoints.at(-1);if(item?.page!==expectedPage)return null;state.checkpoints.pop();state.currentPage=expectedPage;persist();return expectedPage}
 export function timeBreakdown(s=state){return {taskTime:Number(s.paidTime||0),marketTime:Number(s.marketTime||0),extraWorkTime:Number(s.extraWorkTime||0),breakTime:Number(s.breakTime||0),totalTime:Number(s.time||0)}}
 export function wellbeingLabel(v){return v>=70?'عبء مرتفع':v>=40?'عبء متوسط':'عبء منخفض'}
