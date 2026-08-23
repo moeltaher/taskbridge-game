@@ -23,4 +23,5 @@ export function stateStorageMode(){return newestState()?.mode||'none'}
 export function clearState(){return remove(STATE_KEY)}
 export function hasState(){return !!loadState()?.scenarioKey}
 export function archiveResult(value){if(!value?.runId)return false;const next=compactResult(value),results=asArray(readFrom(local(),RESULTS_KEY,[])).map(compactResult),index=results.findIndex(result=>result.runId===next.runId);if(index>=0)results[index]=next;else results.push(next);return writePersistent(RESULTS_KEY,results.slice(-30))}
+export function removeArchivedResult(runId){if(!runId)return false;const results=asArray(readFrom(local(),RESULTS_KEY,[])).map(compactResult),next=results.filter(result=>String(result.runId)!==String(runId));if(next.length===results.length)return true;return writePersistent(RESULTS_KEY,next)}
 export function savedResults(){return asArray(readFrom(local(),RESULTS_KEY,[])).map(compactResult).filter(result=>result.runId&&result.scenarioName).slice(-30)}
