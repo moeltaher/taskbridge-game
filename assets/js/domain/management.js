@@ -1,13 +1,17 @@
 import {acceptanceRate,scoreWork,qualityAfterTask,taskRecord,nextSampleIndexes} from './work.js';
 export const BREAK_MINUTES=3;
 export const BREAK_STRESS_REDUCTION=8;
+export const SECOND_OFFER_DECISION_MINUTES=2;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+const rate=(accepted,decisions)=>Number(decisions)>0?Number(accepted||0)/Number(decisions)*100:100;
+const symmetricRound=value=>Math.sign(value)*Math.round(Math.abs(value));
 export function baselineAcceptanceRate(state){return acceptanceRate(Number(state.baselineAcceptedOffers||0),Number(state.baselineOfferDecisions||0))}
 export function computeManagedAccess(scenario,state){
  const score=Number(state.completedTasks?.[0]?.score??state.workScore??85);
  const performanceDelta=Math.round((score-85)*.4);
- const baseline=baselineAcceptanceRate(state);
- const acceptanceDelta=Math.round((Number(state.acceptance??baseline)-baseline)*.3);
+ const baselineRaw=rate(state.baselineAcceptedOffers,state.baselineOfferDecisions);
+ const currentRaw=rate(state.acceptedOffers,state.offerDecisions);
+ const acceptanceDelta=symmetricRound((currentRaw-baselineRaw)*.3);
  return clamp(Number(scenario.initial.access)+performanceDelta+acceptanceDelta,35,95);
 }
 export function premiumSampleCount(scenario){return scenario.type==='data'?3:5}
@@ -17,11 +21,12 @@ export function buildSecondOffer(scenario,access){
   {id:'second-premium',title:'دفعة مميزة إضافية',pay:3.85,duration:18,clientValue:Math.max(7.5,scenario.clientPay*1.2),premium:true,sampleCount:premiumSampleCount(scenario),stress:scenario.jobStress.premium}:
   {id:'second-standard',title:'دفعة إضافية',pay:1.8,duration:11,clientValue:Math.max(3.2,scenario.clientPay*.55),premium:false,sampleCount:2,stress:Math.max(4,Math.round((scenario.jobStress.micro+scenario.jobStress.core)/2))};
 }
+export function withSecondOfferDecisionTime(state,changes={}){return {...changes,marketTime:Number(state.marketTime||0)+SECOND_OFFER_DECISION_MINUTES,time:Number(state.time||0)+SECOND_OFFER_DECISION_MINUTES}}
 export function secondOfferDecision(state,accepted){
  const offer=state.secondOffer,before={acceptance:state.acceptance,stress:state.stress};
  const offerDecisions=state.offerDecisions+1,acceptedOffers=state.acceptedOffers+(accepted?1:0),rejections=state.rejections+(accepted?0:1);
  const acceptance=acceptanceRate(acceptedOffers,offerDecisions);
- return {offerDecisions,acceptedOffers,rejections,acceptance,result:{accepted,completed:false,title:offer.title,pay:offer.pay,duration:offer.duration,beforeAcceptance:before.acceptance,afterAcceptance:acceptance,beforeStress:before.stress,afterStress:before.stress}};
+ return {offerDecisions,acceptedOffers,rejections,acceptance,result:{accepted,completed:false,title:offer.title,pay:offer.pay,duration:offer.duration,beforeAcceptance:before.acceptance,afterAcceptance:acceptance,beforeStress:before.stress,afterStress:before.stress},timeChanges:withSecondOfferDecisionTime(state)};
 }
 export function prepareSecondTask(state){return nextSampleIndexes(state,state.secondOffer.sampleCount)}
 export function completeSecondTask(scenario,state){
