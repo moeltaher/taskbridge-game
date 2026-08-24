@@ -16,5 +16,5 @@ export function buildPaymentSettlement(sc,state){
  const availableNet=cashPayout-operating;
  const heldBalance=hold;
  const economicPosition=availableNet+heldBalance;
- return {clientPaid,contracted,platformService,mediator,transfer,hold,heldBalance,operating,cashPayout,availableNet,economicPosition,net:availableNet};
+ return {clientPaid,contracted,platformService,mediator,transfer,hold,heldBalance,operating,cashPayout,availableNet,economicPosition};
 }
