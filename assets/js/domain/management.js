@@ -3,13 +3,16 @@ export const BREAK_MINUTES=3;
 export const BREAK_STRESS_REDUCTION=8;
 export const SECOND_OFFER_DECISION_MINUTES=2;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+const rawRate=(accepted,decisions)=>Number(decisions)>0?Number(accepted||0)/Number(decisions)*100:100;
+const symmetricRound=value=>Math.sign(value)*Math.round(Math.abs(value));
 export function baselineAcceptanceRate(state){return acceptanceRate(Number(state.baselineAcceptedOffers||0),Number(state.baselineOfferDecisions||0))}
 export function computeManagedAccess(scenario,state){
  const initialQuality=Number(state.initialQuality??85);
  const quality=Number(state.quality??initialQuality);
  const performanceDelta=Math.round((quality-initialQuality)*2);
- const baseline=baselineAcceptanceRate(state);
- const acceptanceDelta=Math.round((Number(state.acceptance??baseline)-baseline)*.3);
+ const baselineRaw=rawRate(state.baselineAcceptedOffers,state.baselineOfferDecisions);
+ const currentRaw=rawRate(state.acceptedOffers,state.offerDecisions);
+ const acceptanceDelta=symmetricRound((currentRaw-baselineRaw)*.3);
  return clamp(Number(scenario.initial.access)+performanceDelta+acceptanceDelta,35,95);
 }
 export function premiumSampleCount(scenario){return scenario.type==='data'?3:5}
