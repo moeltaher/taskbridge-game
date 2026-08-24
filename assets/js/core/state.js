@@ -1,6 +1,6 @@
 import {axes} from '../data/parties.js';
 import {pageForStage as routePageForStage,stageForPage as routeStageForPage,isPublicPage} from './routes.js';
-import {saveState,loadState,clearState,stateStorageMode,latestStateRevision,latestStateSnapshot} from './storage.js';
+import {saveState,loadState,clearState,stateStorageMode,latestStateRevision,latestStateSnapshot,removeArchivedResult} from './storage.js';
 
 export const STATE_SCHEMA_VERSION=10;
 const writerId=globalThis.crypto?.randomUUID?.()||`tab-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
@@ -31,7 +31,7 @@ export function normalizeState(value){
  normalized.evidenceSort=value.evidenceSort&&typeof value.evidenceSort==='object'?value.evidenceSort:{};
  normalized.answers=value.answers&&typeof value.answers==='object'?value.answers:{};
  normalized.power={...base.power};for(const axis of axes){const prior=value.power?.[axis.id]||{};normalized.power[axis.id]={worker:[0,1,2].includes(Number(prior.worker))?Number(prior.worker):0,platform:[0,1,2].includes(Number(prior.platform))?Number(prior.platform):0,client:[0,1,2].includes(Number(prior.client))?Number(prior.client):0}}
- normalized.completedTasks=(normalized.completedTasks||[]).map(task=>({...task,technicalIssueSampleIndexes:Array.isArray(task?.technicalIssueSampleIndexes)?task.technicalIssueSampleIndexes:[]}));
+ normalized.completedTasks=(normalized.completedTasks||[]).map(task=>{const clean={...task,technicalIssueSampleIndexes:Array.isArray(task?.technicalIssueSampleIndexes)?task.technicalIssueSampleIndexes:[]};delete clean.technicalIssue;return clean});
  normalized.riskMode=['random','force-event','force-none'].includes(normalized.riskMode)?normalized.riskMode:'random';
  return normalized;
 }
@@ -48,7 +48,7 @@ export function patch(changes){return commit({changes})}
 export function reset(){state=freshState();clearState();warnedPersistence=false;warnedSession=false;revisionCounter=0;persist();return state}
 export function enterPage(page,{record=true}={}){syncExternalState();if(state.currentPage===page)return state;if(record&&state.checkpoints.at(-1)?.page!==state.currentPage)checkpoint({persistNow:false,label:'العودة إلى الصفحة السابقة'});state.currentPage=page;persist();return state}
 export function currentBackLabel(){return state.checkpoints.at(-1)?.label||'رجوع'}
-export function undoCheckpoint(){syncExternalState();const item=state.checkpoints.pop();if(!item)return null;const keep=state.checkpoints;state=normalizeState(structuredClone(item.snapshot));state.checkpoints=keep;state.currentPage=item.page;persist();return item.page}
+export function undoCheckpoint(){syncExternalState();const item=state.checkpoints.pop();if(!item)return null;const reopenCompletedResult=state.currentPage==='result'&&item.page==='conclusion',runId=state.realStartedAt;const keep=state.checkpoints;state=normalizeState(structuredClone(item.snapshot));state.checkpoints=keep;state.currentPage=item.page;if(reopenCompletedResult)removeArchivedResult(String(runId||''));persist();return item.page}
 export function consumeCheckpointTo(expectedPage){syncExternalState();const item=state.checkpoints.at(-1);if(item?.page!==expectedPage)return null;state.checkpoints.pop();state.currentPage=expectedPage;persist();return expectedPage}
 export function timeBreakdown(s=state){return {taskTime:Number(s.paidTime||0),marketTime:Number(s.marketTime||0),extraWorkTime:Number(s.extraWorkTime||0),breakTime:Number(s.breakTime||0),totalTime:Number(s.time||0)}}
 export function wellbeingLabel(v){return v>=70?'عبء مرتفع':v>=40?'عبء متوسط':'عبء منخفض'}
