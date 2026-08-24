@@ -32,7 +32,7 @@ function resolveLocal(from,spec){
 }
 
 const all=await listJs(runtimeRoot),allSet=new Set(all);
-const seeds=[path.join(runtimeRoot,'core','bootstrap.js'),...Object.keys(pages).map(page=>path.join(runtimeRoot,'pages',`${page}.js`))].map(path.resolve);
+const seeds=[path.join(runtimeRoot,'core','bootstrap.js'),...Object.keys(pages).map(page=>path.join(runtimeRoot,'pages',`${page}.js`))].map(file=>path.resolve(file));
 const missingSeeds=seeds.filter(file=>!allSet.has(file));
 if(missingSeeds.length){console.error('Missing runtime entry modules:',missingSeeds.map(toRepo).join(', '));process.exit(1)}
 
