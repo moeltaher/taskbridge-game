@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {APP_VERSION,RESULT_VERSION,SCORE_MODEL_VERSION,ECONOMY_MODEL_VERSION} from '../assets/js/core/config.js';
 import {powerAxisCredit,leaders,secondTier} from '../assets/js/core/power-scoring.js';
-assert.equal(APP_VERSION,'4.0.0');assert.equal(RESULT_VERSION,'No Boss v4.0.0');assert.equal(SCORE_MODEL_VERSION,'9');assert.equal(ECONOMY_MODEL_VERSION,'4');
+assert.equal(APP_VERSION,'3.8.0');assert.equal(RESULT_VERSION,'No Boss v3.8.0');assert.equal(SCORE_MODEL_VERSION,'9');assert.equal(ECONOMY_MODEL_VERSION,'4');
 globalThis.location={pathname:'/taskbridge-game/work/index.html'};
 const {projectBase,pageFromPath,href,pageForStage,stageForPage,isPublicPage,isResearcherPage}=await import('../assets/js/core/routes.js');assert.equal(pageFromPath(),'work');assert.equal(projectBase(),'/taskbridge-game/');assert.equal(href('management'),'/taskbridge-game/management/');assert.equal(pageForStage(0),'scenario');assert.equal(pageForStage(11),'result');assert.equal(stageForPage('rights'),11);assert.equal(isPublicPage('home'),true);assert.equal(isResearcherPage('investigation'),true);
 const ref={primary:['platform'],secondary:['client']};assert.deepEqual(leaders({worker:0,platform:2,client:1}),['platform']);assert.deepEqual(secondTier({worker:0,platform:2,client:1}),['client']);assert.equal(powerAxisCredit({worker:0,platform:2,client:1},ref),1);assert.equal(powerAxisCredit({worker:1,platform:2,client:0},ref),.7);assert.equal(powerAxisCredit({worker:0,platform:2,client:2},{primary:['platform','client'],secondary:[]}),1);
