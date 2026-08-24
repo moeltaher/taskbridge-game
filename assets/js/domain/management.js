@@ -5,7 +5,7 @@ export const SECOND_OFFER_DECISION_MINUTES=2;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 export function baselineAcceptanceRate(state){return acceptanceRate(Number(state.baselineAcceptedOffers||0),Number(state.baselineOfferDecisions||0))}
 export function computeManagedAccess(scenario,state){
- const initialQuality=Number(state.initialQuality??scenario.initial.quality);
+ const initialQuality=Number(state.initialQuality??85);
  const quality=Number(state.quality??initialQuality);
  const performanceDelta=Math.round((quality-initialQuality)*2);
  const baseline=baselineAcceptanceRate(state);
