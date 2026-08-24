@@ -15,7 +15,7 @@ function compareStateCandidates(a,b){if(a.revision!==b.revision)return b.revisio
 function stateCandidates(){return [stateCandidate(local(),'persistent'),stateCandidate(session(),'session')].filter(Boolean)}
 function newestState(){const candidates=stateCandidates();candidates.sort(compareStateCandidates);return candidates[0]||null}
 function compactResult(value){return {runId:value?.runId,scenarioKey:value?.scenarioKey,scenarioName:value?.scenarioName,runPath:value?.runPath,score:value?.score,outcome:value?.outcome,simMinutes:value?.simMinutes,netEconomic:value?.netEconomic,finalStress:value?.finalStress,breakTaken:value?.breakTaken??null,appVersion:value?.appVersion,scoreModelVersion:value?.scoreModelVersion,economyModelVersion:value?.economyModelVersion}}
-function currentResult(value){return value?.appVersion==='4.0.0'&&String(value?.scoreModelVersion)==='9'&&String(value?.economyModelVersion)==='4'}
+function currentResult(value){return value?.appVersion==='3.8.0'&&String(value?.scoreModelVersion)==='9'&&String(value?.economyModelVersion)==='4'}
 export function saveState(state){return write(STATE_KEY,state)}
 export function loadState(){return newestState()?.value||null}
 export function latestStateRevision(){const revisions=stateCandidates().map(candidate=>candidate.revision);return revisions.length?Math.max(...revisions):0}
