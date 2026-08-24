@@ -1,5 +1,5 @@
-const STATE_KEY='no_boss_state_v10';
-const RESULTS_KEY='no_boss_results_v4';
+const STATE_KEY='no_boss_state';
+const RESULTS_KEY='no_boss_results';
 function local(){try{return globalThis.localStorage||null}catch{return null}}
 function session(){try{return globalThis.sessionStorage||null}catch{return null}}
 function readFrom(store,key,fallback=null){if(!store)return fallback;try{const raw=store.getItem(key);return raw===null?fallback:JSON.parse(raw)}catch{return fallback}}
@@ -15,6 +15,7 @@ function compareStateCandidates(a,b){if(a.revision!==b.revision)return b.revisio
 function stateCandidates(){return [stateCandidate(local(),'persistent'),stateCandidate(session(),'session')].filter(Boolean)}
 function newestState(){const candidates=stateCandidates();candidates.sort(compareStateCandidates);return candidates[0]||null}
 function compactResult(value){return {runId:value?.runId,scenarioKey:value?.scenarioKey,scenarioName:value?.scenarioName,runPath:value?.runPath,score:value?.score,outcome:value?.outcome,simMinutes:value?.simMinutes,netEconomic:value?.netEconomic,finalStress:value?.finalStress,breakTaken:value?.breakTaken??null,appVersion:value?.appVersion,scoreModelVersion:value?.scoreModelVersion,economyModelVersion:value?.economyModelVersion}}
+function currentResult(value){return value?.appVersion==='4.0.0'&&String(value?.scoreModelVersion)==='9'&&String(value?.economyModelVersion)==='4'}
 export function saveState(state){return write(STATE_KEY,state)}
 export function loadState(){return newestState()?.value||null}
 export function latestStateRevision(){const revisions=stateCandidates().map(candidate=>candidate.revision);return revisions.length?Math.max(...revisions):0}
@@ -22,5 +23,5 @@ export function latestStateSnapshot(){return newestState()?.value||null}
 export function stateStorageMode(){return newestState()?.mode||'none'}
 export function clearState(){return remove(STATE_KEY)}
 export function hasState(){return !!loadState()?.scenarioKey}
-export function archiveResult(value){if(!value?.runId||!value?.appVersion||!value?.scoreModelVersion||!value?.economyModelVersion)return false;const next=compactResult(value),results=asArray(readFrom(local(),RESULTS_KEY,[])).map(compactResult).filter(result=>result.runId&&result.appVersion),index=results.findIndex(result=>result.runId===next.runId);if(index>=0)results[index]=next;else results.push(next);return writePersistent(RESULTS_KEY,results.slice(-30))}
-export function savedResults(){return asArray(readFrom(local(),RESULTS_KEY,[])).map(compactResult).filter(result=>result.runId&&result.scenarioName&&result.appVersion&&result.scoreModelVersion&&result.economyModelVersion).slice(-30)}
+export function archiveResult(value){if(!value?.runId||!currentResult(value))return false;const next=compactResult(value),results=asArray(readFrom(local(),RESULTS_KEY,[])).map(compactResult).filter(currentResult),index=results.findIndex(result=>result.runId===next.runId);if(index>=0)results[index]=next;else results.push(next);return writePersistent(RESULTS_KEY,results.slice(-30))}
+export function savedResults(){return asArray(readFrom(local(),RESULTS_KEY,[])).map(compactResult).filter(result=>result.runId&&result.scenarioName&&currentResult(result)).slice(-30)}
