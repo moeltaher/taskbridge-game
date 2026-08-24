@@ -27,6 +27,8 @@ jobs:
         run: npm run check:domain
       - name: Semantic invariant checks
         run: npm run check:semantic
+      - name: Dead runtime code check
+        run: npm run check:dead
       - name: JavaScript syntax checks
         run: npm run check:syntax
       - name: Install browser-test dependencies

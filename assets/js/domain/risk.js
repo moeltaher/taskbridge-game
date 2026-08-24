@@ -13,10 +13,10 @@ function deterministicRoll(scenario,state){const stableSeed=Number(state.riskSee
 function moderationExposure(state){const indexes=(state.completedTasks||[]).flatMap(task=>task.sampleIndexes||[]);return indexes.some(index=>['تهديد','مضايقة/إساءة'].includes(samples.moderation?.[index]?.preferred))}
 export function riskTransition(scenario,state){
  if(state.riskEvent)return {event:state.riskEvent,changes:null};
- const profile=riskProfile(scenario.riskType),eligible=scenario.riskType!=='wellbeing'||moderationExposure(state),threshold=eligible?(probability[scenario.riskType]??65):0,roll=deterministicRoll(scenario,state),occurs=roll<threshold;
+ const profile=riskProfile(scenario.riskType),eligible=scenario.riskType!=='wellbeing'||moderationExposure(state),threshold=eligible?(probability[scenario.riskType]??65):0,roll=deterministicRoll(scenario,state),mode=['force-event','force-none'].includes(state.riskMode)?state.riskMode:'random',occurs=eligible&&(mode==='force-event'||(mode==='random'&&roll<threshold));
  const affectedTask=profile.technicalIssue?(state.completedTasks||[]).at(-1):null,affectedSampleIndex=profile.technicalIssue?affectedTask?.sampleIndexes?.at(-1)??null:null;
  const event=occurs?{...profile,affectedTaskId:affectedTask?.id||null,affectedSampleIndex}:{...noEvent,affectedTaskId:null,affectedSampleIndex:null};
  const time=Number(state.time||0),extraWorkTime=Number(state.extraWorkTime||0),stress=Number(state.stress||0);
  const completedTasks=event.technicalIssue&&event.affectedTaskId?(state.completedTasks||[]).map(task=>task.id===event.affectedTaskId?{...task,technicalIssue:true,technicalIssueSampleIndexes:[...new Set([...(task.technicalIssueSampleIndexes||[]),event.affectedSampleIndex].filter(Number.isInteger))]}:task):(state.completedTasks||[]);
- return {event:{...event,roll,threshold},changes:{riskEvent:{...event,roll,threshold},completedTasks,time:time+event.minutes,extraWorkTime:extraWorkTime+event.minutes,stress:clamp(stress+event.stress,0,100),status:event.occurred?'حدث موقف إضافي مرتبط بالعمل':'انتهت الوردية دون حدث إضافي'}};
+ return {event:{...event,roll,threshold,mode,eligible},changes:{riskEvent:{...event,roll,threshold,mode,eligible},completedTasks,time:time+event.minutes,extraWorkTime:extraWorkTime+event.minutes,stress:clamp(stress+event.stress,0,100),status:event.occurred?'حدث موقف إضافي مرتبط بالعمل':'انتهت الوردية دون حدث إضافي'}};
 }

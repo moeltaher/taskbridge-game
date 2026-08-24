@@ -1,11 +1,13 @@
 import {acceptanceRate,scoreWork,qualityAfterTask,taskRecord,nextSampleIndexes} from './work.js';
 export const BREAK_MINUTES=3;
 export const BREAK_STRESS_REDUCTION=8;
+export const SECOND_OFFER_DECISION_MINUTES=2;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 export function baselineAcceptanceRate(state){return acceptanceRate(Number(state.baselineAcceptedOffers||0),Number(state.baselineOfferDecisions||0))}
 export function computeManagedAccess(scenario,state){
- const score=Number(state.completedTasks?.[0]?.score??state.workScore??85);
- const performanceDelta=Math.round((score-85)*.4);
+ const initialQuality=Number(state.initialQuality??85);
+ const quality=Number(state.quality??initialQuality);
+ const performanceDelta=Math.round((quality-initialQuality)*2);
  const baseline=baselineAcceptanceRate(state);
  const acceptanceDelta=Math.round((Number(state.acceptance??baseline)-baseline)*.3);
  return clamp(Number(scenario.initial.access)+performanceDelta+acceptanceDelta,35,95);
@@ -21,7 +23,7 @@ export function secondOfferDecision(state,accepted){
  const offer=state.secondOffer,before={acceptance:state.acceptance,stress:state.stress};
  const offerDecisions=state.offerDecisions+1,acceptedOffers=state.acceptedOffers+(accepted?1:0),rejections=state.rejections+(accepted?0:1);
  const acceptance=acceptanceRate(acceptedOffers,offerDecisions);
- return {offerDecisions,acceptedOffers,rejections,acceptance,result:{accepted,completed:false,title:offer.title,pay:offer.pay,duration:offer.duration,beforeAcceptance:before.acceptance,afterAcceptance:acceptance,beforeStress:before.stress,afterStress:before.stress}};
+ return {offerDecisions,acceptedOffers,rejections,acceptance,time:Number(state.time||0)+SECOND_OFFER_DECISION_MINUTES,marketTime:Number(state.marketTime||0)+SECOND_OFFER_DECISION_MINUTES,result:{accepted,completed:false,title:offer.title,pay:offer.pay,duration:offer.duration,beforeAcceptance:before.acceptance,afterAcceptance:acceptance,beforeStress:before.stress,afterStress:before.stress,decisionMinutes:SECOND_OFFER_DECISION_MINUTES}};
 }
 export function prepareSecondTask(state){return nextSampleIndexes(state,state.secondOffer.sampleCount)}
 export function completeSecondTask(scenario,state){
